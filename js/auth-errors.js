@@ -13,7 +13,8 @@ const messageOf = (error) => String((error && error.message) || "");
 
 export function isNetworkError(error) {
   if (!error || typeof error !== "object") return false;
-  if (error.name === "AuthRetryableFetchError") return true;
+  // auth-js also wraps every 5xx answer in AuthRetryableFetchError, with its HTTP status: only status 0 means no answer.
+  if (error.name === "AuthRetryableFetchError") return !error.status;
   return NETWORK_MESSAGE.test(messageOf(error));
 }
 

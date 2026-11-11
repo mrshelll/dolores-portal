@@ -33,6 +33,16 @@ test("classifyAuthError maps a TypeError: Failed to fetch to network", () => {
   assert.equal(isNetworkError({ message: "TypeError: Failed to fetch" }), true);
 });
 
+// auth-js 2.117.2 (lib/fetch.js, NETWORK_ERROR_CODES) wraps every 5xx answer, 500 included, in AuthRetryableFetchError
+// with the HTTP status. An answer came back, so it is the server's failure (a rejected SMTP login gives 500), not the
+// reader's internet.
+test("classifyAuthError maps an AuthRetryableFetchError that carries an HTTP status to other", () => {
+  const smtpRefused = { name: "AuthRetryableFetchError", status: 500, message: "Error sending confirmation email" };
+  assert.equal(classifyAuthError(smtpRefused), "other");
+  assert.equal(isNetworkError(smtpRefused), false);
+  assert.equal(classifyAuthError({ name: "AuthRetryableFetchError", status: 504, message: "HTTP 504" }), "other");
+});
+
 test("classifyAuthError maps anything else, and nothing, to other", () => {
   assert.equal(classifyAuthError({ status: 500, message: "boom" }), "other");
   assert.equal(classifyAuthError(null), "other");
