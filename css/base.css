@@ -1,0 +1,433 @@
+/* dolores: the page's one stylesheet. A small set of tokens (neutral greys, one accent, light and dark through
+   prefers-color-scheme, a system font stack, spacing on an 8 px step) and the shared pieces every screen uses: the
+   frame and its header, text styles, buttons, fields, the section notice, tags and the list of pains. Mobile first,
+   one breakpoint at 672 px (the factory grid's first tier). Nothing below the tokens uses a loose colour, size or
+   radius (FUN-35). Every text colour reaches WCAG AA (4.5:1) on the page, sheet and tag backgrounds, in both modes. */
+
+:root {
+  color-scheme: light dark;
+
+  /* Colour: greys, one accent («you can touch this»: links and the primary button), and the error colour. */
+  --bg: #F5F5F4;
+  --sheet: #FFFFFF;
+  --ink: #1C1C1E;
+  --muted: #5C5C62;
+  --line: #D9D9DC;
+  --tag: #E8E8EA;
+  --accent: #1D5BC4;
+  --on-accent: #FFFFFF;
+  --error: #B42318;
+  /* Hover and press on a button (COM-04): the accent a step darker; a secondary button takes the line grey. */
+  --accent-hover: color-mix(in srgb, var(--accent) 88%, black);
+  --secondary-hover: var(--line);
+
+  /* Type: the system's own fonts, three sizes (FUN-02). The title is 20 px on a phone, so a pain's title of up to two
+     lines still ends within 160 px at 320 × 640 (MAR-14); 24 px from 672 px. */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-small: 14px;
+  --text-body: 16px;
+  --text-title: 20px;
+  --text-section: 18px; /* only the home's section titles; the home has no 14 px text, so it keeps three sizes */
+
+  /* Spacing on an 8 px step. */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 48px;
+  --space-between-blocks: var(--space-4);
+
+  /* Frame. It reaches the widest review width (1440) with the page margin on each side and centres above it. */
+  --margin-page: 16px;
+  --frame-page: 1392px;
+  --measure-form: 440px;
+  --measure-text: 40rem;
+
+  --radius: 4px;
+  --radius-pill: 999px;
+  --target-min: 48px;
+  --target-link: 44px;
+  --pain-title-pad: 11px; /* (44 − 16 × 1.4) / 2, rounded up */
+  --mark: 4px; /* the stripe on a notice's start edge */
+
+  /* The frame contract the factory's screen checks read (MAR-08, MAR-09, MAR-11, FUN-05, FUN-37). They only point at
+     the tokens above, which stay the source of truth. */
+  --marco-pagina: calc(var(--frame-page) + 2 * var(--margin-page));
+  --marco-margen-sm: var(--space-2);
+  --marco-margen-pagina: var(--margin-page);
+  --medida-formulario: var(--measure-form);
+  --espacio-entre-bloques: var(--space-between-blocks);
+  --espacio-1: var(--space-1);
+  --espacio-2: var(--space-2);
+  --espacio-3: var(--space-3);
+  --espacio-4: var(--space-4);
+  --espacio-5: var(--space-5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141416;
+    --sheet: #1E1E21;
+    --ink: #EDEDEF;
+    --muted: #A3A3AA;
+    --line: #34343A;
+    --tag: #2C2C31;
+    --accent: #8AB4F8;
+    --on-accent: #141416;
+    --error: #FF8A80;
+  }
+}
+
+@media (min-width: 672px) {
+  :root { --margin-page: 24px; --text-title: 24px; }
+}
+
+/* ---- base ------------------------------------------------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 var(--text-body)/1.5 var(--font-sans);
+  overflow-wrap: break-word;
+}
+p, h1, h2, h3, ol, ul { margin: 0; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); text-underline-offset: 3px; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+
+/* ---- frame and header ------------------------------------------------------------------- */
+
+.frame {
+  width: 100%;
+  max-width: var(--marco-pagina);
+  margin-inline: auto;
+  padding-inline: var(--margin-page);
+}
+
+/* The header: the product name, and on the right what applies to the whole visit («Salir»). One row, so on a
+   320 × 640 phone the frame at rest ends well before 160 px (MAR-14). */
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: calc(var(--target-min) + 2 * var(--space-1));
+  padding-block: var(--space-1);
+  border-bottom: 1px solid var(--line);
+}
+.masthead-actions { display: flex; gap: var(--space-1); }
+
+/* «dolores», in a type style nothing else uses (NAV-08): the only 700 weight on the page, tracked tight. As a link
+   home it keeps the text colour and the tap target. */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target-min);
+  color: inherit;
+  font-size: var(--text-body);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-decoration: none;
+}
+a.brand:hover { text-decoration: underline; }
+
+main { padding-block: var(--space-4) var(--space-5); }
+
+/* The title band: the h1, then its data lines. */
+.page-head h1 { font-size: var(--text-title); line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+.page-head h1:focus { outline: none; } /* it takes the focus on a new screen; it is not a control */
+.page-meta { max-width: var(--measure-text); margin-top: var(--space-1); color: var(--muted); overflow-wrap: anywhere; }
+
+.notices { margin-top: var(--space-between-blocks); }
+.notices:empty { display: none; }
+.body { margin-top: var(--space-between-blocks); }
+
+/* ---- text styles ------------------------------------------------------------------------ */
+
+.section + .section { margin-top: var(--space-between-blocks); }
+.section h2 { font-size: var(--text-body); line-height: 1.4; font-weight: 600; margin-bottom: var(--space-1); }
+.section p, .prose { max-width: var(--measure-text); } /* about 80 characters a line (FUN-12) */
+.muted { color: var(--muted); }
+.loading { color: var(--muted); }
+
+/* Blocks of one group, one under the other, each at its own width. */
+.stack { display: grid; justify-items: start; gap: var(--space-2); }
+
+/* Sections side by side share the width equally (MAR-12); below 672 px they stack. */
+.split { display: grid; gap: var(--space-between-blocks); }
+.split > .section { margin: 0; }
+@media (min-width: 672px) {
+  .split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.steps { list-style: none; padding: 0; display: grid; gap: var(--space-1); }
+.step-number { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ---- section notice --------------------------------------------------------------------- */
+
+/* A sheet with a stripe: grey for information, ink for a warning, the error colour for an error. Never the accent,
+   which means «you can touch this» (COM-15). */
+.notice {
+  --notice-accent: var(--muted);
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-inline-start: var(--mark) solid var(--notice-accent);
+  border-radius: var(--radius);
+  background: var(--sheet);
+}
+.notice--warning { --notice-accent: var(--ink); }
+.notice--error { --notice-accent: var(--error); }
+.notice p { max-width: var(--measure-text); }
+/* A notice in a stack (the «sin permiso» screen) takes the full width, like every notice in the notice zone. */
+.stack > .notice { justify-self: stretch; }
+.notice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
+
+/* ---- fields ----------------------------------------------------------------------------- */
+
+.form { display: grid; gap: var(--space-2); max-width: var(--measure-form); }
+.field { display: grid; gap: var(--space-1); }
+label { font-weight: 600; }
+.hint { color: var(--muted); font-size: var(--text-small); }
+input, textarea, select {
+  width: 100%;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+  background: var(--sheet);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-body); /* 16 px or more keeps iOS from zooming in */
+}
+input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] {
+  border-color: var(--error);
+  box-shadow: inset 0 0 0 1px var(--error);
+}
+.field-error { color: var(--error); font-size: var(--text-small); font-weight: 600; }
+/* The code is figures, in the fixed-width font, as wide as the 8 digits need (COM-02). */
+.code-input {
+  max-width: calc(12ch + 2 * var(--space-2));
+  font-family: var(--font-mono);
+  font-size: var(--text-title);
+  letter-spacing: 0.2em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- buttons and actions ---------------------------------------------------------------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target-min);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+.button--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.button--secondary { background: transparent; border-color: var(--muted); color: var(--ink); }
+/* Feedback on hover and press, 90 ms (MOV-03); the reduced-motion rule above drops the transition. */
+.button { transition: background-color 90ms ease-out, border-color 90ms ease-out; }
+.button--primary:not([disabled]):is(:hover, :active) { background: var(--accent-hover); border-color: var(--accent-hover); }
+.button--secondary:not([disabled]):is(:hover, :active) { background: var(--secondary-hover); }
+.form .button--primary { width: 100%; }
+
+/* A secondary action that reads as a link (COM-01). */
+.link-button {
+  appearance: none;
+  min-height: var(--target-link);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  text-align: start;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+/* What follows a form goes after it, so the form's primary action is its last control (MAR-06). */
+.secondary-actions { display: grid; justify-items: start; margin-top: var(--space-2); max-width: var(--measure-form); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+
+/* ---- tags ------------------------------------------------------------------------------- */
+
+/* A short label (a topic, a mark): text on a grey pill, never colour alone (FUN-27). */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--tag);
+  color: var(--ink);
+  font-size: var(--text-small);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* ---- the list of pains (home) ----------------------------------------------------------- */
+
+/* The week's sentence opens the body; the sections follow at the space between blocks. */
+.week-sentence { max-width: var(--measure-text); }
+.week-sentence + .section { margin-top: var(--space-between-blocks); }
+/* On the home every section starts a step further from what is above it, so its title reads as the head of a group. */
+.home-body > * + .section { margin-top: var(--space-5); }
+/* The home's section titles outrank its pain titles (16 px). Its meta lines go up to the body size, muted, so the home
+   still uses three sizes: 16, 18 and the title (FUN-02). Every other screen keeps 14 px for its small text. */
+.home-body > .section > h2, .home-body .section-summary h2 { font-size: var(--text-section); }
+.home-body .pain-meta { font-size: var(--text-body); }
+
+/* Rows split by lines, not boxes (FUN-04); the lines run the full width while each text keeps its reading measure. */
+.pain-list { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+.pain-row { padding-block: var(--space-1) var(--space-2); border-bottom: 1px solid var(--line); }
+.pain-title { font-size: var(--text-body); line-height: 1.4; font-weight: 600; }
+/* The title is the row's link. Its padding makes a tap target of 44 px on one line (22.4 + 2 × 11, FUN-18) and puts the
+   same space between the title and the «who» line in every row, also when the title takes two lines. */
+.pain-title a { display: inline-block; padding-block: var(--pain-title-pad); }
+.pain-who, .pain-meta { max-width: var(--measure-text); }
+.pain-meta { margin-top: var(--space-1); color: var(--muted); font-size: var(--text-small); }
+.pain-list + .link-button { margin-top: var(--space-1); }
+
+/* «Descartados», folded: the summary reads like a section title and is a full tap target. */
+.section-summary {
+  min-height: var(--target-min);
+  padding-block: var(--space-1);
+  font-weight: 600;
+  line-height: 2;
+  cursor: pointer;
+}
+/* Its h2 stays on the marker's line. */
+.section-summary h2 { display: inline; margin: 0; }
+details[open] > .section-summary { margin-bottom: var(--space-1); }
+
+/* ---- a pain's detail (the «detalle» pattern) ---------------------------------------------- */
+
+/* The context: «← Volver» on one line, a 44 px target (FUN-18). */
+.back-link { display: inline-flex; align-items: center; min-height: var(--target-link); white-space: nowrap; }
+.has-context .page-head { margin-top: var(--space-1); }
+
+/* MAR-14 on a phone: masthead, «← Volver» and a two-line title end within 160 px of a 640 px screen. The back link keeps
+   its 44 px target, but its negative margins leave the line it sits on (24 px, the text's own line height) as its only
+   height in the flow: the target reaches into the space around it. The page starts closer to the masthead.
+   65 (masthead) + 8 + 24 (back) + 8 + 2 × 25 (title) = 155. */
+@media (max-width: 671.98px) {
+  main.has-context { padding-top: var(--space-1); }
+  .has-context .back-link { margin-block: calc(-1 * var(--space-2)); }
+}
+
+/* The header: the title, the status as a tag under it, the key data, then the marks as its actions, last (MAR-06). */
+.detail-status { margin-top: var(--space-1); }
+.key-data { margin-top: var(--space-1); padding: 0; list-style: none; max-width: var(--measure-text); }
+.key-label { color: var(--muted); font-size: var(--text-small); }
+.key-value { color: var(--ink); }
+.detail-actions { margin-top: var(--space-2); }
+.own-mark { margin-top: var(--space-1); color: var(--muted); font-size: var(--text-small); }
+
+/* On a phone the key data share one line, «·» between them, the value at the label's size; a value that reads alone
+   keeps its label only for screen readers (DET-12). */
+@media (max-width: 671.98px) {
+  .key-data { font-size: var(--text-small); }
+  .key { display: inline; }
+  /* The plain declaration first: Safari before 17.4 drops the one with alt text and keeps it. */
+  .key + .key::before { content: "·"; content: "·" / ""; margin-inline: var(--space-1); color: var(--muted); }
+  .key--alone .key-label {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+}
+/* From 672 px each datum carries its label, small and muted, over its value (DET-02). */
+@media (min-width: 672px) {
+  .key-data { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
+  .key { display: grid; }
+}
+
+.button[aria-disabled="true"] { cursor: progress; }
+
+/* A fold's summary is a 44 px target: its line plus the padding (FUN-18). Its marker goes after the words, so the
+   words start on the body's line (MAR-10). */
+.fold > summary {
+  padding-block: var(--space-1);
+  line-height: calc(var(--target-link) - 2 * var(--space-1));
+  color: var(--accent);
+  list-style: none;
+  cursor: pointer;
+}
+.fold > summary::-webkit-details-marker { display: none; }
+/* The plain declaration first: Safari before 17.4 drops the one with alt text and keeps it. */
+.fold > summary::after { content: "▾"; content: "▾" / ""; margin-inline-start: var(--space-1); }
+.fold[open] > summary::after { content: "▴"; content: "▴" / ""; }
+
+/* The body: the index, then the sections. On a phone the index is folded at the top, in the flow, so the first
+   section still shows on the first screen (FUN-42) and nothing sticks (MAR-14, point 5). From 672 px it is sticky,
+   beside the sections on the right, so the sections and the comment form start at the body's edge (DET-04, MAR-09). */
+.detail-layout { display: grid; gap: var(--space-between-blocks); }
+.detail-index ul { list-style: none; padding: 0; display: grid; }
+.detail-index a { display: inline-flex; align-items: center; min-height: var(--target-link); }
+.detail-index--wide { display: none; }
+@media (min-width: 672px) {
+  .detail-layout { grid-template-columns: minmax(0, 1fr) 14rem; align-items: start; }
+  .detail-sections { grid-column: 1; grid-row: 1; }
+  .detail-index--wide { display: block; grid-column: 2; grid-row: 1; position: sticky; top: var(--space-2); }
+  .detail-index--wide ul { gap: var(--space-1); }
+  .detail-index--wide a { min-height: 0; }
+  .detail-index--fold { display: none; }
+}
+.detail-section h2:focus { outline: none; } /* the index moves the focus here; it is not a control */
+.detail-section > p + p { margin-top: var(--space-1); }
+.detail-notice + .section { margin-top: var(--space-between-blocks); }
+
+/* Quotes: the translation as a quote, its source and, folded, the original (one level, DET-07). */
+.quotes { list-style: none; padding: 0; display: grid; gap: var(--space-2); margin-top: var(--space-2); max-width: var(--measure-text); }
+.quote blockquote { margin: 0; padding-inline-start: var(--space-2); border-inline-start: var(--mark) solid var(--line); }
+.quote-source { display: inline-flex; align-items: center; min-height: var(--target-link); }
+.original > p { color: var(--muted); }
+
+/* The glossary: term and meaning, rows split by a line (DET-08). */
+.glossary { margin: 0; max-width: var(--measure-text); border-top: 1px solid var(--line); }
+.glossary-row { padding-block: var(--space-1); border-bottom: 1px solid var(--line); }
+.glossary dt { font-weight: 600; }
+.glossary dd { margin: 0; }
+
+/* Marks and comments. */
+.detail-section h3 {
+  margin-top: var(--space-3);
+  margin-bottom: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.detail-section h3:focus { outline: none; }
+.mark-list, .comment-list { list-style: none; padding: 0; max-width: var(--measure-text); }
+.comment-list { border-top: 1px solid var(--line); }
+.comment { padding-block: var(--space-1); border-bottom: 1px solid var(--line); }
+.comment-meta { color: var(--muted); font-size: var(--text-small); }
+.comment-body { white-space: pre-wrap; }
+.comment-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-3); }
+.comment-form { margin-top: var(--space-3); }
+.comment-form textarea { resize: vertical; }
+.form-notices:empty { display: none; }
+
+/* ---- index.html's fallback when the page could not load --------------------------------- */
+
+.fallback { display: grid; justify-items: start; gap: var(--space-2); }
