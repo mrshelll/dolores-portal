@@ -204,9 +204,10 @@ export function homeNotice(notice, { empty = false } = {}) {
   return empty && notice.kind === "none" ? null : notice;
 }
 
-// The home whose pains are all discarded points to them, without «esta semana» under a stale notice.
+// The home whose pains are all discarded points to them, without «esta semana» whenever the week's run did not end
+// well (sentenceTense is not null: failed, incomplete, ingest-only or stale).
 export function onlyDiscardedSentence(notice = null) {
-  return isStale(notice) ? T.homeOnlyDiscardedLatest : T.homeOnlyDiscarded;
+  return sentenceTense(notice) ? T.homeOnlyDiscardedLatest : T.homeOnlyDiscarded;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;

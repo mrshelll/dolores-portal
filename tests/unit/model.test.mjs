@@ -4,6 +4,7 @@ import {
   effectiveMark, buildSections, sectionOf, weekSentence, emptySentence, onlyDiscardedSentence, homeNotice, sentenceTense, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, PAGED_ABOVE, rowMeta,
 } from "../../js/model.js";
 import { loadHome } from "../../js/api.js";
+import { T } from "../../js/text.js";
 
 // Fixtures in the base's shapes, with invented texts (this repository is public and carries no catalog data).
 const PEOPLE = [
@@ -322,6 +323,14 @@ test("sentenceTense: this week's failed or incomplete run is «past»; any stale
   assert.equal(sentenceTense(null), null);
 });
 
+test("the only-discarded home never says «esta semana» when the week's run did not end well", () => {
+  for (const kind of ["failed", "incomplete", "ingest-only", "stale"]) {
+    assert.equal(onlyDiscardedSentence({ kind }), T.homeOnlyDiscardedLatest, kind);
+  }
+  assert.equal(onlyDiscardedSentence(null), T.homeOnlyDiscarded);
+  assert.equal(onlyDiscardedSentence(), T.homeOnlyDiscarded);
+});
+
 // ---- emptySentence ---------------------------------------------------------------------------
 
 test("emptySentence: one sentence for an empty home, with what was reviewed when it is known", () => {
@@ -356,7 +365,7 @@ const HOME_SENTENCES = {
   incomplete: {
     fresh: [`En esa revisión hubo 1 dolor con peso para trabajar. Revisamos 480 publicaciones sobre ${TOPIC}.`,
       `Revisamos 480 publicaciones sobre ${TOPIC} y ninguna trajo un dolor. La próxima revisión es el lunes.`,
-      "No hay dolores activos esta semana. Los descartados están abajo."],
+      "No hay dolores activos. Los descartados están abajo."],
     stale: [`En la última revisión hubo 1 dolor con peso para trabajar. Revisamos 480 publicaciones sobre ${TOPIC}.`,
       `Revisamos 480 publicaciones sobre ${TOPIC} y ninguna trajo un dolor. La próxima revisión es el lunes.`,
       "No hay dolores activos. Los descartados están abajo."],
@@ -364,7 +373,7 @@ const HOME_SENTENCES = {
   failed: {
     fresh: ["En esa revisión hubo 1 dolor con peso para trabajar.",
       "La revisión de esta semana no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
-      "No hay dolores activos esta semana. Los descartados están abajo."],
+      "No hay dolores activos. Los descartados están abajo."],
     stale: ["En la última revisión hubo 1 dolor con peso para trabajar.",
       "La última revisión no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
       "No hay dolores activos. Los descartados están abajo."],
@@ -372,7 +381,7 @@ const HOME_SENTENCES = {
   "ingest-only": {
     fresh: ["En la última revisión hubo 1 dolor con peso para trabajar.",
       "La revisión de esta semana no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
-      "No hay dolores activos esta semana. Los descartados están abajo."],
+      "No hay dolores activos. Los descartados están abajo."],
     stale: ["En la última revisión hubo 1 dolor con peso para trabajar.",
       "La última revisión no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
       "No hay dolores activos. Los descartados están abajo."],
