@@ -387,7 +387,7 @@ test("loadPain reads the one pain, its card, marks and comments, and everyone's 
     ["select", "comments", "*", [["pain_id", "dol-0027"]]],
     ["select", "marks", "*", [["pain_id", "dol-0027"]]],
     ["select", "pain_cards", "pain_id,kind,card", [["pain_id", "dol-0027"]]],
-    ["select", "pains", "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts", [["id", "dol-0027"]]],
+    ["select", "pains", "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts,gate:doc->gate", [["id", "dol-0027"]]],
     ["select", "people", "*", []],
   ]);
 });

@@ -47,11 +47,12 @@ function tracesOf(result) {
 // { summary, pains, cards, marks, people, traces }. summary is null when there is no run yet; traces is [] when no run
 // left one, or when run_traces failed for a reason other than refused or expired (tracesOf). Every read starts at once;
 // the first one refused rejects the whole load (a fetch that fails rejects as it is). Each pain brings `team_discard` from its doc, so the page can place a team discard whose marks are gone
-// (model.js, buildSections), and its `history`, so the home can tell which pains the latest run touched (decideList).
+// (model.js, buildSections), its `history`, so the home can tell which pains the latest run touched (decideList), and
+// its `gate`, the counts the run judged it by (model.js, analysisRows); a pain stored before the gate existed has none.
 export async function loadHome(client) {
   const [summary, pains, cards, marks, people, traces] = await Promise.all([
     client.rpc("week_summary"),
-    client.from("pains").select("id,territory,status,team_discard:doc->team_discard,history:doc->history"),
+    client.from("pains").select("id,territory,status,team_discard:doc->team_discard,history:doc->history,gate:doc->gate"),
     client.from("pain_cards").select("pain_id,kind,card"),
     client.from("marks").select("*"),
     client.from("people").select("*"),
@@ -87,8 +88,9 @@ export async function loadRuns(client) {
   return objects(result.data);
 }
 
-// A pain's detail also brings its quotes and the attacks' verdicts, for «Cómo llegamos a este dolor».
-const PAIN_COLUMNS = "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts";
+// A pain's detail also brings its quotes and the attacks' verdicts, for «Cómo llegamos a este dolor», and its gate, for
+// the analysis table (model.js, analysisRows).
+const PAIN_COLUMNS = "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts,gate:doc->gate";
 
 // The pain ids a card's duels name (dolores/scripts/lib/cards.mjs, PAIN_ID), each once, never the pain's own.
 const RIVAL_ID = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/;

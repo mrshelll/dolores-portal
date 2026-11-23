@@ -15,7 +15,7 @@ export const T = Object.freeze({
   brandLampGreen: "La última corrida terminó completa",
   brandLampAmber: "La última corrida quedó a medias, es vieja o todavía no hay ninguna",
   brandLampRed: "La última corrida falló",
-  // The same state in two or three words, shown beside the brand from 768 px (the lamp's label keeps the long one).
+  // The same state in two or three words, shown beside the brand at every width (the lamp's label keeps the long one).
   brandShortComplete: "Corrida completa",
   brandShortPartial: "Corrida a medias",
   brandShortOld: "Corrida vieja",
@@ -84,6 +84,7 @@ export const T = Object.freeze({
   leadOrderWeighty: "Primero, los que tienen peso para trabajar.",
   decideEmpty: "No hay nada para decidir ahora. Los demás dolores están en el catálogo.",
   seeCatalog: "Ver el catálogo",
+  resultsLabel: "Resultados",
   boardLabel: "El catálogo completo",
   boardWeighty: "con peso para trabajar",
   boardInterested: "marcados «Nos interesa»",
@@ -100,6 +101,26 @@ export const T = Object.freeze({
   factTestimoniesMany: "{count} testimonios",
   factAttacks: "Resistió {held} de {total} ataques",
   factAttacksOne: "Resistió {held} de 1 ataque",
+  // The lab report's analysis table: the counts the run judged a pain by, each against the threshold the run used (the
+  // gate's own numbers, never fixed here).
+  analysisCaption: "Análisis",
+  analysisValueLabel: "Valor",
+  analysisRangeLabel: "Rango de referencia",
+  analysisFlagLabel: "Indicador",
+  analysisTestimonies: "Testimonios",
+  analysisTiers: "Tipos de fuente",
+  analysisSurvivals: "Ataques resistidos",
+  analysisStatement: "Descrito por quien lo sufre",
+  analysisRange: "{n} o más",
+  analysisIn: "DENTRO DEL RANGO",
+  analysisOut: "FUERA DEL RANGO",
+  analysisHeld: "{held} de {total}",
+  analysisIncomplete: "Sin resultado completo ({n} de {total} respondieron)",
+  analysisNoAttacks: "Sin ataques evaluados",
+  analysisMissing: "Falta",
+  analysisPerCountry: "Contado dentro de un solo país",
+  // Where the table would be, on a full result or a pain's page, when the pain has no gate (stored before it existed).
+  analysisNone: "Sin análisis guardado para este dolor",
   duelReasonLabel: "En el duelo:",
   commentAction: "Comentar",
   stationInterested: "Nos interesa",
@@ -135,6 +156,18 @@ export const T = Object.freeze({
   sourceUnknown: "sin dato",
   sourceOf: "de {available}",
   otherCuts: "Otros recortes",
+  // The line as the lab report's processed sample: the table's columns, and in words for a screen reader what the table
+  // abbreviates («N°», «Cant.») or leaves as a dash.
+  lineColNumber: "N°",
+  lineColNumberFull: "Número",
+  lineColStage: "Etapa",
+  lineColCount: "Cant.",
+  lineColCountFull: "Cantidad",
+  lineColCap: "Tope",
+  lineColFlag: "Indicador",
+  lineNoCap: "sin tope",
+  lineNoCount: "sin dato",
+  sourceRowLabel: "Fuente:",
   // The cuts the page cannot explain, said once on the home's line, as a link to the run's page.
   cutOtherLinkOne: "Hubo un recorte más; míralo en su corrida",
   cutsOtherLinkMany: "Hubo {count} recortes más; míralos en su corrida",

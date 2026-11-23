@@ -24,6 +24,7 @@ signing in), and the code email follows `patrones/correo-aviso.md`, COR-10 to CO
 | `js/app.js` | Session, hash router (`#/` home, `#/dolor/<id>` a pain) and the screens: sign-in (email, then code), «sin permiso», the home with the week's pains, and a pain's card with the team's marks and comments |
 | `js/text.js` | Every visible string (`T`), the plain names of the territories (`TOPICS`, `topicName`) and `formatDate` |
 | `js/model.js` | The home's logic, without DOM or network: the section of each pain (`buildSections`, with the run's `effectiveMark`), the week's sentence, the notice about the run, what a failed read means (`classifyError`) and loading by parts |
+| `js/analysis.js` | The lab report's analysis table: a pain's judged counts (`analysisRows`, model.js) as a `<table>` captioned «Análisis», each count with its value, its reference range and bar, and its flag in words |
 | `js/api.js` | `loadHome(client)` and `loadPain(client, id)`: what the home and a pain read; `setMark`, `addComment` and `deleteComment`: the three writes, through the base's functions. The client is passed in |
 | `js/detail.js` | A pain's logic, without DOM or network: its title, status tag and key data, its card sections and quotes, the marks and comments to show, what a failed write means, and the comment kept across a lost session |
 | `js/auth-errors.js` | Turns a Supabase Auth error into what the screen says: rate limit, the hourly email cap, wrong or expired code, no connection, other |
@@ -101,13 +102,14 @@ What runs:
   - Catálogo: `catalog` (55 under watch, so it shows 20 and «Ver 20 más», and the check asserts the button shows),
     `catalog-empty`;
   - a pain: `detail-v2` and `detail-v3` (a version-3 card opened by direct link, its duel rivals named by title, by
-    what hurts for a version-1 card, or as «otro dolor del catálogo»), `detail-long-title`, `detail-line`,
+    what hurts for a version-1 card, or as «otro dolor del catálogo»), `detail-no-gate` (a pain stored before the gate
+    existed: «Sin análisis guardado para este dolor» where the table would be), `detail-long-title`, `detail-line`,
     `detail-line-v1`, `detail-missing`;
   - Corridas: `runs`, `runs-empty`, `run-detail` (the unmapped cuts counted in one line), `run-detail-technical`
     (the same run with «Detalle técnico» open), `run-failed`, `run-missing`.
 
   Each scenario waits for a selector and an `<h1>` that only its own screen has, so it never measures another screen
-  (an error in its place, say), and lets the «tomoshi» move light every lamp before measuring. A screen fails on any
+  (an error in its place, say), and lets the fonts load and the last transition end before measuring. A screen fails on any
   serious or critical axe violation (moderate and minor ones are printed as a count), a page wider than the window
   (`scrollWidth` over `clientWidth`), a link, button, field or fold smaller than 44 × 44 px, a console error or page
   error, a request the fake does not know, a different `<h1>`, a raw run text (the fixtures mark them `RAW-`) anywhere
@@ -120,18 +122,17 @@ What runs:
   keeps it and «Salir sin publicar» goes on; a mark from the home is undone and saved again with the same button, in
   the base and in words; «Ver más» under a source puts the focus on the first quote added; at 390 × 844 the first
   station's «Nos interesa» shows without scrolling; the home's line says the cuts nobody mapped once, as a link to that
-  run's page; the «tomoshi» move lights a run's lamps once per session, and back on the home (or on that run's page)
-  they are drawn lit; the top bar says the same week, niche and cost on the home and on a pain opened first. And
+  run's page; the top bar says the same week, niche and cost on the home and on a pain opened first. And
   Review Focus 5: at
   320 px with the long title the line is the folded strip, the title wraps whole with no ellipsis and no sideways
-  scroll; under `prefers-reduced-motion` the lamps are drawn lit with no sequence, while the same screen with motion
-  lights them in sequence. Each behaviour also fails on a request the fake does not know.
+  scroll. Each behaviour also fails on a request the fake does not know.
 
 Exceptions, each printed at the end of every run (no check is removed):
 
-- **MAR-14 holds a pain's screens to 187 px.** At 320 × 640, `detail-v2`, `detail-v3`, `detail-long-title` and
-  `detail-line` end their h1 at 187 px: under the two-row masthead (89 px: the brand, then the tabs), «← Volver» and a
-  title on two lines. Every other screen ends its h1 within 160 px; these are held to 187 exactly, so any growth fails.
+- **MAR-14 holds a pain's screens to 180 px.** At 320 × 640, `detail-v2`, `detail-v3`, `detail-no-gate`,
+  `detail-long-title` and `detail-line` end their h1 at 180 px: under the two-row masthead band (88 px: the brand, then
+  the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180
+  exactly, so any growth fails.
 - **MAR-14 skips `detail-line-v1`.** A version-1 card has no `line.title`, so its h1 is `what_hurts`, a full sentence of
   several lines. This is transitional: the next run rewrites every card with a title. The screen is still measured
   and screenshotted; only the h1 height is not held to 160 px (the runner prints a `NOTE` saying so).
@@ -159,10 +160,11 @@ quotes' «Texto original» fold at a third level (DET-07). The factory's `indice
 The email with the one-time code is `supabase/templates/otp-code.html` (HTML only: Supabase Auth's mailer sends no
 plain-text part) and its subject is `supabase/templates/otp-code.subject.txt`. The rules are COR-10 to COR-13 of the
 factory's visual manual (`patrones/correo-aviso.md`): the code first, large and as real text; how long it lasts; what
-to do if it was not asked for; no links, no images. It says tomoshi in the board's colours: the code first, on the day board's
-panel, then a dark band (#1A1C1E) under an amber line that closes the email with the lowercase wordmark as text; every
-text colour reaches WCAG AA on its own background. `tests/unit/otp-template.test.mjs` checks what is mechanical, contrast
-included.
+to do if it was not asked for; no links, no images. It says tomoshi in the lab report's colours: the code first, in
+the report's ink (#14213D) on a near-white sheet, then the report's blue band (#1F4E8C, the portal's masthead) that
+closes the email with the lowercase wordmark as near-white text, in Public Sans when the reader has it and Arial
+otherwise (no web font is loaded); no pure white or black (COR-09), and every text colour reaches WCAG AA on its own
+background. `tests/unit/otp-template.test.mjs` checks what is mechanical, contrast included.
 
 Steps in the Supabase panel, project `dolores` (Miguel does them; the app password is typed in the panel, never in
 this repository):

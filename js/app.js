@@ -24,7 +24,8 @@ import {
   sendErrorKind, draftKey, draftValue, readDraft, isDraftKey, discardNote, markErrorText, commentErrorText, COMMENT_MAX,
   markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
-import { renderLine, lightUp, lamp, firstLighting } from "./line.js";
+import { renderLine, lamp } from "./line.js";
+import { analysisTable } from "./analysis.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 
 const root = document.getElementById("app");
@@ -71,10 +72,10 @@ const TABS = [["week", "#/", "tabWeek"], ["catalog", "#/catalogo", "tabCatalog"]
 // The masthead (NAV-08): the brand, lowercase «tomoshi» with the lamp of how the latest run went at its left; after
 // signing in the tabs, the week's data and «Salir». The name links home on every screen with a session (NAV-09); on
 // the sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being
-// typed. The lamp is off and silent until a load says how the run went; then its state is accessible text, and from
-// 768 px it is also written beside the name in two or three words (hidden from a screen reader, which has the lamp's).
+// typed. The lamp is off and silent until a load says how the run went; then its state is accessible text, and it is
+// also written beside the name in two or three words at every width (hidden from a screen reader, which has the lamp's).
 function masthead({ brandLink, actions, tab }) {
-  const brandLight = h("span", { class: "lamp lamp--brand", "data-lamp": "off", "data-lit": true, "aria-hidden": "true" });
+  const brandLight = h("span", { class: "lamp lamp--brand", "data-lamp": "off", "aria-hidden": "true" });
   const word = brandLink
     ? h("a", { class: "brand-word", href: "#/", "aria-label": T.brandHome, "aria-current": atHome() ? "page" : null }, T.brand)
     : h("span", { class: "brand-word" }, T.brand);
@@ -263,7 +264,7 @@ function showNoAccess(email) {
 // week's data are right there too; the home and Catálogo read it again with every load (loadInto). It never holds the
 // screen up, and a failure only leaves the lamp off: the next such screen tries again. An answer that comes after the
 // session ended, or after a home load already filled the week, is dropped. Returns what resolves to the session's week
-// once known, or null when the read failed; it never rejects (an opened run waits on it to know if it is this week's).
+// once known, or null when the read failed; it never rejects.
 function ensureWeek() {
   if (state.week) return Promise.resolve(state.week);
   if (!state.weekLoad) {
@@ -342,9 +343,9 @@ function showLoadError(layout, error, email, otherText) {
     h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.retry));
 }
 
-// «Para decidir» (decideList) as numbered stations, with the run's line beside them from 1024 px and as a folded strip
-// under the title below. Over the stations, the board counts the whole catalog by state, each count a way into it.
-// The lamps of the line light in stage order, and then those of the pains with new evidence from this week's run.
+// «Para decidir» (decideList) as numbered results, with the run's line beside them from 1024 px and as a folded strip
+// under the title below. Over the results, the board (the summary strip) counts the whole catalog by state, each count
+// a way into it.
 function renderHome(layout, home, email) {
   const me = lower(email);
   const { latest } = state.week;
@@ -354,20 +355,17 @@ function renderHome(layout, home, email) {
   const sections = catalogSections(home);
   const inCatalog = Object.values(sections).some((list) => list.length);
   const notice = showRunNotice(layout, home, { empty: !inCatalog });
-  // This week's line lights up with the «tomoshi» move the first time this session draws it; after that it is drawn
-  // already lit, like an older run's.
-  const light = latest.isThisWeek && firstLighting(latest.trace && latest.trace.run_id);
 
   // The panel only when there are stations to draw; otherwise the strip under the title says why, at every width.
   if (view && view.stages.length) {
     layout.side.hidden = false;
     layout.shell.classList.add("shell--line");
     replaceChildren(layout.side, h("div", { class: "line-panel-inner" },
-      renderLine(latest.trace, { title: heading.title, note: heading.note, idPrefix: "linea", light })));
+      renderLine(latest.trace, { title: heading.title, note: heading.note, idPrefix: "linea" })));
   }
   const lead = h("p", { class: "page-lead", hidden: !items.length });
   layout.head.append(lead,
-    renderLine(latest.trace, { compact: true, title: heading.title, note: heading.note, idPrefix: "franja", light,
+    renderLine(latest.trace, { compact: true, title: heading.title, note: heading.note, idPrefix: "franja",
       week: weekMeta(home.summary, latest) }));
 
   const blocks = [];
@@ -388,13 +386,12 @@ function renderHome(layout, home, email) {
         h("a", { class: "button button--primary", "data-rol": "accion-principal", href: "#/catalogo" }, T.seeCatalog)));
     }
     blocks.push(counts.element);
-    if (items.length) blocks.push(stationList(items, { home, email, me, latest, view, light, onChange: refresh }));
+    if (items.length) blocks.push(stationList(items, { home, email, me, latest, view, onChange: refresh }));
     refresh();
   }
   layout.body.removeAttribute("aria-busy");
   layout.body.classList.add("home-body");
   replaceChildren(layout.body, blocks);
-  state.cleanup = lightUp(root);
 }
 
 // The whole catalog by state: four counts, each a link to Catálogo. `refresh` recounts after a mark.
@@ -409,39 +406,40 @@ function board(sections) {
   return { element, refresh };
 }
 
-// The stations in decideList's order, numbered 01, 02… A pain with new evidence from this week's run waits for the
-// move: it lights after the line's last stage. (An older run's line and its pains are drawn already lit.)
+// «Resultados»: the results in decideList's order, numbered 01, 02…, one result per row.
 function stationList(items, ctx) {
   const pains = new Map(ctx.home.pains.filter((p) => p && p.id).map((p) => [p.id, p]));
-  let step = ctx.view ? ctx.view.stages.length : 0;
-  // An odd last full station spans its row, so no hole is left beside it (the compact ones start their own row).
-  const full = items.filter((item) => item.full);
-  const spans = full.length % 2 === 1 ? full[full.length - 1] : null;
-  return h("ol", { class: "stations", role: "list", "aria-label": T.homeTitle }, items.map((item, index) => {
-    const lights = item.fresh && ctx.light;
-    const element = station(item, index, { ...ctx, pain: pains.get(item.id), step: lights ? step++ : null });
-    if (item === spans) element.classList.add("station--span");
-    return element;
-  }));
+  return h("div", { class: "results" },
+    h("p", { class: "section-label results-label", id: "resultados" }, T.resultsLabel),
+    h("ol", { class: "stations", role: "list", "aria-labelledby": "resultados" },
+      items.map((item, index) => station(item, index, { ...ctx, pain: pains.get(item.id) }))));
 }
 
-// One station: its plate (number, lamp and its state written beside it), the title as the link to the pain, its tags,
-// why it is there (its testimonies, the attacks it held, and for the duel's winner why it won), who suffers it, the
-// trend and topic, the team's marks, and «Comentar», «Descartar» and «Nos interesa». The duel's winner and the pains with
-// weight are full stations; the rest are compact (`station--compact`): no «Quién lo sufre» and no trend line. Each
-// button says what pressing it does, and names its pain for a screen reader (aria-describedby). A mark changes the
-// station in place: a discarded pain stays until the next load, lamp off, so it can be undone with the same button.
+// One result, as the lab report's block. Its head: the number, the title as the link to the pain, its tags and its
+// state flag at the right (a dot with the state in words, on a chip). Its body, in two columns that stack in a narrow
+// block: at the left the duel's line (for the winner) and the «Análisis» table (analysisTable: the counts the run judged
+// it by against the run's own thresholds), or, without a gate, a line that says there is no analysis and why it is there
+// in a facts line; at the right «Quién lo
+// sufre», the trend and topic, the team's marks and «Nos interesa», «Descartar» and «Comentar». The duel's winner and
+// the pains with weight are full results; the rest are compact (`station--compact`): one head row with the facts line
+// in it, then the marks and the actions. Each button says what pressing it does, and names its pain for a screen reader
+// (aria-describedby). A mark changes the result in place: a discarded pain stays until the next load, its dot off, so it
+// can be undone with the same button.
 function station(item, index, ctx) {
   const { home, me, pain } = ctx;
   const viewId = state.viewId;
   const titleId = `estacion-${index + 1}`;
   const href = `#/dolor/${encodeURIComponent(item.id)}`;
-  const light = lamp(item.lamp, { step: ctx.step, size: "station" });
+  const light = lamp(item.lamp, { size: "small" });
   const stateText = h("span", { class: "station-state-text" });
+  const stateFlag = h("p", { class: "station-state" }, light, stateText);
   const tags = stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" })
     .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
   const meta = item.full ? stationMeta(item) : [];
-  const facts = stationFactLines(item.facts);
+  const table = item.full ? analysisTable(item.gate) : null;
+  const facts = table ? [] : stationFactLines(item.facts);
+  const factsLine = facts.length
+    ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null;
   const reason = item.facts && item.facts.duelReason;
   const marksLine = h("p", { class: "station-marks" });
   const interested = h("button", { type: "button", class: "button button--primary", "aria-describedby": titleId });
@@ -456,7 +454,9 @@ function station(item, index, ctx) {
   };
   function refresh() {
     const section = pain ? sectionOf(pain, home.marks) : item.section;
-    light.dataset.lamp = painLamp(section);
+    const color = painLamp(section);
+    light.dataset.lamp = color;
+    stateFlag.dataset.lamp = color;
     stateText.textContent = stationStateText(section);
     const labels = stationButtonLabels(mine());
     interested.textContent = labels.interested;
@@ -497,22 +497,33 @@ function station(item, index, ctx) {
   discard.addEventListener("click", () => press("discarded"));
   refresh();
 
+  // The left column: the duel's line, said as what it is, then the analysis; when there is none, a line that says so
+  // where the table would be, and why it is there.
+  const main = [
+    reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
+    table,
+    item.full && !table ? h("p", { class: "analysis-none" }, T.analysisNone) : null,
+    item.full && !table ? factsLine : null,
+  ].filter(Boolean);
   return h("li", { class: item.full ? "station" : "station station--compact", "aria-labelledby": titleId },
-    h("div", { class: "station-plate" },
-      h("span", { class: "station-number", "aria-hidden": "true" }, pad(index + 1)),
-      h("p", { class: "station-state" }, light, stateText)),
-    h("div", { class: "station-body" },
-      h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title)),
+    h("div", { class: "station-head" },
+      h("div", { class: "station-name" },
+        h("span", { class: "station-number", "aria-hidden": "true" }, pad(index + 1)),
+        h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title))),
       tags.length ? h("p", { class: "station-tags" }, tags) : null,
-      // The duel's line, said as what it is, right under its «Ganó el duelo» tag.
-      reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-      facts.length ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null,
-      item.full && item.who ? h("p", { class: "station-who" }, h("span", { class: "station-label" }, `${T.whoLabel}:`), " ", item.who) : null,
-      meta.length ? h("p", { class: "station-meta" }, meta.join(" · ")) : null,
-      h("div", { class: "station-foot" },
-        marksLine,
-        h("div", { class: "station-actions" }, comment, h("span", { class: "station-pair" }, discard, interested)),
-        note)));
+      item.full ? null : factsLine,
+      stateFlag),
+    h("div", { class: main.length ? "station-body" : "station-body station-body--single" },
+      main.length ? h("div", { class: "station-main" }, main) : null,
+      h("div", { class: "station-side" },
+        item.full && item.who
+          ? h("p", { class: "station-who" }, h("span", { class: "section-label" }, T.whoLabel), h("span", { class: "visually-hidden" }, ": "), item.who)
+          : null,
+        meta.length ? h("p", { class: "station-meta" }, meta.join(" · ")) : null,
+        h("div", { class: "station-foot" },
+          marksLine,
+          h("div", { class: "station-actions" }, interested, discard, comment),
+          note))));
 }
 
 // ---- Catálogo: every pain by state --------------------------------------------------------
@@ -533,19 +544,21 @@ function renderCatalog(layout, home) {
   replaceChildren(layout.body, blocks);
 }
 
-// A section: its lamp and its heading with the count, then its rows or the sentence that says it has none. The
-// discarded ones are folded away, since few need them (COM-06); their h2 is in the fold's summary.
+// A section, as one of the report's result tables: a hairline-bordered sheet, its head band on the section tint with
+// the lamp and the heading with the count, then its rows (and «Ver 20 más» at its foot) or the sentence that says it has
+// none. The discarded ones are folded away, since few need them (COM-06); their h2 is in the fold's summary, the band.
 function catalogSection(section) {
   const id = `seccion-${section.key}`;
   const heading = h("h2", { id, class: "catalog-heading" }, lamp(section.lamp), h("span", {}, section.heading));
   if (!section.count) {
-    return h("section", { class: "catalog-section", "aria-labelledby": id }, heading, h("p", { class: "catalog-empty" }, section.emptyText));
+    return h("section", { class: "catalog-section sheet", "aria-labelledby": id },
+      h("div", { class: "sheet-head" }, heading), h("p", { class: "catalog-empty" }, section.emptyText));
   }
   const rows = painList(section.items, (item) => painRow(item, section));
   if (section.key === "discarded") {
-    return h("details", { class: "catalog-section catalog-fold" }, h("summary", { class: "catalog-summary" }, heading), rows);
+    return h("details", { class: "catalog-section catalog-fold sheet" }, h("summary", { class: "sheet-head catalog-summary" }, heading), rows);
   }
-  return h("section", { class: "catalog-section", "aria-labelledby": id }, heading, rows);
+  return h("section", { class: "catalog-section sheet", "aria-labelledby": id }, h("div", { class: "sheet-head" }, heading), rows);
 }
 
 // One row per pain, dense: its lamp and its state in words, the title as the link to it (the whole row is its target),
@@ -618,12 +631,19 @@ async function showRuns(layout, email) {
   const [list, more] = painList(rows, runListRow);
   list.className = "run-list";
   list.setAttribute("aria-label", T.runsListLabel);
-  replaceChildren(layout.body, list, more);
+  // The sheet's head band names the columns for the eye, once the rows have them (from 720 px); each row says its parts
+  // in words, so a screen reader skips it.
+  const columns = h("div", { class: "sheet-head run-columns", "aria-hidden": "true" },
+    h("span", { class: "section-label" }, T.lineColFlag),
+    h("span", { class: "section-label" }, T.runTitle),
+    h("span", { class: "section-label run-columns-mini" }, T.runMiniLabel));
+  replaceChildren(layout.body, h("div", { class: "sheet run-sheet" }, columns, list, more));
 }
 
 // One run, dense: its lamp and its state in words, its date as the link to it (the whole row is its target), its niche,
 // how long it took, its cost and its new pains; then the mini line, each stage's lamp and count, and how many stages had
-// a cut in words (the lamps are only drawn: the words beside them say it). Every lamp here is drawn lit.
+// a cut in words (the lamps are only drawn: the words beside them say it). Every lamp is drawn in its final state on
+// the first paint: the lab report has no lighting sequence.
 function runListRow(row) {
   const mini = row.hasCounts
     ? h("div", { class: "run-mini" },
@@ -642,19 +662,18 @@ function runListRow(row) {
     mini);
 }
 
-// One run opened: it reads the runs again (the list is a year at most) and the session's week, to know whether it is
-// this week's run: only that one's line lights up with the «tomoshi» move, and only if this session has not lit it yet
-// (on the home or here). A run not in the list (no trace, or an address typed by hand) says so and points back to the
-// list.
+// One run opened: it reads the runs again (the list is a year at most) and, for the masthead, the session's week (it
+// never holds the screen up). A run not in the list (no trace, or an address typed by hand) says so and points back
+// to the list.
 async function showRun(layout, id, email) {
   state.view = "run";
   const viewId = state.viewId;
   layout.body.setAttribute("aria-busy", "true");
   replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.runsLoading));
   layout.heading.focus({ preventScroll: true });
+  ensureWeek();
   let traces;
-  let week;
-  try { [traces, week] = await Promise.all([loadRuns(supabase), ensureWeek()]); }
+  try { traces = await loadRuns(supabase); }
   catch (error) {
     if (viewId !== state.viewId) return;
     return showLoadError(layout, error, email, T.runsError);
@@ -672,16 +691,15 @@ async function showRun(layout, id, email) {
   const fresh = await loadTitles(supabase, duelIds(trace));
   if (viewId !== state.viewId) return;
   const titles = new Map([...(state.titles ?? []), ...fresh]);
-  const thisWeek = Boolean(week && week.latest && week.latest.isThisWeek && week.latest.trace && week.latest.trace.run_id === trace.run_id);
-  renderRun(layout, trace, titles, thisWeek);
+  renderRun(layout, trace, titles);
 }
 
 // The run's sections: the cost, the cuts and the duels in words, each with what it says when it has none; then
 // «Detalle técnico», closed, the only place where the run's raw texts show.
 function runSection(key, title, items, emptyText, list = "ul") {
   const id = `corrida-${key}`;
-  return h("section", { class: "run-section", "aria-labelledby": id },
-    h("h2", { id }, title),
+  return h("section", { class: "run-section sheet", "aria-labelledby": id },
+    h("div", { class: "sheet-head" }, h("h2", { id }, title)),
     items.length ? h(list, { class: `run-${key}-list`, role: list === "ul" ? "list" : null }, items) : h("p", { class: "run-empty" }, emptyText));
 }
 
@@ -689,7 +707,7 @@ function technicalPart(title, items) {
   return items.length ? h("div", { class: "tech-part" }, h("h3", {}, title), h("ul", { role: "list" }, items)) : null;
 }
 
-function renderRun(layout, trace, titles, thisWeek) {
+function renderRun(layout, trace, titles) {
   const title = runTitle(trace);
   layout.heading.textContent = title;
   setTitle(title);
@@ -698,7 +716,7 @@ function renderRun(layout, trace, titles, thisWeek) {
   layout.head.classList.add("run-head");
   // Element.append writes a null as the text «null»: only what exists goes in.
   layout.head.append(...[
-    h("p", { class: "detail-status" }, lamp(status.lamp), h("span", {}, status.text)),
+    h("p", { class: "detail-status", "data-lamp": status.lamp }, lamp(status.lamp), h("span", {}, status.text)),
     keys.length ? h("ul", { class: "key-data", role: "list" }, keys.map(keyItem)) : null,
   ].filter(Boolean));
 
@@ -707,8 +725,8 @@ function renderRun(layout, trace, titles, thisWeek) {
   const duels = runDuelLines(trace, titles);
   const tech = runTechnical(trace, titles);
   const counted = Array.isArray(trace.funnel) && trace.funnel.some((stage) => stage && typeof stage.count === "number");
-  const technical = h("details", { class: "run-tech" },
-    h("summary", {}, T.techTitle),
+  const technical = h("details", { class: "run-tech sheet" },
+    h("summary", { class: "sheet-head" }, T.techTitle),
     h("div", { class: "run-tech-body" },
       h("p", { class: "run-tech-lead" }, T.techLead),
       tech.empty ? h("p", { class: "run-empty" }, T.techNone) : null,
@@ -720,7 +738,7 @@ function renderRun(layout, trace, titles, thisWeek) {
   layout.body.classList.add("run-body");
   replaceChildren(layout.body, h("div", { class: "run-detail" },
     h("div", { class: "run-line" }, renderLine(trace, {
-      idPrefix: "corrida-linea", light: thisWeek && firstLighting(trace.run_id), costs: false, otherCuts: false,
+      idPrefix: "corrida-linea", costs: false, otherCuts: false,
       note: counted ? null : T.runMiniNone })),
     h("div", { class: "run-sections" },
       runSection("costo", T.runCostTitle, costs.map((row) => h("div", { class: row.total ? "run-cost run-cost--total" : "run-cost" },
@@ -728,7 +746,6 @@ function renderRun(layout, trace, titles, thisWeek) {
       runSection("recortes", T.runCutsTitle, cuts.map((line) => h("li", {}, line)), T.runCutsNone),
       runSection("duelos", T.runDuelsTitle, duels.map((line) => h("li", {}, line)), T.runDuelsNone),
       technical)));
-  state.cleanup = lightUp(root);
 }
 
 // ---- a pain: its card, the team's marks and comments (the manual's «detalle» pattern) ------
@@ -808,18 +825,20 @@ function quoteItem(quote) {
     quote.original ? h("details", { class: "fold original" }, h("summary", {}, T.originalText), h("p", {}, quote.original)) : null);
 }
 
-// A section of the card: its h2, its paragraphs, then its quotes or its glossary (a <dl>, DET-08). Separated by space,
-// never boxed (DET-09).
+// A section of the card, as a section of the report: a hairline-bordered sheet, its h2 on the head band, then its
+// paragraphs, its quotes or its glossary (a <dl>, DET-08). Inside it nothing is boxed again (DET-09): its rows are
+// divided by hairlines.
 function cardSection(section, ...extra) {
   const headingId = `${section.id}-titulo`;
-  return h("section", { class: "section detail-section", id: section.id, "aria-labelledby": headingId },
-    h("h2", { id: headingId, tabindex: "-1" }, section.title),
-    section.paragraphs.map((text) => h("p", {}, text)),
-    section.quotes && section.quotes.length ? h("ul", { class: "quotes", role: "list" }, section.quotes.map(quoteItem)) : null,
-    section.glossary && section.glossary.length
-      ? h("dl", { class: "glossary" }, section.glossary.map((g) => h("div", { class: "glossary-row" }, h("dt", {}, g.term), h("dd", {}, g.meaning))))
-      : null,
-    extra);
+  return h("section", { class: "section detail-section sheet", id: section.id, "aria-labelledby": headingId },
+    h("div", { class: "sheet-head" }, h("h2", { id: headingId, tabindex: "-1" }, section.title)),
+    h("div", { class: "sheet-body" },
+      section.paragraphs.map((text) => h("p", {}, text)),
+      section.quotes && section.quotes.length ? h("ul", { class: "quotes", role: "list" }, section.quotes.map(quoteItem)) : null,
+      section.glossary && section.glossary.length
+        ? h("dl", { class: "glossary" }, section.glossary.map((g) => h("div", { class: "glossary-row" }, h("dt", {}, g.term), h("dd", {}, g.meaning))))
+        : null,
+      extra));
 }
 
 // ---- «Cómo llegamos a este dolor» ----
@@ -900,7 +919,8 @@ function sectionIndex(sections) {
   return [
     h("details", { class: "fold detail-index detail-index--fold" },
       h("summary", {}, T.indexLabel), h("nav", { "aria-label": T.indexLabel }, links())),
-    h("nav", { class: "detail-index detail-index--wide", "data-rol": "lateral", "aria-label": T.indexLabel }, links()),
+    h("nav", { class: "detail-index detail-index--wide sheet", "data-rol": "lateral", "aria-label": T.indexLabel },
+      h("p", { class: "sheet-head section-label", "aria-hidden": "true" }, T.indexLabel), links()),
   ];
 }
 
@@ -914,7 +934,7 @@ function renderPain(layout, id, email, data) {
   // ---- the header (DET-01, DET-12): the status tag, the key data, then the marks as its actions (MAR-06) ----
   const tag = h("span", {});
   const statusLamp = lamp("off");
-  const statusRow = h("p", { class: "detail-status" }, statusLamp, tag);
+  const statusRow = h("p", { class: "detail-status", "data-lamp": "off" }, statusLamp, tag);
   const interested = h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal" },
     T.markInterestedAction);
   const discard = h("button", { type: "button", class: "button button--secondary" }, T.markDiscardAction);
@@ -938,6 +958,7 @@ function renderPain(layout, id, email, data) {
     const label = statusLabel(section);
     tag.textContent = label || "";
     statusLamp.dataset.lamp = painLamp(section);
+    statusRow.dataset.lamp = statusLamp.dataset.lamp;
     statusRow.hidden = !label; // a pain that just left every list (a dead one no longer kept): no tag
     const mine = myMark();
     const labels = markButtonLabels(mine);
@@ -1126,12 +1147,20 @@ function renderPain(layout, id, email, data) {
     if (section.id === "como-llegamos") return cardSection(section, howBody(how));
     return cardSection(section);
   });
+  // The card opens with its «Análisis» (analysisTable: the counts the run judged it by against the run's own
+  // thresholds) on a panel that is its container; a pain stored before the gate existed has none, claims nothing, and
+  // says so in one line where the panel would be.
+  const table = analysisTable(data.pain.gate);
+  const analysis = table ? h("div", { class: "detail-analysis" }, table) : h("p", { class: "analysis-none" }, T.analysisNone);
   layout.body.removeAttribute("aria-busy");
   if (isLineCard(data.card)) {
-    replaceChildren(layout.body, h("div", { class: "notice detail-notice" }, lineNotice), blocks);
+    replaceChildren(layout.body, h("div", { class: "detail-sections" },
+      h("div", { class: "notice detail-notice" }, lineNotice), analysis, blocks));
   } else {
+    // On a phone the index is a fold under the analysis; from 672 px it is a column beside the sections.
+    const [foldIndex, wideIndex] = sectionIndex(sections);
     replaceChildren(layout.body, h("div", { class: "detail-layout" },
-      sectionIndex(sections), h("div", { class: "detail-sections" }, blocks)));
+      wideIndex, h("div", { class: "detail-sections" }, analysis, foldIndex, blocks)));
   }
   refreshHeader();
   refreshMarks();
@@ -1196,9 +1225,10 @@ async function requestCode(email) {
 
 const systemErrorText = (kind) => (kind === "network" ? T.networkError : T.otherError);
 
+// How signing in works, as a sheet of the report: its h2 on the head band, then one row per step.
 function stepsSection() {
-  return h("section", { class: "section", "aria-labelledby": "steps-title" },
-    h("h2", { id: "steps-title" }, T.stepsTitle),
+  return h("section", { class: "section sheet steps-sheet", "aria-labelledby": "steps-title" },
+    h("div", { class: "sheet-head" }, h("h2", { id: "steps-title" }, T.stepsTitle)),
     h("ol", { class: "steps" }, [T.step1, t("step2", { length: EMAIL_OTP_LENGTH }), T.step3].map((text, i) =>
       h("li", {}, h("span", { class: "step-number" }, `${i + 1}. `), text))));
 }

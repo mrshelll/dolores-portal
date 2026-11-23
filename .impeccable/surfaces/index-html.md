@@ -5,7 +5,7 @@ primary_target: "index.html"
 related_targets: []
 ---
 
-# index.html — tomoshi, the andon board for deciding
+# index.html — tomoshi, the lab results report for deciding
 
 ## Scope
 The whole page (one `index.html`, hash routes): Esta semana `#/`, Catálogo `#/catalogo`, Corridas `#/corridas`,
@@ -15,33 +15,40 @@ el dolor `#/dolor/<id>`, plus sign-in and «sin permiso». Visitor mode: Operate
 - Audience: the small team on the access list, on phone and computer alike, on Monday.
 - Job: decide which pains to work on; the weekly run's trace is context that backs each decision.
 - Action: «Nos interesa» / «Descartar» on each pain of «Para decidir»; comment.
-- Proof: the run's production line (sources, counts, caps that cut, duel), each pain's verbatim quotes and attacks.
-- Constraints: plain Spanish, no jargon or internal ids; every lamp has its state written beside it; AA on both
-  themes; from 320 px; no real data in this public repo.
+- Proof: each pain's evidence against the run's real thresholds, its verbatim quotes and attacks; the run's line.
+- Constraints: plain Spanish, no jargon or internal ids; every state written in words beside its colour; AA on both
+  themes; from 320 px; no real data in this public repo; never yellow or amber (Miguel, 2026-11-23).
+- Replaces the andon-board world (2026-11-22), which Miguel rejected on 2026-11-23: «no me gustó el diseño, ese
+  amarillo no me gusta».
 
 ## Direction contract
-THESIS: Each pain is a station on the plant's andon board and lights when the week's run pulled the cord for it; the
-page refuses the category default of a feed of cards under a hero with a separate analytics tab.
+THESIS: Each pain arrives as a lab result: its evidence measured against the run's own reference ranges, with what
+falls in or out of range said in words; the page refuses the category default of a feed of cards with a separate
+analytics tab.
 
-OWN-WORLD: The andon board. Dark: graphite shell #1A1C1E, panels #2A2D31, text #F4F4F2, muted #A9ADB1, flat lamps
-amber #F2A900, green #2E9E4F, red #D7261E, off #4A4E53. Light, automatic via `prefers-color-scheme`, «el tablero de
-día»: cool steel ground ~#DCDEE0, panels ~#F2F3F4, text #1A1C1E, the same lamp hues each with a dark rim; never
-cream. Barlow Semi Condensed, tabular figures, big station numbers; flat discs, no bevel, glow or screws.
+OWN-WORLD: The clinical lab results report. Light: white ground, institutional blue #1F4E8C shell band and headings,
+pale blue-grey section heads #E8EEF6, hairline tables #D5DCE6, ink #14213D; state: attention blue, green in range,
+red failed. Dark (automatic): deep navy ground, same roles. Public Sans, tabular figures, small tracked uppercase
+section labels («RESULTADOS», «ANÁLISIS»), never as an eyebrow above a heading. Flat, hairline rules, 2–4 px radius, no shadows.
 
-STORY: The visitor sees what waits for a mark and why each pain is there, trusts it because the run's line shows where
-it came from and what was cut, and marks «Nos interesa» or «Descartar».
+STORY: The visitor sees which pains wait for a mark, reads each one's results against the ranges that decide «con
+peso» (3 testimonios, 2 tipos de fuente, 3 de 5 ataques resistidos), trusts it because the processed sample shows
+every stage and cut, and marks «Nos interesa» or «Descartar».
 
-FIRST VIEWPORT: The chosen sketch `.impeccable/mocks/decision/model-pick.html`: top bar with the lowercase «tomoshi»
-wordmark and the run-state lamp at its left, tabs Esta semana · Catálogo · Corridas, week, niche and cost at right;
-«Para decidir» as a grid of numbered stations (01, 02…) with lamp, written state, title, who suffers it, marks and
-the primary «Nos interesa» button on each; the run's production line beside it, one station per stage with count
-and lamp, sources under the first.
+FIRST VIEWPORT: The chosen sketch `.impeccable/mocks/decision/model-pick.html`: blue shell band with «tomoshi»,
+status, tabs and week · niche · cost; «Para decidir» with the summary strip, then «RESULTADOS»: each pain a result
+block (number, title, tags, state flag right) with an analysis table (value, reference-range bar, flag in words) and
+«Quién lo sufre» plus the actions beside it; at right «Línea de la corrida» as the processed sample's stage table
+(cant., tope, indicador).
 
-FORM: candidate 1 of 7 (IMPECCABLE'S PICK), seed:faca3a33afad1fff. Signature move «tomoshi»: on load the lamps light
-one after another in stage order, 70 ms apart, once; none under reduced motion; a pain with new evidence lights with
-that move, the rest are already lit and still.
+FORM: candidate 3 of 7 dealt as the roll's assignment was «La transmisión del partido»; Miguel chose IMPECCABLE'S
+PICK, candidate 1 of 7 (the lab report), seed:4b4c0fa1c771083c. Signature move: the reference-range bar — a value
+marker on a band whose shaded part is the real threshold, flagged «DENTRO DEL RANGO» / «FUERA DEL RANGO» in words.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Unresolved
-- How the line folds into a strip on phones, and the exact cut of «Ver más» on quotes.
+- The thresholds live in the dolores repo (`record-run.mjs`: TESTIMONY_THRESHOLD 3, TIER_THRESHOLD 2, MIN_SURVIVALS
+  3); the page must not drift from them.
+- Per-country counting: a pain can show 3+ testimonies in total and still be «en observación»; the range must read
+  the same counts the run judged.

@@ -28,11 +28,11 @@ const MAR14_MAX_BOTTOM = 160; // at 320 × 640 the h1 ends within the first 160 
 const TARGET_PX = 44; // the page's --target: every control and link at least 44 × 44, at every width
 const FAILING_IMPACT = new Set(["serious", "critical"]);
 const READY_TIMEOUT_MS = 20000;
-const SETTLE_MS = 400; // the lamps' 320 ms transition, once the «tomoshi» move has lit them all
+const SETTLE_MS = 250; // the folds' 200 ms chevron turn, the last transition on the page (lamps have none)
 
 // Explicit exceptions: a check that cannot pass for a stated reason. Never a deleted check.
 const EXCEPTIONS = [
-  "MAR-14 holds a pain's screens (detail-v2, detail-v3, detail-long-title, detail-line) to 187 px, not 160: at 320 × 640 their h1 ends at 187 px, under the two-row masthead (89 px, the brand and the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 187 exactly, so any growth fails.",
+  "MAR-14 holds a pain's screens (detail-v2, detail-v3, detail-no-gate, detail-long-title, detail-line) to 180 px, not 160: at 320 × 640 their h1 ends at 180 px, under the two-row masthead band (88 px, the brand and the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180 exactly, so any growth fails.",
   "MAR-14 skips detail-line-v1 (see its NOTE): a version-1 card has no title, so its h1 is what_hurts. Transitional: the next run rewrites every card with a title.",
   "Console errors: the browser's own «Failed to load resource» line for a request the fake failed on purpose (home-error's read, the behaviours' 401 and 400) is expected and not counted. Every other console error fails.",
   "Targets: a link inside a sentence (other words in the same block) is not held to 44 × 44, as WCAG 2.5.8 allows: its height is the line's. Every other link, button, field and fold is.",
@@ -97,9 +97,9 @@ async function serveCdn(route) {
 
 // ---- one screen ---------------------------------------------------------------------------------
 
-async function openScreen(browser, base, scenario, viewport, { reducedMotion = "no-preference", beforeLoad = null } = {}) {
+async function openScreen(browser, base, scenario, viewport) {
   const context = await browser.newContext({
-    viewport: { width: viewport.width, height: viewport.height }, colorScheme: viewport.scheme, locale: "es-ES", reducedMotion,
+    viewport: { width: viewport.width, height: viewport.height }, colorScheme: viewport.scheme, locale: "es-ES",
   });
   await context.route(CDN, serveCdn);
   const page = await context.newPage();
@@ -114,7 +114,6 @@ async function openScreen(browser, base, scenario, viewport, { reducedMotion = "
     problems.push(`console error: ${message.text()}${at ? ` (${at})` : ""}`);
   });
   await prepareStorage(page, { signedIn: scenario.signedIn !== false, pendingSignIn: scenario.pendingSignIn });
-  if (beforeLoad) await beforeLoad(page);
   await page.goto(new URL(scenario.hash || "", base).href);
   let ready = true;
   try {
@@ -134,9 +133,8 @@ async function openScreen(browser, base, scenario, viewport, { reducedMotion = "
   return { context, page, state, log, problems, ready };
 }
 
-// Every lamp lit by the «tomoshi» move, the fonts in, the last transition over.
+// The fonts in, the last transition over.
 async function settle(page) {
-  await page.waitForFunction(() => !document.querySelector("[data-wait]:not([data-lit])"), null, { timeout: 5000 }).catch(() => {});
   await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(SETTLE_MS);
 }
@@ -261,19 +259,6 @@ async function measure(browser, axePath, base, out, scenario, viewport) {
 // ---- behaviours ---------------------------------------------------------------------------------
 
 const PHONE = { width: 320, height: 640, scheme: "light" };
-
-// Counts, on every DOM change from the first paint, how many lamps still wait for the «tomoshi» move, and keeps the
-// highest count seen. Under reduced motion the page lights them in the same task that draws them, so it stays 0.
-async function watchLamps(page) {
-  await page.addInitScript(() => {
-    window.__waitingMax = 0;
-    const count = () => {
-      const n = document.querySelectorAll("[data-wait]:not([data-lit])").length;
-      if (n > window.__waitingMax) window.__waitingMax = n;
-    };
-    new MutationObserver(count).observe(document, { subtree: true, childList: true, attributes: true, attributeFilter: ["data-lit", "data-wait"] });
-  });
-}
 
 async function behaviours(browser, base) {
   const results = [];
@@ -438,27 +423,6 @@ async function behaviours(browser, base) {
     await context.close();
   }
 
-  // Finish review 8: the move lights a run's lamps once per session. Back on the home in the same tab, they are drawn
-  // lit, with no sequence; so is that run's page.
-  {
-    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), PHONE, { beforeLoad: watchLamps });
-    await settle(page);
-    const first = await page.evaluate(() => window.__waitingMax);
-    await page.evaluate(() => { location.hash = "#/catalogo"; });
-    await page.waitForSelector(".pain-list", { timeout: 10000 }).catch(() => {});
-    await page.evaluate(() => { window.__waitingMax = 0; location.hash = "#/"; });
-    await page.waitForSelector(".stations", { timeout: 10000 }).catch(() => {});
-    await page.waitForFunction(() => !document.querySelector("[aria-busy=true]"), null, { timeout: 10000 }).catch(() => {});
-    const again = await page.evaluate(() => ({ max: window.__waitingMax, now: document.querySelectorAll("[data-wait]:not([data-lit])").length }));
-    await page.evaluate((id) => { window.__waitingMax = 0; location.hash = `#/corridas/${id}`; }, RUN_ID);
-    await page.waitForSelector(".run-line", { timeout: 10000 }).catch(() => {});
-    const run = await page.evaluate(() => ({ max: window.__waitingMax, now: document.querySelectorAll("[data-wait]:not([data-lit])").length }));
-    check("the lamps light in sequence once per session; after that they are drawn lit",
-      first > 0 && again.max === 0 && again.now === 0 && run.max === 0 && run.now === 0 && clean(log, problems),
-      `first ${first}; again ${JSON.stringify(again)}; run page ${JSON.stringify(run)}; ${why(log, problems)}`);
-    await context.close();
-  }
-
   // Round 3: the top bar names the week's niche and cost the same way whether the home or a pain is opened first.
   {
     const wide = { width: 1440, height: 900, scheme: "dark" };
@@ -474,18 +438,15 @@ async function behaviours(browser, base) {
   }
 
   // Review Focus 5: 320 px with a long Spanish title and a dense line. The line is the strip under the title (the side
-  // panel hidden), the title wraps whole (no ellipsis, nothing cut), no sideways scroll; and under reduced motion the
-  // lamps are drawn lit, with no sequence. The same screen with motion has one, so the check can tell.
+  // panel hidden), the title wraps whole (no ellipsis, nothing cut), no sideways scroll.
   {
-    const { context, page, log, problems } = await openScreen(browser, base, scenario("home-long-title"), PHONE, { reducedMotion: "reduce", beforeLoad: watchLamps });
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home-long-title"), PHONE);
     const seen = await page.evaluate((long) => {
       const title = [...document.querySelectorAll(".station-title a")].find((a) => a.textContent === long);
       if (!title) return { title: false };
       const style = getComputedStyle(title);
       const heading = title.closest(".station-title");
       return {
-        waitingMax: window.__waitingMax,
-        waitingNow: document.querySelectorAll("[data-wait]:not([data-lit])").length,
         strip: !!document.querySelector(".line-strip") && document.querySelector(".line-strip").checkVisibility(),
         panel: !!document.querySelector(".line-panel") && document.querySelector(".line-panel").checkVisibility(),
         ellipsis: style.textOverflow === "ellipsis" || getComputedStyle(heading).textOverflow === "ellipsis",
@@ -497,17 +458,7 @@ async function behaviours(browser, base) {
     check("320 px, a long title: the line is a strip, the title wraps whole, no sideways scroll",
       seen.strip && !seen.panel && !seen.ellipsis && !seen.clipped && seen.lines >= 2 && !seen.scroll && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
-    check("reduced motion: the lamps are drawn lit, with no sequence",
-      seen.waitingMax === 0 && seen.waitingNow === 0, JSON.stringify(seen));
     await context.close();
-
-    const moving = await openScreen(browser, base, scenario("home-long-title"), PHONE, { beforeLoad: watchLamps });
-    await settle(moving.page);
-    const sequence = await moving.page.evaluate(() => ({ waitingMax: window.__waitingMax, waitingNow: document.querySelectorAll("[data-wait]:not([data-lit])").length }));
-    check("with motion the same lamps light in sequence, and all end lit",
-      sequence.waitingMax > 0 && sequence.waitingNow === 0 && clean(moving.log, moving.problems),
-      `${JSON.stringify(sequence)}; ${why(moving.log, moving.problems)}`);
-    await moving.context.close();
   }
   return results;
 }

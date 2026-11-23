@@ -105,7 +105,9 @@ test("every label the shell, the home and the line use exists", () => {
     "lineLabel", "lineTitle", "lineTitleOld", "lineTitleOldUndated", "lineNoTrace", "lineOlderNote",
     "lineNoRun", "lineStripCutsOne", "lineStripCuts", "lineStripClean", "durationMinutes", "durationHours", "durationShort",
     "costUsd", "costCards", "costLabel", "stageOk", "stageCut", "stageNoData", "stageCap", "sourcesLabel", "sourceOk",
-    "sourceTruncated", "sourceEmpty", "sourceFailed", "sourceUnknown", "sourceOf", "otherCuts", "catalogTitle",
+    "sourceTruncated", "sourceEmpty", "sourceFailed", "sourceUnknown", "sourceOf", "otherCuts",
+    "lineColNumber", "lineColNumberFull", "lineColStage", "lineColCount", "lineColCountFull", "lineColCap", "lineColFlag",
+    "lineNoCap", "lineNoCount", "sourceRowLabel", "catalogTitle",
     "catalogLoading", "runsTitle", "runsLead", "runsLoading", "runsError", "runsEmpty", "runMissing", "statusOut",
     "runTitleDated", "runTitleUndated", "runStateComplete", "runStateIncomplete", "runStateIngestOnly", "runStateFailed",
     "runStateUnknown", "costTotal", "cutsOtherMany", "duelLine", "techTitle", "techLead",
@@ -117,6 +119,7 @@ test("every label the shell, the home and the line use exists", () => {
   assert.equal(T.tabWeek, "Esta semana");
   assert.equal(T.tabCatalog, "Catálogo");
   assert.equal(T.tabRuns, "Corridas");
+  assert.equal(T.analysisNone, "Sin análisis guardado para este dolor");
 });
 
 test("formatDayMonth: «16 de noviembre», on its own day in any time zone; \"\" for nothing", () => {
@@ -146,4 +149,21 @@ test("formatNumber groups thousands the Spanish way", () => {
 test("no visible string calls a run «revisión»", () => {
   for (const [where, value] of visible()) assert.doesNotMatch(value, /(?<![\p{L}\p{N}_-])revisi(?:ón|ones)(?![\p{L}\p{N}_-])/iu, `${where}: ${value}`);
   assert.equal(T.keyRunsValue, "{count} corridas");
+});
+
+// The lab report's analysis table: the copy is pinned word for word (the plan's brief), and the thresholds never live
+// here: «{n} o más» takes the gate's own number.
+test("the analysis table's copy", () => {
+  assert.equal(T.analysisCaption, "Análisis");
+  assert.equal(T.analysisTestimonies, "Testimonios");
+  assert.equal(T.analysisTiers, "Tipos de fuente");
+  assert.equal(T.analysisSurvivals, "Ataques resistidos");
+  assert.equal(T.analysisStatement, "Descrito por quien lo sufre");
+  assert.equal(fill(T.analysisRange, { n: 3 }), "3 o más");
+  assert.equal(T.analysisIn, "DENTRO DEL RANGO");
+  assert.equal(T.analysisOut, "FUERA DEL RANGO");
+  assert.equal(fill(T.analysisHeld, { held: 4, total: 5 }), "4 de 5");
+  assert.equal(fill(T.analysisIncomplete, { n: 3, total: 5 }), "Sin resultado completo (3 de 5 respondieron)");
+  assert.equal(T.analysisMissing, "Falta");
+  assert.equal(T.analysisPerCountry, "Contado dentro de un solo país");
 });

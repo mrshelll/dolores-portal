@@ -35,7 +35,7 @@ const TRACE = { version: 1, run_id: "2030-02-04-1", date: "2030-02-04", status: 
 const OLDER = { version: 1, run_id: "2030-01-28-1", date: "2030-01-28", status: "failed", funnel: [] };
 const callOf = (client, name) => client.calls.find((c) => c[1] === name);
 
-test("loadHome reads each pain's history and the latest 12 traces", async () => {
+test("loadHome reads each pain's history and gate, and the latest 12 traces", async () => {
   const client = fakeClient({
     "rpc:run_traces": { data: [TRACE, OLDER] },
     pains: { data: [{ id: "dol-9201", territory: null, status: "watching", history: [{ run_id: "2030-02-04-1", date: "2030-02-04" }] }] },
@@ -44,7 +44,7 @@ test("loadHome reads each pain's history and the latest 12 traces", async () => 
   assert.deepEqual(home.traces, [TRACE, OLDER]);
   assert.equal(home.pains[0].history.length, 1);
   assert.deepEqual(callOf(client, "run_traces"), ["rpc", "run_traces", { p_limit: 12 }]);
-  assert.equal(callOf(client, "pains")[2], "id,territory,status,team_discard:doc->team_discard,history:doc->history");
+  assert.equal(callOf(client, "pains")[2], "id,territory,status,team_discard:doc->team_discard,history:doc->history,gate:doc->gate");
 });
 
 test("loadHome turns no traces, or a reply that is not a list, into an empty list and skips non-objects", async () => {
@@ -113,9 +113,10 @@ test("loadRuns returns the traces, newest first as the base orders them", async 
     (error) => error.source === "run_traces" && classifyError(error) === "no-access");
 });
 
-test("loadPain brings the pain's evidence and verdicts", async () => {
+test("loadPain brings the pain's evidence, verdicts and gate", async () => {
   const pain = {
     id: "dol-9202", territory: null, status: "watching",
+    gate: { testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: { testimonies: 3, tiers: 2, survivals: 3, verdicts: 5 } },
     evidence: [{ quote: "Una cita inventada.", date: "2030-02-01", url: "https://example.com/1" }],
     verdicts: [{ lens: "evidence", run_id: "2030-02-04-1", result: "survives" }],
   };
@@ -126,7 +127,7 @@ test("loadPain brings the pain's evidence and verdicts", async () => {
   const data = await loadPain(client, "dol-9202");
   assert.deepEqual(data.pain, pain);
   assert.equal(callOf(client, "pains")[2],
-    "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts");
+    "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts,gate:doc->gate");
 });
 
 test("loadWeek reads only the week's summary and the latest trace, for the masthead on any screen", async () => {

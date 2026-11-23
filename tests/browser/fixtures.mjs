@@ -218,15 +218,31 @@ const OLD_RUN_ID = "2026-11-03-1";
 const seen = (...runs) => runs.map(([run_id, date], i) => ({ run_id, date, score: 10, inputs: { testimonies: 3 + i, tiers: 2 } }));
 export const WINNER_REASON = "Más tesoreros lo cuentan y dos federaciones ya pagan por algo parecido.";
 const PAIN_0027 = { id: "dol-0027", territory: "accounting-automation", status: "alive", team_discard: null, evidence: EVIDENCE, verdicts: VERDICTS };
+
+// The counts a run judged a pain by (dolores' decideStatus, `gate` on the pain's doc), with the run's own thresholds.
+// On the home, the pain with weight (dol-0027) passes every one; the duel's winner, still under watch, has one type of
+// source of the two required, and its testimonies were counted within one country.
+const THRESHOLDS = { testimonies: 3, tiers: 2, survivals: 3, verdicts: 5 };
+const GATE_IN_RANGE = { testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: THRESHOLDS };
+const GATE_ONE_TIER = { testimonies: 4, tiers: 1, survivals: 4, verdicts: 5, has_statement: true, per_country: true, thresholds: THRESHOLDS };
 const PAIN_0002 = { id: "dol-0002", territory: null, status: "watching", team_discard: null };
+// A pain's detail opens with its analysis. The detail's dol-0027 has one count out of range (one type of source of the
+// two required), so the page shows both flags; with it the run keeps the pain under watch (decideStatus: fewer types of
+// source than required is never «con peso»), and Carla's «Nos interesa» puts it in «Nos interesa», which is why its card
+// is full. The detail scenarios without a gate (detail-no-gate, a pain stored before the gate existed, and the line
+// card's dol-0002) show no table and claim nothing: one line says there is no analysis.
+const GATE_DETAIL = { testimonies: 4, tiers: 1, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: THRESHOLDS };
+const PAIN_0027_DETAIL = { ...PAIN_0027, status: "watching", gate: GATE_DETAIL };
 
 // The home: one pain with weight (dol-0027, Carla finds it interesting), one marked interested while under watch
 // (dol-0002, the store's version-1 line card, with new evidence this run), 55 under watch, and one the team discarded
 // (dol-0030). The trace's duel is between two of the watched (dol-0100 and dol-0101, the winner); dol-0102 is new in this
-// run. So «Para decidir» has five stations and Catálogo lists all of them. With `oldTrace` the week's run left no trace
+// run. So «Para decidir» has five stations and Catálogo lists all of them. dol-0027 carries a gate in range and the
+// winner (dol-0101) one with a single type of source; the others have none. With `oldTrace` the week's run left no trace
 // and the line is the one before (Review Focus 2). With `longTitle` the first station's title is LONG_WORDS_TITLE
-// (Review Focus 5).
-function homeData(status = "complete", { oldTrace = false, longTitle = false } = {}) {
+// (Review Focus 5). With `gates: false` no pain has a gate (stored before it existed): the full results read their
+// facts line instead of the analysis table.
+function homeData(status = "complete", { oldTrace = false, longTitle = false, gates = true } = {}) {
   const watching = watchingPains(WATCHING_ROWS);
   const week = [RUN_ID, today()];
   const before = [OLD_RUN_ID, daysAgo(7)];
@@ -237,12 +253,13 @@ function homeData(status = "complete", { oldTrace = false, longTitle = false } =
   // The duel's winner (dol-0101) has a version-3 card that says why it won.
   const winner = watching.cards.find((row) => row.pain_id === "dol-0101");
   winner.card = { ...winner.card, version: 3, duels: [{ against: "dol-0100", won: true, plain: WINNER_REASON }] };
+  if (gates) watching.pains.find((pain) => pain.id === "dol-0101").gate = GATE_ONE_TIER;
   return {
     people: PEOPLE,
     summary: summary(status, oldTrace ? "2026-11-17-1" : RUN_ID),
     traces: [runTrace(RUN_ID, oldTrace ? daysAgo(7) : today())],
     pains: [
-      { ...PAIN_0027, history: seen(before) },
+      { ...PAIN_0027, history: seen(before), ...(gates ? { gate: GATE_IN_RANGE } : {}) },
       { ...PAIN_0002, history: seen(before, week) },
       ...watching.pains,
       { id: "dol-0030", territory: "document-data-extraction", status: "manually-discarded", team_discard: { previous_status: "watching" } },
@@ -293,7 +310,7 @@ function detailData(painRow, cardRow) {
 export const V1_RIVAL_PLAIN = "Este dolor tiene más evidencia que el de las autorizaciones.";
 function detailV3Data() {
   const card = { ...FULL_CARD_V3, duels: [...FULL_CARD_V3.duels, { against: "dol-0002", won: true, plain: V1_RIVAL_PLAIN }] };
-  const data = detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card });
+  const data = detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card });
   const rival = watchingPains(WATCHING_ROWS).cards.find((row) => row.pain_id === "dol-0101");
   data.cards.push(rival, { pain_id: "dol-0002", kind: "line", card: LINE_CARD_V1 });
   return data;
@@ -369,8 +386,9 @@ function runsData({ traces = [fullRunTrace(), failedRunTrace(), incompleteRunTra
 // not be on the screen as a person reads it (innerText: a closed fold's text is not read). `mar14: false` leaves a
 // scenario out of the MAR-14 h1 check, and `mar14: <px>` holds it to that figure instead of 160 (both in EXCEPTIONS);
 // `note` says why (printed as a NOTE line).
-const PAIN_MAR14 = 187; // a pain at 320 × 640: the masthead (89 px), «← Volver» and a title on two lines
+const PAIN_MAR14 = 180; // a pain at 320 × 640: the masthead (88 px), «← Volver» and a title on two lines
 const HOME_LIST = ".stations";
+const ANALYSIS = [T.analysisCaption.toLocaleUpperCase("es"), T.analysisIn, T.analysisOut];
 const CATALOG_LIST = ".pain-list";
 const MORE_BUTTON = `button.link-button:text-is("${T.showMore.replace("{count}", "20")}")`;
 const runTitleOn = (day) => fill(T.runTitleDated, { date: formatDate(day) });
@@ -380,12 +398,20 @@ export function scenarios() {
     { name: "sign-in-email", hash: "", signedIn: false, data: empty(), ready: "#email", expectedTitle: T.signInTitle },
     { name: "sign-in-code", hash: "", signedIn: false, pendingSignIn: ME, data: empty(), ready: "#code", expectedTitle: T.codeTitle },
     { name: "no-access", hash: "#/", data: { ...homeData(), people: [] }, ready: "[data-rol=cuerpo] .stack > .notice", expectedTitle: T.noAccessTitle },
-    // This week's run left its trace: the line is «Línea de la corrida» and lights up; its one unmapped cut is counted.
+    // This week's run left its trace: the line is «Línea de la corrida», each stage drawn in its final state; its one
+    // unmapped cut is counted.
+    // The pain with weight reads in range, the winner out of range on its types of source (counted within one country),
+    // and the compact ones without a gate keep their facts line.
     { name: "home", hash: "#/", data: homeData(), ready: HOME_LIST, expectedTitle: T.homeTitle,
-      mustRead: [T.lineTitle, WINNER_REASON, fill(T.factAttacks, { held: 4, total: 5 }), fill(T.factTestimoniesMany, { count: 4 })] },
-    // Review Focus 2: the week's run left no trace; the line is the one before, by its date, already lit.
-    { name: "home-old-trace", hash: "#/", data: homeData("complete", { oldTrace: true }), ready: HOME_LIST, expectedTitle: T.homeTitle,
-      mustRead: [oldLine] },
+      mustRead: [T.lineTitle, WINNER_REASON, T.resultsLabel.toLocaleUpperCase("es"), T.analysisIn, T.analysisOut, T.analysisPerCountry,
+        fill(T.factTestimoniesMany, { count: 4 })],
+      mustNotRead: [T.analysisNone] },
+    // Review Focus 2: the week's run left no trace; the line is the one before, by its date, drawn in its final state.
+    // Its pains were stored before the gate existed: the full results say so in words where the table would be, and why
+    // they are there in their facts line, with no range.
+    { name: "home-old-trace", hash: "#/", data: homeData("complete", { oldTrace: true, gates: false }), ready: HOME_LIST, expectedTitle: T.homeTitle,
+      mustRead: [oldLine, T.analysisNone, fill(T.factAttacks, { held: 4, total: 5 }), fill(T.factTestimoniesMany, { count: 4 })],
+      mustNotRead: [T.analysisIn, T.analysisOut] },
     { name: "home-failed-run", hash: "#/", data: homeData("failed", { oldTrace: true }),
       ready: `[data-rol=avisos]:has(.notice--warning) ~ [data-rol=cuerpo] ${HOME_LIST}`, expectedTitle: T.homeTitle, mustRead: [T.runFailed, oldLine] },
     // Review Focus 5: the first station's title is 48 characters of long Spanish words.
@@ -399,16 +425,22 @@ export function scenarios() {
     { name: "catalog-empty", hash: "#/catalogo", data: empty(), ready: "[data-rol=vacio] .week-sentence", expectedTitle: T.catalogTitle },
     // A version-2 card: «Cómo llegamos» has the quotes and each attack's question and result, with no plain line.
     { name: "detail-v2", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
-      data: detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title },
+      data: detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title,
+      mustRead: ANALYSIS, mustNotRead: [T.statusWeighty, T.analysisNone] },
     // A version-3 card: a plain line per attack and per duel, opened directly (the Monday email's link). The rival with
     // a title (dol-0101) goes by it, the version-1 one (dol-0002) by what hurts, and the one without a card (dol-0420)
     // by «otro dolor del catálogo».
     { name: "detail-v3", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027", data: detailV3Data(), ready: ".how-rows", expectedTitle: FULL_CARD.line.title,
-      mustRead: [fill(T.duelAgainst, { title: LINE_CARD_V1.line.what_hurts }), T.duelAgainstOther, V1_RIVAL_PLAIN] },
+      mustRead: [fill(T.duelAgainst, { title: LINE_CARD_V1.line.what_hurts }), T.duelAgainstOther, V1_RIVAL_PLAIN, ...ANALYSIS] },
+    // A full card whose pain was stored before the gate existed: no «Análisis», one line in words where it would be.
+    { name: "detail-no-gate", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
+      data: detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title,
+      mustRead: [T.statusWeighty, T.analysisNone], mustNotRead: ANALYSIS },
     { name: "detail-long-title", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
-      data: detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card: FULL_CARD_LONG_TITLE }), ready: ".detail-actions", expectedTitle: LONGEST_TITLE },
+      data: detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card: FULL_CARD_LONG_TITLE }), ready: ".detail-actions", expectedTitle: LONGEST_TITLE },
     { name: "detail-line", mar14: PAIN_MAR14, hash: "#/dolor/dol-0002",
-      data: detailData(PAIN_0002, { pain_id: "dol-0002", kind: "line", card: LINE_CARD_V2 }), ready: ".detail-notice", expectedTitle: LINE_CARD_V2.line.title },
+      data: detailData(PAIN_0002, { pain_id: "dol-0002", kind: "line", card: LINE_CARD_V2 }), ready: ".detail-notice", expectedTitle: LINE_CARD_V2.line.title,
+      mustRead: [T.analysisNone], mustNotRead: ANALYSIS },
     { name: "detail-line-v1", hash: "#/dolor/dol-0002",
       data: detailData(PAIN_0002, { pain_id: "dol-0002", kind: "line", card: LINE_CARD_V1 }), ready: ".detail-notice",
       mar14: false, expectedTitle: LINE_CARD_V1.line.what_hurts,

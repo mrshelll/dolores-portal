@@ -4,7 +4,7 @@ import {
   effectiveMark, buildSections, sectionOf, emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, PAGED_ABOVE, rowMeta,
   decideList, catalogSections, painLamp, hasNewEvidence, lineView, latestTrace, brandLamp,
   stationMarks, stationMeta, decideLead, stationTags, lineHeading, runFacts, costRows, weekMeta, brandLampText, stageNotes,
-  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines,
+  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows,
 } from "../../js/model.js";
 import { scenarios } from "../browser/fixtures.mjs";
 import { loadHome, loadWeek } from "../../js/api.js";
@@ -470,7 +470,7 @@ test("loadHome reads the summary by rpc and each table with its columns", async 
   assert.deepEqual(sorted, [
     ["select", "marks", "*"],
     ["select", "pain_cards", "pain_id,kind,card"],
-    ["select", "pains", "id,territory,status,team_discard:doc->team_discard,history:doc->history"],
+    ["select", "pains", "id,territory,status,team_discard:doc->team_discard,history:doc->history,gate:doc->gate"],
     ["select", "people", "*"],
     ["rpc", "run_traces", { p_limit: 12 }],
     ["rpc", "week_summary", undefined],
@@ -1058,4 +1058,109 @@ test("the top bar names the niche and the cost the same way whether the home or 
   const fallback = [{ label: T.metaWeek, value: "11 de febrero" }, { label: T.metaNiche, value: "Preparar documentos para la IA" }];
   assert.deepEqual(bar(homeFailed), fallback);
   assert.deepEqual(bar(firstFailed), fallback);
+});
+
+// ---- the lab report: a pain's judged counts (dolores' decideStatus, `gate` on the pain's doc) as analysis rows ------
+
+const GATE = Object.freeze({
+  testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false,
+  thresholds: Object.freeze({ testimonies: 3, tiers: 2, survivals: 3, verdicts: 5 }),
+});
+const gateWith = (extra = {}, thresholds = {}) => ({ ...GATE, ...extra, thresholds: { ...GATE.thresholds, ...thresholds } });
+const rowOf = (gate, key) => analysisRows(gate).rows.find((row) => row.key === key);
+const pick = ({ value, min, max, at }) => ({ value, min, max, at });
+
+test("analysisRows reads the thresholds from the gate", () => {
+  const { rows } = analysisRows(gateWith());
+  assert.deepEqual(rows.map((row) => row.key), ["testimonies", "tiers", "survivals"]);
+  assert.deepEqual(rows.map((row) => row.label), ["Testimonios", "Tipos de fuente", "Ataques resistidos"]);
+  assert.deepEqual(rows.map((row) => row.range), ["3 o más", "2 o más", "3 o más"]);
+  assert.deepEqual(rows.map((row) => row.min), [3, 2, 3]);
+  assert.equal(rowOf(gateWith({}, { testimonies: 4 }), "testimonies").range, "4 o más");
+  assert.equal(rowOf(gateWith({}, { testimonies: 4 }), "testimonies").min, 4);
+  // The survivals total is the gate's own number of attacks, not a fixed five.
+  assert.equal(rowOf(gateWith({ survivals: 5, verdicts: 6 }, { verdicts: 6 }), "survivals").value, "5 de 6");
+  // A complete result counts the attacks that answered (gate.verdicts), as dolores' own reason does, not the required
+  // number: six answered and all held reads «6 de 6» though five were required.
+  assert.equal(rowOf(gateWith({ survivals: 6, verdicts: 6 }, { verdicts: 5 }), "survivals").value, "6 de 6");
+});
+
+test("analysisRows: in and out of range, with the value in words and the bar's ends", () => {
+  assert.deepEqual(rowOf(gateWith({ testimonies: 4 }), "testimonies"), {
+    key: "testimonies", label: "Testimonios", value: "4", range: "3 o más", min: 3, max: 6, at: 4, flag: "in", flagText: "DENTRO DEL RANGO",
+  });
+  assert.deepEqual(rowOf(gateWith({ tiers: 1 }), "tiers"), {
+    key: "tiers", label: "Tipos de fuente", value: "1", range: "2 o más", min: 2, max: 4, at: 1, flag: "out", flagText: "FUERA DEL RANGO",
+  });
+  // Exactly at the threshold is in range; the bar grows past twice the threshold to fit the value.
+  assert.equal(rowOf(gateWith({ testimonies: 3 }), "testimonies").flag, "in");
+  const many = rowOf(gateWith({ testimonies: 12345 }), "testimonies");
+  assert.deepEqual([many.value, many.max, many.at], ["12.345", 12345, 12345]);
+  // The attacks' bar spans the attacks that answered: «2 de 5» ends at 5, and «4 de 6» at 6.
+  assert.deepEqual(rowOf(gateWith({ survivals: 2 }), "survivals"), {
+    key: "survivals", label: "Ataques resistidos", value: "2 de 5", range: "3 o más", min: 3, max: 5, at: 2, flag: "out", flagText: "FUERA DEL RANGO",
+  });
+  assert.deepEqual(pick(rowOf(gateWith({ survivals: 4 }), "survivals")), { value: "4 de 5", min: 3, max: 5, at: 4 });
+  assert.deepEqual(pick(rowOf(gateWith({ survivals: 4, verdicts: 6 }), "survivals")), { value: "4 de 6", min: 3, max: 6, at: 4 });
+  // A gate whose numbers do not add up never pushes the threshold or the mark off the bar.
+  assert.deepEqual(pick(rowOf(gateWith({ survivals: 1, verdicts: 2 }, { survivals: 3, verdicts: 2 }), "survivals")), { value: "1 de 2", min: 3, max: 3, at: 1 });
+  assert.deepEqual(pick(rowOf(gateWith({ survivals: 7, verdicts: 5 }), "survivals")), { value: "7 de 5", min: 3, max: 7, at: 7 });
+  assert.equal(rowOf(gateWith({ testimonies: 0 }), "testimonies").flag, "out");
+});
+
+test("analysisRows: no statement adds the statement row only when it is missing", () => {
+  assert.equal(rowOf(gateWith({ has_statement: true }), "statement"), undefined);
+  assert.equal(rowOf(gateWith({ has_statement: undefined }), "statement"), undefined);
+  const { rows } = analysisRows(gateWith({ has_statement: false }));
+  assert.deepEqual(rows.map((row) => row.key), ["testimonies", "tiers", "survivals", "statement"]);
+  assert.deepEqual(rows[3], {
+    key: "statement", label: "Descrito por quien lo sufre", value: "Falta", range: "", min: null, max: null, at: null, flag: "out", flagText: "FUERA DEL RANGO",
+  });
+});
+
+test("analysisRows: incomplete attacks have no flag", () => {
+  assert.deepEqual(rowOf(gateWith({ survivals: null, verdicts: 3 }), "survivals"), {
+    key: "survivals", label: "Ataques resistidos", value: "Sin resultado completo (3 de 5 respondieron)", range: "3 o más",
+    min: null, max: null, at: null, flag: "none", flagText: "",
+  });
+  assert.equal(rowOf(gateWith({ survivals: null, verdicts: 1 }), "survivals").value, "Sin resultado completo (1 de 5 respondieron)");
+  assert.equal(rowOf(gateWith({ survivals: null, verdicts: 4 }), "survivals").value, "Sin resultado completo (4 de 5 respondieron)");
+});
+
+test("analysisRows: a pain no attack answered says so, with no bar and no flag", () => {
+  // «0 de 5 respondieron» would claim five attacks were sent: none may have been, this run or ever.
+  const none = { key: "survivals", label: "Ataques resistidos", value: "Sin ataques evaluados", range: "3 o más", min: null, max: null, at: null, flag: "none", flagText: "" };
+  assert.deepEqual(rowOf(gateWith({ survivals: null, verdicts: 0 }), "survivals"), none);
+  // A gate whose survivals do not add up with no attack answered still invents no result.
+  assert.deepEqual(rowOf(gateWith({ survivals: 0, verdicts: 0 }), "survivals"), none);
+});
+
+test("analysisRows: per country adds the note", () => {
+  assert.equal(analysisRows(gateWith({ per_country: true })).note, "Contado dentro de un solo país");
+  assert.equal(analysisRows(gateWith({ per_country: false })).note, null);
+  assert.equal(analysisRows(gateWith({ per_country: "true" })).note, null);
+});
+
+test("analysisRows: a missing or malformed gate gives no rows", () => {
+  const none = { rows: [], note: null };
+  for (const gate of [null, undefined, {}, { testimonies: "x" }, "gate", 7, [], [GATE]]) assert.deepEqual(analysisRows(gate), none, JSON.stringify(gate));
+  assert.deepEqual(analysisRows(), none);
+  for (const extra of [{ testimonies: -1 }, { tiers: 1.5 }, { verdicts: null }, { survivals: "4" }, { survivals: -1 }, { survivals: undefined }]) {
+    assert.deepEqual(analysisRows(gateWith(extra)), none, JSON.stringify(extra));
+  }
+  for (const thresholds of [undefined, null, "3", [3, 2, 3, 5]]) assert.deepEqual(analysisRows({ ...GATE, thresholds }), none, String(thresholds));
+  for (const bad of [{ testimonies: 0 }, { tiers: -2 }, { survivals: "3" }, { verdicts: 2.5 }, { verdicts: undefined }]) {
+    assert.deepEqual(analysisRows(gateWith({}, bad)), none, JSON.stringify(bad));
+  }
+  // Only the counts the page reads are checked: a field it does not know is ignored.
+  assert.equal(analysisRows({ ...gateWith(), extra: "x" }).rows.length, 3);
+});
+
+test("decideList carries each pain's gate to its station, or null without one", () => {
+  const pains = [painOf("dol-9221", "alive", [], { gate: gateWith() }), painOf("dol-9222", "alive"), painOf("dol-9223", "alive", [], { gate: "odd" })];
+  const items = decideList({ pains, cards: ["dol-9221", "dol-9222", "dol-9223"].map((id) => lineCard(id)), marks: [], people: CREW, traces: [] });
+  const byId = new Map(items.map((item) => [item.id, item.gate]));
+  assert.deepEqual(byId.get("dol-9221"), gateWith());
+  assert.equal(byId.get("dol-9222"), null);
+  assert.equal(byId.get("dol-9223"), null);
 });

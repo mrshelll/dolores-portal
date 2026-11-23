@@ -1,484 +1,446 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T07:18:35.221Z",
+  "generatedAt": "2026-11-23T18:03:57.042155Z",
   "title": "Design System: tomoshi",
   "extensions": {
     "colorMeta": {
-      "graphite-ground": {
+      "report-white": {
         "role": "neutral",
-        "displayName": "Graphite Ground",
-        "canonical": "oklch(22.5% 0.005 248.0)",
+        "displayName": "Report White",
+        "canonical": "#FFFFFF",
         "tonalRamp": [
-          "oklch(15% 0.001 248.0)",
-          "oklch(26% 0.002 248.0)",
-          "oklch(37% 0.004 248.0)",
-          "oklch(48% 0.005 248.0)",
-          "oklch(59% 0.005 248.0)",
-          "oklch(70% 0.004 248.0)",
-          "oklch(82% 0.002 248.0)",
-          "oklch(95% 0.001 248.0)"
+          "#666666",
+          "#999999",
+          "#CCCCCC",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF",
+          "#FFFFFF"
         ]
       },
-      "graphite-side": {
+      "section-tint": {
         "role": "neutral",
-        "displayName": "Graphite Side Panel",
-        "canonical": "oklch(25.1% 0.006 258.4)",
+        "displayName": "Section Tint",
+        "canonical": "#E8EEF6",
         "tonalRamp": [
-          "oklch(15% 0.001 258.4)",
-          "oklch(26% 0.003 258.4)",
-          "oklch(37% 0.005 258.4)",
-          "oklch(48% 0.006 258.4)",
-          "oklch(59% 0.006 258.4)",
-          "oklch(70% 0.005 258.4)",
-          "oklch(82% 0.003 258.4)",
-          "oklch(95% 0.001 258.4)"
+          "#5D5F62",
+          "#8B8F94",
+          "#BABEC5",
+          "#E8EEF6",
+          "#EEF2F8",
+          "#F4F6FA",
+          "#F9FBFD",
+          "#FDFDFE"
         ]
       },
-      "graphite-panel": {
+      "report-ink": {
         "role": "neutral",
-        "displayName": "Graphite Panel",
-        "canonical": "oklch(29.6% 0.008 255.6)",
+        "displayName": "Report Ink",
+        "canonical": "#14213D",
         "tonalRamp": [
-          "oklch(15% 0.001 255.6)",
-          "oklch(26% 0.004 255.6)",
-          "oklch(37% 0.006 255.6)",
-          "oklch(48% 0.008 255.6)",
-          "oklch(59% 0.008 255.6)",
-          "oklch(70% 0.007 255.6)",
-          "oklch(82% 0.004 255.6)",
-          "oklch(95% 0.001 255.6)"
+          "#080D18",
+          "#0C1425",
+          "#101A31",
+          "#14213D",
+          "#4F586E",
+          "#8A909E",
+          "#C4C8CE",
+          "#E8E9EC"
         ]
       },
-      "board-ink": {
+      "muted-ink": {
         "role": "neutral",
-        "displayName": "Board Ink",
-        "canonical": "oklch(96.7% 0.003 106.4)",
+        "displayName": "Muted Ink",
+        "canonical": "#4A5568",
         "tonalRamp": [
-          "oklch(15% 0.000 106.4)",
-          "oklch(26% 0.001 106.4)",
-          "oklch(37% 0.002 106.4)",
-          "oklch(48% 0.003 106.4)",
-          "oklch(59% 0.003 106.4)",
-          "oklch(70% 0.002 106.4)",
-          "oklch(82% 0.001 106.4)",
-          "oklch(95% 0.000 106.4)"
+          "#1E222A",
+          "#2C333E",
+          "#3B4453",
+          "#4A5568",
+          "#77808E",
+          "#A4AAB4",
+          "#D2D4D9",
+          "#EDEEF0"
         ]
       },
-      "board-muted": {
+      "hairline": {
         "role": "neutral",
-        "displayName": "Board Muted",
-        "canonical": "oklch(74.6% 0.007 247.9)",
+        "displayName": "Hairline",
+        "canonical": "#D5DCE6",
         "tonalRamp": [
-          "oklch(15% 0.001 247.9)",
-          "oklch(26% 0.003 247.9)",
-          "oklch(37% 0.005 247.9)",
-          "oklch(48% 0.007 247.9)",
-          "oklch(59% 0.007 247.9)",
-          "oklch(70% 0.006 247.9)",
-          "oklch(82% 0.004 247.9)",
-          "oklch(95% 0.001 247.9)"
+          "#55585C",
+          "#80848A",
+          "#AAB0B8",
+          "#D5DCE6",
+          "#E0E5EC",
+          "#EAEEF2",
+          "#F4F6F9",
+          "#FBFCFC"
         ]
       },
-      "board-line": {
+      "control-edge": {
         "role": "neutral",
-        "displayName": "Board Line",
-        "canonical": "oklch(36.2% 0.010 254.0)",
+        "displayName": "Control Edge",
+        "canonical": "#6B778A",
         "tonalRamp": [
-          "oklch(15% 0.002 254.0)",
-          "oklch(26% 0.004 254.0)",
-          "oklch(37% 0.007 254.0)",
-          "oklch(48% 0.010 254.0)",
-          "oklch(59% 0.010 254.0)",
-          "oklch(70% 0.008 254.0)",
-          "oklch(82% 0.005 254.0)",
-          "oklch(95% 0.002 254.0)"
+          "#2B3037",
+          "#404753",
+          "#565F6E",
+          "#6B778A",
+          "#9099A7",
+          "#B5BBC4",
+          "#DADDE2",
+          "#F0F1F3"
         ]
       },
-      "board-edge": {
-        "role": "neutral",
-        "displayName": "Board Edge",
-        "canonical": "oklch(58.1% 0.012 256.7)",
-        "tonalRamp": [
-          "oklch(15% 0.002 256.7)",
-          "oklch(26% 0.005 256.7)",
-          "oklch(37% 0.009 256.7)",
-          "oklch(48% 0.012 256.7)",
-          "oklch(59% 0.012 256.7)",
-          "oklch(70% 0.010 256.7)",
-          "oklch(82% 0.006 256.7)",
-          "oklch(95% 0.002 256.7)"
-        ]
-      },
-      "board-hover": {
-        "role": "neutral",
-        "displayName": "Board Hover Tint",
-        "canonical": "rgba(244, 244, 242, 0.06)"
-      },
-      "steel-ground": {
-        "role": "neutral",
-        "displayName": "Steel Ground",
-        "canonical": "oklch(90.0% 0.003 247.9)",
-        "tonalRamp": [
-          "oklch(15% 0.001 247.9)",
-          "oklch(26% 0.001 247.9)",
-          "oklch(37% 0.003 247.9)",
-          "oklch(48% 0.003 247.9)",
-          "oklch(59% 0.003 247.9)",
-          "oklch(70% 0.003 247.9)",
-          "oklch(82% 0.002 247.9)",
-          "oklch(95% 0.001 247.9)"
-        ]
-      },
-      "steel-side": {
-        "role": "neutral",
-        "displayName": "Steel Side Panel",
-        "canonical": "oklch(93.0% 0.003 247.9)",
-        "tonalRamp": [
-          "oklch(15% 0.001 247.9)",
-          "oklch(26% 0.001 247.9)",
-          "oklch(37% 0.002 247.9)",
-          "oklch(48% 0.003 247.9)",
-          "oklch(59% 0.003 247.9)",
-          "oklch(70% 0.003 247.9)",
-          "oklch(82% 0.002 247.9)",
-          "oklch(95% 0.001 247.9)"
-        ]
-      },
-      "steel-panel": {
-        "role": "neutral",
-        "displayName": "Steel Panel",
-        "canonical": "oklch(96.4% 0.002 247.8)",
-        "tonalRamp": [
-          "oklch(15% 0.000 247.8)",
-          "oklch(26% 0.001 247.8)",
-          "oklch(37% 0.001 247.8)",
-          "oklch(48% 0.002 247.8)",
-          "oklch(59% 0.002 247.8)",
-          "oklch(70% 0.001 247.8)",
-          "oklch(82% 0.001 247.8)",
-          "oklch(95% 0.000 247.8)"
-        ]
-      },
-      "day-ink": {
-        "role": "neutral",
-        "displayName": "Day Ink",
-        "canonical": "oklch(22.5% 0.005 248.0)",
-        "tonalRamp": [
-          "oklch(15% 0.001 248.0)",
-          "oklch(26% 0.002 248.0)",
-          "oklch(37% 0.004 248.0)",
-          "oklch(48% 0.005 248.0)",
-          "oklch(59% 0.005 248.0)",
-          "oklch(70% 0.004 248.0)",
-          "oklch(82% 0.002 248.0)",
-          "oklch(95% 0.001 248.0)"
-        ]
-      },
-      "day-muted": {
-        "role": "neutral",
-        "displayName": "Day Muted",
-        "canonical": "oklch(42.5% 0.012 252.9)",
-        "tonalRamp": [
-          "oklch(15% 0.002 252.9)",
-          "oklch(26% 0.005 252.9)",
-          "oklch(37% 0.009 252.9)",
-          "oklch(48% 0.012 252.9)",
-          "oklch(59% 0.012 252.9)",
-          "oklch(70% 0.009 252.9)",
-          "oklch(82% 0.006 252.9)",
-          "oklch(95% 0.002 252.9)"
-        ]
-      },
-      "day-line": {
-        "role": "neutral",
-        "displayName": "Day Line",
-        "canonical": "oklch(82.8% 0.007 247.9)",
-        "tonalRamp": [
-          "oklch(15% 0.001 247.9)",
-          "oklch(26% 0.003 247.9)",
-          "oklch(37% 0.005 247.9)",
-          "oklch(48% 0.007 247.9)",
-          "oklch(59% 0.007 247.9)",
-          "oklch(70% 0.006 247.9)",
-          "oklch(82% 0.003 247.9)",
-          "oklch(95% 0.001 247.9)"
-        ]
-      },
-      "day-edge": {
-        "role": "neutral",
-        "displayName": "Day Edge",
-        "canonical": "oklch(54.3% 0.011 252.9)",
-        "tonalRamp": [
-          "oklch(15% 0.002 252.9)",
-          "oklch(26% 0.005 252.9)",
-          "oklch(37% 0.008 252.9)",
-          "oklch(48% 0.011 252.9)",
-          "oklch(59% 0.011 252.9)",
-          "oklch(70% 0.009 252.9)",
-          "oklch(82% 0.005 252.9)",
-          "oklch(95% 0.002 252.9)"
-        ]
-      },
-      "day-signal": {
+      "institutional-blue": {
         "role": "primary",
-        "displayName": "Day Signal",
-        "canonical": "oklch(46.7% 0.099 74.3)",
+        "displayName": "Institutional Blue",
+        "canonical": "#1F4E8C",
         "tonalRamp": [
-          "oklch(15% 0.015 74.3)",
-          "oklch(26% 0.042 74.3)",
-          "oklch(37% 0.071 74.3)",
-          "oklch(48% 0.099 74.3)",
-          "oklch(59% 0.099 74.3)",
-          "oklch(70% 0.079 74.3)",
-          "oklch(82% 0.047 74.3)",
-          "oklch(95% 0.015 74.3)"
+          "#0C1F38",
+          "#132F54",
+          "#193E70",
+          "#1F4E8C",
+          "#577AA9",
+          "#8FA6C6",
+          "#C7D3E2",
+          "#E9EDF4"
         ]
       },
-      "day-hover": {
-        "role": "neutral",
-        "displayName": "Day Hover Tint",
-        "canonical": "rgba(26, 28, 30, 0.07)"
+      "signal-blue": {
+        "role": "tertiary",
+        "displayName": "Signal Blue",
+        "canonical": "#2B6CC4",
+        "tonalRamp": [
+          "#112B4E",
+          "#1A4176",
+          "#22569D",
+          "#2B6CC4",
+          "#6091D3",
+          "#95B6E2",
+          "#CADAF0",
+          "#EAF0F9"
+        ]
       },
-      "lamp-amber": {
+      "attention-blue": {
+        "role": "tertiary",
+        "displayName": "Attention Blue",
+        "canonical": "#2B6CC4",
+        "tonalRamp": [
+          "#112B4E",
+          "#1A4176",
+          "#22569D",
+          "#2B6CC4",
+          "#6091D3",
+          "#95B6E2",
+          "#CADAF0",
+          "#EAF0F9"
+        ]
+      },
+      "attention-blue-text": {
+        "role": "tertiary",
+        "displayName": "Attention Blue Text",
+        "canonical": "#2862B3",
+        "tonalRamp": [
+          "#102748",
+          "#183B6B",
+          "#204E8F",
+          "#2862B3",
+          "#5E89C6",
+          "#94B0D9",
+          "#C9D8EC",
+          "#EAEFF7"
+        ]
+      },
+      "in-range-green": {
+        "role": "tertiary",
+        "displayName": "In Range Green",
+        "canonical": "#2E9E4F",
+        "tonalRamp": [
+          "#123F20",
+          "#1C5F2F",
+          "#257E3F",
+          "#2E9E4F",
+          "#62B67B",
+          "#96CEA7",
+          "#CBE7D3",
+          "#EAF5ED"
+        ]
+      },
+      "in-range-green-text": {
+        "role": "tertiary",
+        "displayName": "In Range Green Text",
+        "canonical": "#1D7A3A",
+        "tonalRamp": [
+          "#0C3117",
+          "#114923",
+          "#17622E",
+          "#1D7A3A",
+          "#569B6B",
+          "#8EBC9C",
+          "#C6DECE",
+          "#E8F2EB"
+        ]
+      },
+      "failed-red": {
+        "role": "tertiary",
+        "displayName": "Failed Red",
+        "canonical": "#C62828",
+        "tonalRamp": [
+          "#4F1010",
+          "#771818",
+          "#9E2020",
+          "#C62828",
+          "#D45E5E",
+          "#E29494",
+          "#F1C9C9",
+          "#F9EAEA"
+        ]
+      },
+      "off-grey": {
+        "role": "tertiary",
+        "displayName": "Off Grey",
+        "canonical": "#7A8597",
+        "tonalRamp": [
+          "#31353C",
+          "#49505B",
+          "#626A79",
+          "#7A8597",
+          "#9BA4B1",
+          "#BCC2CB",
+          "#DEE0E5",
+          "#F2F3F5"
+        ]
+      },
+      "navy-ground": {
+        "role": "neutral",
+        "displayName": "Navy Ground",
+        "canonical": "#0D1729",
+        "tonalRamp": [
+          "#050910",
+          "#080E19",
+          "#0A1221",
+          "#0D1729",
+          "#4A515E",
+          "#868B94",
+          "#C2C5CA",
+          "#E7E8EA"
+        ]
+      },
+      "navy-panel": {
+        "role": "neutral",
+        "displayName": "Navy Panel",
+        "canonical": "#111E33",
+        "tonalRamp": [
+          "#070C14",
+          "#0A121F",
+          "#0E1829",
+          "#111E33",
+          "#4C5666",
+          "#888E99",
+          "#C4C7CC",
+          "#E7E8EB"
+        ]
+      },
+      "navy-section": {
+        "role": "neutral",
+        "displayName": "Navy Section",
+        "canonical": "#18294A",
+        "tonalRamp": [
+          "#0A101E",
+          "#0E192C",
+          "#13213B",
+          "#18294A",
+          "#525E77",
+          "#8C94A4",
+          "#C5CAD2",
+          "#E8EAED"
+        ]
+      },
+      "navy-ink": {
+        "role": "neutral",
+        "displayName": "Navy Ink",
+        "canonical": "#E6ECF5",
+        "tonalRamp": [
+          "#5C5E62",
+          "#8A8E93",
+          "#B8BDC4",
+          "#E6ECF5",
+          "#ECF1F8",
+          "#F2F6FA",
+          "#F9FAFC",
+          "#FCFDFE"
+        ]
+      },
+      "navy-muted": {
+        "role": "neutral",
+        "displayName": "Navy Muted",
+        "canonical": "#A9B6CA",
+        "tonalRamp": [
+          "#444951",
+          "#656D79",
+          "#8792A2",
+          "#A9B6CA",
+          "#BEC8D7",
+          "#D4DAE4",
+          "#EAEDF2",
+          "#F6F8FA"
+        ]
+      },
+      "navy-hairline": {
+        "role": "neutral",
+        "displayName": "Navy Hairline",
+        "canonical": "#2A3B5A",
+        "tonalRamp": [
+          "#111824",
+          "#192336",
+          "#222F48",
+          "#2A3B5A",
+          "#5F6C83",
+          "#949DAC",
+          "#CACED6",
+          "#EAEBEE"
+        ]
+      },
+      "navy-edge": {
+        "role": "neutral",
+        "displayName": "Navy Edge",
+        "canonical": "#7486A3",
+        "tonalRamp": [
+          "#2E3641",
+          "#465062",
+          "#5D6B82",
+          "#7486A3",
+          "#97A4BA",
+          "#BAC2D1",
+          "#DCE1E8",
+          "#F1F3F6"
+        ]
+      },
+      "navy-brand": {
         "role": "primary",
-        "displayName": "Andon Amber",
-        "canonical": "oklch(78.5% 0.164 77.6)",
+        "displayName": "Navy Brand",
+        "canonical": "#8DB6EE",
         "tonalRamp": [
-          "oklch(15% 0.025 77.6)",
-          "oklch(26% 0.070 77.6)",
-          "oklch(37% 0.118 77.6)",
-          "oklch(48% 0.164 77.6)",
-          "oklch(59% 0.164 77.6)",
-          "oklch(70% 0.131 77.6)",
-          "oklch(82% 0.079 77.6)",
-          "oklch(95% 0.025 77.6)"
+          "#38495F",
+          "#556D8F",
+          "#7192BE",
+          "#8DB6EE",
+          "#AAC8F2",
+          "#C6DAF6",
+          "#E2EDFB",
+          "#F4F8FD"
         ]
       },
-      "lamp-green": {
-        "role": "secondary",
-        "displayName": "Run Green",
-        "canonical": "oklch(61.9% 0.153 149.1)",
-        "tonalRamp": [
-          "oklch(15% 0.023 149.1)",
-          "oklch(26% 0.065 149.1)",
-          "oklch(37% 0.110 149.1)",
-          "oklch(48% 0.153 149.1)",
-          "oklch(59% 0.153 149.1)",
-          "oklch(70% 0.122 149.1)",
-          "oklch(82% 0.073 149.1)",
-          "oklch(95% 0.023 149.1)"
-        ]
-      },
-      "lamp-red": {
-        "role": "secondary",
-        "displayName": "Stop Red",
-        "canonical": "oklch(56.7% 0.212 28.8)",
-        "tonalRamp": [
-          "oklch(15% 0.032 28.8)",
-          "oklch(26% 0.090 28.8)",
-          "oklch(37% 0.152 28.8)",
-          "oklch(48% 0.212 28.8)",
-          "oklch(59% 0.212 28.8)",
-          "oklch(70% 0.169 28.8)",
-          "oklch(82% 0.102 28.8)",
-          "oklch(95% 0.032 28.8)"
-        ]
-      },
-      "lamp-red-board": {
-        "role": "secondary",
-        "displayName": "Stop Red, Board",
-        "canonical": "oklch(59.1% 0.212 28.0)",
-        "tonalRamp": [
-          "oklch(15% 0.032 28.0)",
-          "oklch(26% 0.091 28.0)",
-          "oklch(37% 0.153 28.0)",
-          "oklch(48% 0.212 28.0)",
-          "oklch(59% 0.212 28.0)",
-          "oklch(70% 0.170 28.0)",
-          "oklch(82% 0.102 28.0)",
-          "oklch(95% 0.032 28.0)"
-        ]
-      },
-      "lamp-off-day": {
+      "navy-band": {
         "role": "neutral",
-        "displayName": "Lamp Off, Day",
-        "canonical": "oklch(78.1% 0.008 253.9)",
+        "displayName": "Navy Band",
+        "canonical": "#173763",
         "tonalRamp": [
-          "oklch(15% 0.001 253.9)",
-          "oklch(26% 0.004 253.9)",
-          "oklch(37% 0.006 253.9)",
-          "oklch(48% 0.008 253.9)",
-          "oklch(59% 0.008 253.9)",
-          "oklch(70% 0.007 253.9)",
-          "oklch(82% 0.004 253.9)",
-          "oklch(95% 0.001 253.9)"
+          "#091628",
+          "#0E213B",
+          "#122C4F",
+          "#173763",
+          "#51698A",
+          "#8B9BB1",
+          "#C5CDD8",
+          "#E8EBEF"
         ]
       },
-      "lamp-off-board": {
-        "role": "neutral",
-        "displayName": "Lamp Off, Board",
-        "canonical": "oklch(42.2% 0.010 253.9)",
+      "navy-attention": {
+        "role": "tertiary",
+        "displayName": "Navy Attention",
+        "canonical": "#5B9BEA",
         "tonalRamp": [
-          "oklch(15% 0.001 253.9)",
-          "oklch(26% 0.004 253.9)",
-          "oklch(37% 0.007 253.9)",
-          "oklch(48% 0.010 253.9)",
-          "oklch(59% 0.010 253.9)",
-          "oklch(70% 0.008 253.9)",
-          "oklch(82% 0.005 253.9)",
-          "oklch(95% 0.001 253.9)"
+          "#243E5E",
+          "#375D8C",
+          "#497CBB",
+          "#5B9BEA",
+          "#84B4EF",
+          "#ADCDF4",
+          "#D6E6FA",
+          "#EFF5FD"
         ]
       },
-      "lamp-rim-day": {
-        "role": "neutral",
-        "displayName": "Day Rim",
-        "canonical": "rgba(26, 28, 30, 0.78)"
-      },
-      "lamp-off-rim-day": {
-        "role": "neutral",
-        "displayName": "Day Off Rim",
-        "canonical": "rgba(26, 28, 30, 0.55)"
-      },
-      "on-red": {
-        "role": "neutral",
-        "displayName": "White on Red",
-        "canonical": "oklch(100.0% 0.000 89.9)",
+      "navy-ok": {
+        "role": "tertiary",
+        "displayName": "Navy Ok",
+        "canonical": "#3FB565",
         "tonalRamp": [
-          "oklch(15% 0.000 89.9)",
-          "oklch(26% 0.000 89.9)",
-          "oklch(37% 0.000 89.9)",
-          "oklch(48% 0.000 89.9)",
-          "oklch(59% 0.000 89.9)",
-          "oklch(70% 0.000 89.9)",
-          "oklch(82% 0.000 89.9)",
-          "oklch(95% 0.000 89.9)"
+          "#194828",
+          "#266D3D",
+          "#329151",
+          "#3FB565",
+          "#6FC88C",
+          "#9FDAB2",
+          "#CFECD8",
+          "#ECF8F0"
+        ]
+      },
+      "navy-fail": {
+        "role": "tertiary",
+        "displayName": "Navy Fail",
+        "canonical": "#F0605A",
+        "tonalRamp": [
+          "#602624",
+          "#903A36",
+          "#C04D48",
+          "#F0605A",
+          "#F48883",
+          "#F8B0AC",
+          "#FBD7D6",
+          "#FEEFEE"
         ]
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Station Number",
-        "purpose": "The zero-padded station number (01, 02…); 36px on phones, 52px from 640px, 28px on a compact station."
+      "title": {
+        "displayName": "Title",
+        "purpose": "Screen h1 in institutional blue."
       },
       "headline": {
-        "displayName": "Page Title",
-        "purpose": "The screen's h1; 28px on phones, 32px from 640px."
+        "displayName": "Headline",
+        "purpose": "Section h2."
       },
-      "headline-section": {
-        "displayName": "Detail Section",
-        "purpose": "A section heading in a pain's detail column."
-      },
-      "title": {
-        "displayName": "Station Title",
-        "purpose": "A station's pain title; 21px on phones, 22px from 640px. Row titles step down to 17–19px."
-      },
-      "count": {
-        "displayName": "Count",
-        "purpose": "A stage's count on the line; the board's counters at 26–28px."
+      "result-title": {
+        "displayName": "Result title",
+        "purpose": "A pain's title in ink."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Running text, 40rem measure (54ch in detail prose), tabular figures."
+        "purpose": "Running text, tabular figures."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Table rows, notes."
       },
       "label": {
-        "displayName": "Label",
-        "purpose": "A lamp's written state, field labels, muted labels before values; buttons at 15px/600."
-      },
-      "caption": {
-        "displayName": "Caption",
-        "purpose": "Stage notes, a source's state, the masthead's week data below 1280px."
-      },
-      "tag": {
-        "displayName": "Tag",
-        "purpose": "Filled tags and flags."
+        "displayName": "Section label",
+        "purpose": "Tracked uppercase section and table labels, never an eyebrow."
       }
     },
-    "shadows": [
-      {
-        "name": "lamp-rim",
-        "value": "inset 0 0 0 1.5px var(--lamp-rim)",
-        "purpose": "Structural, not elevation: the dark rim on every lit lamp, amber tag and amber flag on the day board (transparent on the board) so each keeps 3:1 on steel panels."
-      },
-      {
-        "name": "lamp-off-rim",
-        "value": "inset 0 0 0 1px var(--lamp-off-rim)",
-        "purpose": "Outlines an unlit lamp in both themes."
-      },
-      {
-        "name": "rail-ring",
-        "value": "0 0 0 4px var(--ring)",
-        "purpose": "A ring in the colour of the surface behind a line station's lamp; it cuts the rail so it seems to stop at each lamp."
-      },
-      {
-        "name": "field-error",
-        "value": "inset 0 0 0 1px var(--lamp-red)",
-        "purpose": "Doubles a field's red border when it is invalid."
-      }
-    ],
+    "shadows": [],
     "motion": [
-      {
-        "name": "tomoshi-step",
-        "value": "70ms",
-        "purpose": "The interval between lamps in the «tomoshi» lighting sequence, in stage order, once per run per session."
-      },
-      {
-        "name": "tomoshi-start",
-        "value": "160ms",
-        "purpose": "Delay after first paint before the sequence starts, so it is seen."
-      },
       {
         "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Lamp lighting (320ms on background and scale) and chevron rotation (200ms)."
-      },
-      {
-        "name": "lamp-light",
-        "value": "320ms",
-        "purpose": "A waiting lamp goes from off at scale 0.82 to its colour at scale 1."
-      },
-      {
-        "name": "control-feedback",
-        "value": "90ms ease-out",
-        "purpose": "Button background, border and colour changes."
-      },
-      {
-        "name": "reduced-motion",
-        "value": "none",
-        "purpose": "Under prefers-reduced-motion every lamp is lit at once and all transitions and animations are off."
+        "purpose": "Rare state transitions; all removed under prefers-reduced-motion."
       }
     ],
     "breakpoints": [
       {
-        "name": "narrow-phone-max",
-        "value": "399.98px"
-      },
-      {
-        "name": "plate-column",
+        "name": "wide-pad",
         "value": "640px"
       },
       {
-        "name": "detail-index",
-        "value": "672px"
-      },
-      {
-        "name": "row-columns",
-        "value": "720px"
-      },
-      {
-        "name": "masthead-two-rows",
-        "value": "768px"
-      },
-      {
-        "name": "side-panel",
+        "name": "line-beside",
         "value": "1024px"
       },
       {
-        "name": "row-three-columns",
-        "value": "1200px"
-      },
-      {
-        "name": "masthead-one-row",
-        "value": "1280px"
+        "name": "result-two-column",
+        "value": "container 27rem"
       }
     ]
   },
@@ -487,159 +449,115 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one primary action per station or screen («Nos interesa»): the ink colour inverted, never a lamp colour.",
-      "html": "<button class=\"ds-btn-primary\" type=\"button\">Nos interesa</button>",
-      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px 16px; border: 1px solid var(--ink, #F4F4F2); border-radius: 3px; background: var(--ink, #F4F4F2); color: var(--on-ink, #1A1C1E); font: 600 15px/1.15 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; cursor: pointer; transition: background-color 90ms ease-out, border-color 90ms ease-out; } .ds-btn-primary:hover, .ds-btn-primary:active { background: color-mix(in srgb, var(--ink, #F4F4F2) 84%, var(--ground, #1A1C1E)); border-color: color-mix(in srgb, var(--ink, #F4F4F2) 84%, var(--ground, #1A1C1E)); } .ds-btn-primary:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; }"
+      "description": "The one filled action on a screen, such as «Nos interesa».",
+      "html": "<button class=\"ds-btn-primary\">Nos interesa</button>",
+      "css": ".ds-btn-primary{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:44px;padding:6px 16px;border:1px solid #1F4E8C;border-radius:3px;background:#1F4E8C;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.ds-btn-primary:hover{background:#3E679C;border-color:#3E679C}.ds-btn-primary:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "The counter-action beside the primary («Descartar»): transparent with an edge border.",
-      "html": "<button class=\"ds-btn-secondary\" type=\"button\">Descartar</button>",
-      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px 16px; border: 1px solid var(--edge, #767B82); border-radius: 3px; background: none; color: var(--ink, #F4F4F2); font: 600 15px/1.15 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; cursor: pointer; transition: background-color 90ms ease-out, border-color 90ms ease-out; } .ds-btn-secondary:hover, .ds-btn-secondary:active { background: var(--hover, rgba(244,244,242,0.06)); border-color: var(--ink, #F4F4F2); } .ds-btn-secondary:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; }"
-    },
-    {
-      "name": "Quiet Button",
-      "kind": "button",
-      "refersTo": "button-quiet",
-      "description": "A low-weight action («Comentar», «Salir»): muted text, a tint on hover.",
-      "html": "<button class=\"ds-btn-quiet\" type=\"button\">Comentar</button>",
-      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; min-height: 44px; padding: 6px 10px; border: 1px solid transparent; border-radius: 3px; background: none; color: var(--muted, #A9ADB1); font: 600 15px/1.15 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; cursor: pointer; transition: background-color 90ms ease-out, color 90ms ease-out; } .ds-btn-quiet:hover, .ds-btn-quiet:active { color: var(--ink, #F4F4F2); background: var(--hover, rgba(244,244,242,0.06)); } .ds-btn-quiet:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; }"
+      "description": "Outlined alternative action.",
+      "html": "<button class=\"ds-btn-secondary\">Descartar</button>",
+      "css": ".ds-btn-secondary{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:44px;padding:6px 16px;border:1px solid #1F4E8C;border-radius:3px;background:#fff;color:#1F4E8C;font-size:15px;font-weight:600;cursor:pointer}.ds-btn-secondary:hover{background:#ECF0F6}.ds-btn-secondary:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
     },
     {
       "name": "Text Field",
       "kind": "input",
-      "refersTo": "input",
-      "description": "A field on the panel tone with an edge border; error is a red border plus words after a red dot.",
-      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Comentario</span><input class=\"ds-input\" type=\"text\" placeholder=\"Escribe aquí\"></label>",
-      "css": ".ds-field { display: grid; gap: 6px; max-width: 440px; font: 400 16px/1.45 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; color: var(--ink, #F4F4F2); } .ds-field-label { font-weight: 600; } .ds-input { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid var(--edge, #767B82); border-radius: 3px; background: var(--panel, #2A2D31); color: var(--ink, #F4F4F2); font: inherit; font-size: 16px; } .ds-input::placeholder { color: var(--muted, #A9ADB1); } .ds-input:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; } .ds-input[aria-invalid=\"true\"] { border-color: var(--lamp-red, #E0302A); box-shadow: inset 0 0 0 1px var(--lamp-red, #E0302A); }"
+      "refersTo": "input-field",
+      "description": "44px field with a 1px control edge.",
+      "html": "<input class=\"ds-input\" value=\"Comentario\">",
+      "css": ".ds-input{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-sizing:border-box;width:240px;min-height:44px;padding:8px 12px;border:1px solid #6B778A;border-radius:3px;background:#fff;color:#14213D;font-size:16px}.ds-input:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
     },
     {
-      "name": "Masthead Tabs",
+      "name": "Navigation Tabs",
       "kind": "nav",
-      "refersTo": "tab",
-      "description": "Muted tabs, the current one in ink with a 3px signal bar under it.",
-      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" href=\"#\" aria-current=\"page\">Esta semana</a><a class=\"ds-tab\" href=\"#\">Catálogo</a><a class=\"ds-tab\" href=\"#\">Corridas</a></nav>",
-      "css": ".ds-tabs { display: flex; gap: 4px; font-family: \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; } .ds-tab { display: flex; align-items: center; min-height: 44px; padding: 3px 14px 0; border-bottom: 3px solid transparent; color: var(--muted, #A9ADB1); font-size: 16px; font-weight: 500; text-decoration: none; white-space: nowrap; } .ds-tab:hover { color: var(--ink, #F4F4F2); } .ds-tab[aria-current=\"page\"] { color: var(--ink, #F4F4F2); font-weight: 600; border-bottom-color: var(--signal, #F2A900); } .ds-tab:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; }"
+      "refersTo": "masthead-band",
+      "description": "Tabs on the blue band; the current one is underlined in white.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" aria-current=\"page\" href=\"#\">Esta semana</a><a class=\"ds-tab\" href=\"#\">Catálogo</a><a class=\"ds-tab\" href=\"#\">Corridas</a></nav>",
+      "css": ".ds-tabs{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:flex;background:#1F4E8C;padding:0 12px}.ds-tab{display:flex;align-items:center;min-height:44px;padding:3px 12px 0;border-bottom:3px solid transparent;color:rgba(255,255,255,.85);font-size:15px;font-weight:500;text-decoration:none}.ds-tab:hover{color:#fff}.ds-tab[aria-current]{color:#fff;font-weight:600;border-bottom-color:#fff}"
     },
     {
-      "name": "Lamp with Written State",
+      "name": "Tag Chip",
       "kind": "chip",
-      "refersTo": "lamp",
-      "description": "The signature primitive: a flat disc, aria-hidden, always followed by its state in words.",
-      "html": "<span class=\"ds-lamp-state\"><span class=\"ds-lamp\" data-lamp=\"amber\" aria-hidden=\"true\"></span>En observación</span> <span class=\"ds-lamp-state\"><span class=\"ds-lamp\" data-lamp=\"green\" aria-hidden=\"true\"></span>Con peso para trabajar</span> <span class=\"ds-lamp-state\"><span class=\"ds-lamp\" data-lamp=\"red\" aria-hidden=\"true\"></span>Falló</span> <span class=\"ds-lamp-state\"><span class=\"ds-lamp\" data-lamp=\"off\" aria-hidden=\"true\"></span>Descartado</span>",
-      "css": ".ds-lamp-state { display: inline-flex; align-items: center; gap: 8px; margin-right: 16px; color: var(--ink, #F4F4F2); font: 600 14px/1.2 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; } .ds-lamp { display: inline-block; flex: none; width: 14px; height: 14px; border-radius: 50%; background: var(--lamp-off, #4A4E53); box-shadow: inset 0 0 0 1.5px var(--lamp-rim, transparent); transition: background-color 320ms cubic-bezier(0.16, 1, 0.3, 1), transform 320ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-lamp[data-lamp=\"amber\"] { background: var(--lamp-amber, #F2A900); } .ds-lamp[data-lamp=\"green\"] { background: var(--lamp-green, #2E9E4F); } .ds-lamp[data-lamp=\"red\"] { background: var(--lamp-red, #E0302A); } .ds-lamp[data-lamp=\"off\"] { box-shadow: inset 0 0 0 1px var(--lamp-off-rim, #767B82); }"
+      "refersTo": "tag-chip",
+      "description": "Outlined tag on the panel.",
+      "html": "<span class=\"ds-chip\">Evidencia nueva</span>",
+      "css": ".ds-chip{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;min-height:24px;padding:0 6px;border:1px solid #D5DCE6;border-radius:2px;background:#fff;color:#1F4E8C;font-size:12px;font-weight:600}"
     },
     {
-      "name": "Tags and Flags",
-      "kind": "chip",
-      "refersTo": "tag-fresh",
-      "description": "Small filled plates that carry words: winner in inverted ink, new evidence in amber, a failed source in red.",
-      "html": "<span class=\"ds-tag ds-tag--winner\">Ganó el duelo</span> <span class=\"ds-tag ds-tag--fresh\">Evidencia nueva</span> <span class=\"ds-tag ds-tag--red\">no aportó nada</span>",
-      "css": ".ds-tag { display: inline-block; padding: 2px 8px; border-radius: 2px; font: 600 12px/1.6 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; white-space: nowrap; } .ds-tag--winner { background: var(--ink, #F4F4F2); color: var(--on-ink, #1A1C1E); } .ds-tag--fresh { background: var(--lamp-amber, #F2A900); color: var(--on-amber, #1A1C1E); box-shadow: inset 0 0 0 1px var(--lamp-rim, transparent); } .ds-tag--red { background: var(--lamp-red, #E0302A); color: var(--on-red, #FFFFFF); }"
-    },
-    {
-      "name": "Station",
+      "name": "Result Block",
       "kind": "card",
-      "refersTo": "station",
-      "description": "A pain waiting for a decision: a plate with the big number, lamp and written state, then the title, tags, who suffers it, and the marks at the foot.",
-      "html": "<article class=\"ds-station\"><div class=\"ds-station-plate\"><span class=\"ds-station-number\">01</span><span class=\"ds-station-lamp\" aria-hidden=\"true\"></span><span class=\"ds-station-state\">En observación</span></div><div class=\"ds-station-body\"><h3 class=\"ds-station-title\">Ordenar a mano los pedidos de cada semana</h3><span class=\"ds-station-tag\">Evidencia nueva</span><p class=\"ds-station-who\"><b>Quién lo sufre:</b> Equipos pequeños de una tienda en línea.</p><div class=\"ds-station-foot\"><span class=\"ds-station-marks\">Sin marcas aún</span><button class=\"ds-station-btn ds-station-btn--secondary\" type=\"button\">Descartar</button><button class=\"ds-station-btn ds-station-btn--primary\" type=\"button\">Nos interesa</button></div></div></article>",
-      "css": ".ds-station { display: grid; grid-template-columns: 96px minmax(0, 1fr); max-width: 30rem; border-radius: 4px; background: var(--panel, #2A2D31); color: var(--ink, #F4F4F2); font: 400 16px/1.45 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; font-variant-numeric: tabular-nums; } .ds-station-plate { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 18px 8px; border-right: 1px solid var(--line, #3A3E43); } .ds-station-number { font-size: 52px; font-weight: 700; line-height: 0.9; letter-spacing: -0.01em; } .ds-station-lamp { width: 30px; height: 30px; border-radius: 50%; background: var(--lamp-amber, #F2A900); box-shadow: inset 0 0 0 1.5px var(--lamp-rim, transparent); } .ds-station-state { font-size: 13px; font-weight: 600; line-height: 1.2; text-align: center; } .ds-station-body { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding: 18px 22px 18px 20px; } .ds-station-title { margin: 0; font-size: 22px; font-weight: 600; line-height: 1.15; } .ds-station-tag { align-self: flex-start; padding: 2px 8px; border-radius: 2px; background: var(--lamp-amber, #F2A900); color: var(--on-amber, #1A1C1E); font-size: 12px; font-weight: 600; } .ds-station-who { margin: 0; font-size: 15px; } .ds-station-who b { color: var(--muted, #A9ADB1); font-weight: 600; } .ds-station-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line, #3A3E43); } .ds-station-marks { flex-basis: 100%; color: var(--muted, #A9ADB1); font-size: 14px; } .ds-station-btn { min-height: 44px; padding: 6px 12px; border-radius: 3px; font: 600 15px/1.15 inherit; font-family: inherit; cursor: pointer; transition: background-color 90ms ease-out; } .ds-station-btn--primary { border: 1px solid var(--ink, #F4F4F2); background: var(--ink, #F4F4F2); color: var(--on-ink, #1A1C1E); } .ds-station-btn--secondary { border: 1px solid var(--edge, #767B82); background: none; color: var(--ink, #F4F4F2); } .ds-station-btn--secondary:hover { background: var(--hover, rgba(244,244,242,0.06)); } .ds-station-btn:focus-visible { outline: 2px solid var(--focus, #F2A900); outline-offset: 2px; }"
+      "refersTo": "result-block",
+      "description": "A pain as a result: tinted head with number, title and state; body on white.",
+      "html": "<div class=\"ds-result\"><div class=\"ds-result-head\"><span class=\"ds-n\">1</span><span class=\"ds-t\">Pain title</span><span class=\"ds-state\"><i></i>DENTRO DEL RANGO</span></div><div class=\"ds-result-body\">Evidence measured against the run's ranges.</div></div>",
+      "css": ".ds-result{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;width:320px;border:1px solid #D5DCE6;border-radius:4px;background:#fff;color:#14213D}.ds-result-head{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 16px;background:#E8EEF6;border-bottom:1px solid #D5DCE6;border-radius:3px 3px 0 0}.ds-n{color:#1F4E8C;font-size:13px;font-weight:700}.ds-t{font-size:17px;font-weight:600;flex:1}.ds-state{display:inline-flex;align-items:center;gap:6px;padding:0 6px;min-height:24px;border:1px solid #D5DCE6;border-radius:2px;background:#fff;color:#1D7A3A;font-size:11px;font-weight:700;letter-spacing:.06em}.ds-state i{width:10px;height:10px;border-radius:50%;background:#2E9E4F}.ds-result-body{padding:12px 16px;font-size:14px}"
     },
     {
-      "name": "Run's Line",
+      "name": "Reference-Range Bar",
       "kind": "custom",
-      "refersTo": "line-panel",
-      "description": "The production line: one station per stage on a 2px rail, lamp, step number, label, right-aligned count and a caption with its state.",
-      "html": "<ol class=\"ds-line\"><li class=\"ds-line-station\"><span class=\"ds-line-lamp\" data-lamp=\"amber\" aria-hidden=\"true\"></span><span class=\"ds-line-label\"><span class=\"ds-line-num\">01</span>Juntadas</span><span class=\"ds-line-count\">1 200</span><span class=\"ds-line-notes\"><span class=\"ds-line-flag\">Con recorte</span></span></li><li class=\"ds-line-station\"><span class=\"ds-line-lamp\" data-lamp=\"green\" aria-hidden=\"true\"></span><span class=\"ds-line-label\"><span class=\"ds-line-num\">02</span>Leídas</span><span class=\"ds-line-count\">640</span><span class=\"ds-line-notes\">Sin recortes</span></li><li class=\"ds-line-station\"><span class=\"ds-line-lamp\" data-lamp=\"off\" aria-hidden=\"true\"></span><span class=\"ds-line-label\"><span class=\"ds-line-num\">03</span>Agrupadas</span><span class=\"ds-line-count ds-line-count--empty\">Sin datos</span><span class=\"ds-line-notes\">Sin datos</span></li></ol>",
-      "css": ".ds-line { position: relative; max-width: 26rem; margin: 0; padding: 22px 26px; list-style: none; background: var(--side, #202225); color: var(--ink, #F4F4F2); font: 400 16px/1.45 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; font-variant-numeric: tabular-nums; } .ds-line::before { content: \"\"; position: absolute; left: 33px; top: 34px; bottom: 36px; width: 2px; background: var(--line, #3A3E43); } .ds-line-station { position: relative; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: baseline; padding-block: 7px; } .ds-line-lamp { position: relative; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--lamp-off, #4A4E53); box-shadow: inset 0 0 0 1.5px var(--lamp-rim, transparent), 0 0 0 4px var(--side, #202225); } .ds-line-lamp[data-lamp=\"amber\"] { background: var(--lamp-amber, #F2A900); } .ds-line-lamp[data-lamp=\"green\"] { background: var(--lamp-green, #2E9E4F); } .ds-line-lamp[data-lamp=\"off\"] { box-shadow: inset 0 0 0 1px var(--lamp-off-rim, #767B82), 0 0 0 4px var(--side, #202225); } .ds-line-label { font-weight: 600; line-height: 1.25; } .ds-line-num { margin-right: 6px; color: var(--muted, #A9ADB1); font-size: 13px; font-weight: 500; } .ds-line-count { padding-left: 12px; font-size: 22px; font-weight: 700; line-height: 1; text-align: right; } .ds-line-count--empty { font-size: 14px; font-weight: 500; color: var(--muted, #A9ADB1); } .ds-line-notes { grid-column: 2 / 4; margin-top: 2px; color: var(--muted, #A9ADB1); font-size: 13px; line-height: 1.4; } .ds-line-flag { display: inline-block; padding: 0 6px; border-radius: 2px; background: var(--lamp-amber, #F2A900); color: var(--on-amber, #1A1C1E); font-size: 12px; font-weight: 600; line-height: 1.6; }"
-    },
-    {
-      "name": "Row List",
-      "kind": "card",
-      "refersTo": "row-list",
-      "description": "Dense rows on one panel divided by 1px rules; the lamp and state lead, the title's link covers the row.",
-      "html": "<ul class=\"ds-rows\"><li class=\"ds-row\"><span class=\"ds-row-state\"><span class=\"ds-row-lamp\" data-lamp=\"green\" aria-hidden=\"true\"></span>Con peso para trabajar</span><a class=\"ds-row-title\" href=\"#\">Conciliar pagos de varios canales</a><span class=\"ds-row-meta\">5 testimonios · Igual que la semana pasada</span></li><li class=\"ds-row\"><span class=\"ds-row-state\"><span class=\"ds-row-lamp\" data-lamp=\"amber\" aria-hidden=\"true\"></span>En observación</span><a class=\"ds-row-title\" href=\"#\">Avisar a clientes de un retraso</a><span class=\"ds-row-meta\">2 testimonios · Nuevo</span></li></ul>",
-      "css": ".ds-rows { max-width: 40rem; margin: 0; padding: 0; list-style: none; border-radius: 4px; background: var(--panel, #2A2D31); color: var(--ink, #F4F4F2); font: 400 16px/1.45 \"Barlow Semi Condensed\", \"Arial Narrow\", sans-serif; } .ds-row { position: relative; display: grid; grid-template-columns: 12.5rem minmax(0, 1fr); column-gap: 24px; row-gap: 4px; padding: 10px 16px 12px; } .ds-row + .ds-row { border-top: 1px solid var(--line, #3A3E43); } .ds-row:hover { background: var(--hover, rgba(244,244,242,0.06)); } .ds-row-state { grid-row: 1 / span 2; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; line-height: 1.3; } .ds-row-lamp { width: 14px; height: 14px; border-radius: 50%; background: var(--lamp-off, #4A4E53); box-shadow: inset 0 0 0 1.5px var(--lamp-rim, transparent); } .ds-row-lamp[data-lamp=\"green\"] { background: var(--lamp-green, #2E9E4F); } .ds-row-lamp[data-lamp=\"amber\"] { background: var(--lamp-amber, #F2A900); } .ds-row-title { color: inherit; font-size: 17px; font-weight: 600; line-height: 1.25; text-decoration: none; } .ds-row-title::after { content: \"\"; position: absolute; inset: 0; } .ds-row:hover .ds-row-title { text-decoration: underline; text-decoration-color: var(--edge, #767B82); } .ds-row-title:focus-visible { outline: none; } .ds-row-title:focus-visible::after { outline: 2px solid var(--focus, #F2A900); outline-offset: -2px; border-radius: 4px; } .ds-row-meta { color: var(--muted, #A9ADB1); font-size: 14px; }"
+      "refersTo": "range-bar",
+      "description": "Signature: the value marker on a band whose shaded part is the real threshold, flagged in words.",
+      "html": "<div class=\"ds-row\"><span class=\"ds-l\">Testimonios</span><b class=\"ds-v\">4</b><span class=\"ds-bar\" aria-hidden=\"true\"><span class=\"ds-in\"></span><span class=\"ds-at\"></span></span><span class=\"ds-flag\"><i></i>DENTRO DEL RANGO</span></div>",
+      "css": ".ds-row{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:300px;padding:5px 0;border-bottom:1px solid #D5DCE6;color:#14213D;font-size:14px}.ds-v{font-size:16px;text-align:right}.ds-bar{position:relative;display:block;height:8px;border:1px solid #D5DCE6;border-radius:2px;background:#E8EEF6;margin-top:6px}.ds-in{position:absolute;top:-1px;bottom:-1px;right:-1px;left:50%;border-left:2px solid #2E9E4F;border-radius:0 2px 2px 0;background:#D2EBDA}.ds-at{position:absolute;top:-5px;left:70%;width:3px;height:16px;border-radius:1px;background:#14213D}.ds-flag{grid-column:1/-1;display:inline-flex;align-items:center;gap:6px;color:#1D7A3A;font-size:11px;font-weight:700;letter-spacing:.06em}.ds-flag i{width:10px;height:10px;border-radius:50%;background:#2E9E4F}"
     }
   ],
   "narrative": {
-    "northStar": "The Andon Board",
-    "overview": "The page is a plant's andon board. Each pain waiting for a decision is a numbered station with a flat lamp, and the week's run is a production line of stations with a lamp and a count at each stage. A lamp lights when the run pulled the cord for it. Nothing on the page is a feed, a hero or a dashboard tab. There is one board, read top to bottom, with the line that produced it beside it. The look is industrial and plain: condensed type, big tabular station numbers, flat panels on a flat ground, and four lamp colours that mean something every time they appear.\n\nThere are two themes and no toggle. `prefers-color-scheme` chooses between them. Dark is the plant's board: graphite ground, slightly lighter panels, off-white ink. Light is «el tablero de día» (the day board): a cool steel ground, near-white panels, graphite ink. The lamp hues are the same in both, and each lamp on the day board gets a dark rim. The light theme is never cream or warm paper. The density is that of an operator's screen. Rows are dense, rules are 1 px, every target is 44 px, and the page works from 320 px wide.\n\nColour is status and only status. Amber, green and red appear as lamps, as small filled tags and flags, as the current tab's bar and as the focus ring. They never colour running text. Every lamp has its state written beside it in words, so the lamp repeats what the words already say.",
+    "northStar": "The Lab Results Report",
+    "overview": "\n**Creative North Star: \"The Lab Results Report\"**\n\nEach pain arrives as a result, not a card: its evidence measured against the reference ranges the weekly run itself used, with what falls in or out of range said in words. The page reads like a clinical report on white paper: an institutional blue band across the top, pale blue-grey section heads, hairline-ruled tables, ink on white. At night (automatic, no toggle) it is the same report on a deep navy ground, never graphite and never warm.\n\nThe voice is calm, exact and unadorned. Density is that of a document a person reads closely on Monday, on a phone or a computer: small tracked section labels, tabular numbers, short plain-Spanish sentences. Nothing decorates; the one drawn element is the reference-range bar, because it is data.\n\nThis replaces the earlier andon-board world, which was rejected, above all for its yellow. None of that world carries over.",
     "keyCharacteristics": [
-      "Flat lamp discs (amber, green, red, off) with no bevel, glow or screws, and their state always written beside them.",
-      "Two automatic themes built from one set of role tokens: a graphite board and a cool-steel day board.",
-      "One face, Barlow Semi Condensed, with tabular figures everywhere, so counts line up down a column.",
-      "Zero-padded station numbers (01, 02…), the largest type on the page.",
-      "Depth through tonal steps (ground, side panel, panel) and 1 px rules. No shadows.",
-      "One motion signature, «tomoshi»: on load the lamps light one after another in stage order, 70 ms apart, once."
+      "White paper, one institutional blue, hairline rules; flat, no shadows.",
+      "One typeface (Public Sans) with tabular figures everywhere.",
+      "Never yellow or amber. Attention is blue.",
+      "Every state is written in words beside its colour; dots and bars are `aria-hidden`.",
+      "The signature move is the reference-range bar drawn from the run's real thresholds.",
+      "AA contrast in both themes, usable from 320 px."
     ],
     "rules": [
       {
-        "name": "The Written State Rule",
-        "body": "A lamp never stands alone. Its state is written beside it in words («En observación», which means under watch, or «Con recorte», which means the cap cut items), and the disc itself is hidden from screen readers.",
+        "name": "The Never-Yellow Rule",
+        "body": "No yellow, amber or orange anywhere, in either theme. Attention is blue. (The code keeps the internal attribute name `data-lamp=\"amber\"`; it is only a name and renders the attention blue. Likewise `green`, `red`, `off`.)",
         "section": "colors"
       },
       {
-        "name": "The Lamp Is Not Ink Rule",
-        "body": "Amber, green and red fill discs, tags, flags and the active bar. They never colour text, and green or red text never sits on the graphite ground. An error is ink-coloured words after a red dot.",
+        "name": "The Words-Beside-Colour Rule",
+        "body": "A state is never colour alone. The dot or bar is `aria-hidden` and the state is written next to it («DENTRO DEL RANGO», «FUERA DEL RANGO», the run's status).",
         "section": "colors"
       },
       {
-        "name": "The Never Cream Rule",
-        "body": "The day board is cool steel (a hue near 248°, chroma under 0.01). Warm paper, cream and beige are outside this world.",
+        "name": "The Text-Variant Rule",
+        "body": "A state written as text uses its `-text` value (4.5:1 or better); the plain state value is for dots, bars and control edges (3:1). A green dot never sits directly on the section tint: it goes inside a chip on the panel.",
         "section": "colors"
       },
       {
-        "name": "The Same Lamps Rule",
-        "body": "The lamp hues are shared by both themes. Only the red is lifted on the board for contrast, the rim appears on the day board, and the off colour changes with the ground.",
-        "section": "colors"
-      },
-      {
-        "name": "The One Face Rule",
-        "body": "Barlow Semi Condensed does every job, at 400, 500, 600 and 700. Hierarchy comes from size and weight, never from a second family.",
+        "name": "The No-Eyebrow Rule",
+        "body": "Tracked uppercase labels name a section or a table; they never sit as a kicker above a heading.",
         "section": "typography"
       },
       {
-        "name": "The Tabular Figures Rule",
-        "body": "Every number is tabular, so the counts in a column and the figures in a source line up digit for digit.",
+        "name": "The Out-of-Range-Is-Bold Rule",
+        "body": "A value outside its range is set bold in the failing state's text colour, as a lab report marks it.",
         "section": "typography"
       },
       {
-        "name": "The Big Number Rule",
-        "body": "The station number is the largest type on any screen that has stations. It leads the station's plate, and the title follows it in reading order.",
-        "section": "typography"
-      },
-      {
-        "name": "The Flat Board Rule",
-        "body": "Surfaces never lift. Hover is a tint (6–7% ink over the surface), never a shadow or a raise.",
-        "section": "elevation"
-      },
-      {
-        "name": "The No Bevel Rule",
-        "body": "Lamps are flat discs with no gradient, highlight, glow or screw heads.",
+        "name": "The Hairline-Not-Shadow Rule",
+        "body": "Separate surfaces with a 1px Hairline or a Section Tint head, never a shadow.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do write a lamp's state in words beside every lamp, and mark the disc `aria-hidden`.",
-      "Do build both themes from the same role tokens (ground, side, panel, ink, muted, line, edge, signal, focus, hover), switched only by `prefers-color-scheme`.",
-      "Do give every lit lamp, amber tag and amber flag the 1.5px dark rim on the day board.",
-      "Do set every number in tabular figures, and zero-pad station and stage numbers to two digits.",
-      "Do separate content with tonal steps and 1px rules, and keep panels at 4px, controls at 3px and tags at 2px.",
-      "Do keep every target at 44px or more, and let a short link's box grow to 44px with a negative margin.",
-      "Do draw disclosure chevrons from two borders of an 8px square, rotated, so they inherit the muted colour.",
-      "Do reserve load-time motion for the «tomoshi» lamp sequence, at 70ms a step, once, and with none under reduced motion."
+      "write every state in words beside its colour; keep dots and bars `aria-hidden`.",
+      "draw ranges from the run's real thresholds and flag them in words.",
+      "use Public Sans at 400/500/600/700 with tabular figures.",
+      "separate surfaces with 1px Hairline rules and the Section Tint; keep radii 2 to 4px.",
+      "keep both themes at AA (4.5:1 text, 3:1 marks and control edges) and usable at 320 px."
     ],
     "donts": [
-      "Don't bevel, gloss, glow or screw a lamp. It is a flat disc.",
-      "Don't colour text amber, green or red, and never put green or red text on the graphite ground.",
-      "Don't make a lamp colour the primary action. The primary button is inverted ink.",
-      "Don't warm the day board toward cream or paper. It stays cool steel.",
-      "Don't add drop shadows or lift a panel on hover. Hover is a 6–7% ink tint.",
-      "Don't add a second typeface or a monospace for figures.",
-      "Don't show state by colour alone anywhere: in a lamp, a tag, a flag or a field error."
+      "use yellow, amber or orange, or reintroduce the andon-board look (lamps, graphite, a second display face).",
+      "convey a state by colour alone.",
+      "add shadows, gradients or rounded pills.",
+      "put a tracked uppercase label above a heading as an eyebrow.",
+      "show jargon or internal ids; the page is plain Spanish."
     ]
   }
 }

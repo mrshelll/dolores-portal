@@ -398,6 +398,8 @@ export function decideList({ pains = [], cards = [], marks = [], people = [], tr
       // The ranked board: the duel's winner and the pains with weight are full stations, the rest compact.
       full: won || section === "weighty",
       facts: stationFacts(pain, cardOf.get(pain.id), { winner: won }),
+      // The counts the run judged it by, as stored (analysisRows reads and checks them); null before the gate existed.
+      gate: isObject(pain.gate) ? pain.gate : null,
     });
   }
   const rank = (item) => (item.winner ? 0 : item.section === "weighty" ? 1 : 2);
@@ -500,6 +502,59 @@ export function lineView(trace) {
       return { key, label: text(s.label) ?? "", count: n, cap, lamp: n === null ? "off" : hit ? "amber" : "green" };
     });
   return { stages, sources, cuts, dateLabel: formatDate(trace.date) };
+}
+
+// ---- the lab report: a pain's judged counts as analysis rows --------------------------------------------------------
+
+const isObject = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
+const isCount = (value) => Number.isInteger(value) && value >= 0;
+const isThreshold = (value) => Number.isInteger(value) && value > 0;
+
+// A row measured against its threshold. `min`, `max` and `at` are for the range bar: it spans `top` (by default twice
+// the threshold), stretched to the threshold or the value when one is past it, so neither falls off the bar.
+function measured(key, label, value, min, at, top = min * 2) {
+  const inRange = at >= min;
+  return {
+    key, label, value, range: fill(T.analysisRange, { n: formatNumber(min) }), min, max: Math.max(top, min, at), at,
+    flag: inRange ? "in" : "out", flagText: inRange ? T.analysisIn : T.analysisOut,
+  };
+}
+
+// A pain's gate (dolores' decideStatus, stored on the pain's doc) as the analysis table's rows: testimonies, source
+// tiers, attacks held, and «Descrito por quien lo sufre» only when the statement is missing. Each threshold is the
+// gate's own, so the page says what the run used even if the rules change. Attacks held read out of those that
+// answered (gate.verdicts), as dolores' own reason says them, and their bar spans those: «4 de 5» marks 4 on a bar to 5.
+// With fewer answered than the run requires there is no result to judge: the row says how many answered of those
+// required, with no flag and no bar; with none answered it says no attack was evaluated (not «0 de 5», which would
+// claim five were sent: none may have been, ever). `note` says when the testimonies were counted within one country
+// (dolores' bestCount: not necessarily the one with the most). A missing gate (a pain stored before it existed) or a
+// malformed one gives no rows: the page then shows the facts line and never a range claim it cannot back.
+export function analysisRows(gate) {
+  const none = { rows: [], note: null };
+  if (!isObject(gate) || !isObject(gate.thresholds)) return none;
+  const { testimonies, tiers, survivals, verdicts, thresholds } = gate;
+  if (![testimonies, tiers, verdicts].every(isCount)) return none;
+  if (survivals !== null && !isCount(survivals)) return none;
+  if (![thresholds.testimonies, thresholds.tiers, thresholds.survivals, thresholds.verdicts].every(isThreshold)) return none;
+  const answered = formatNumber(verdicts);
+  const attacks = verdicts === 0 || survivals === null
+    ? {
+      key: "survivals", label: T.analysisSurvivals,
+      value: verdicts === 0 ? T.analysisNoAttacks : fill(T.analysisIncomplete, { n: answered, total: formatNumber(thresholds.verdicts) }),
+      range: fill(T.analysisRange, { n: formatNumber(thresholds.survivals) }), min: null, max: null, at: null, flag: "none", flagText: "",
+    }
+    : measured("survivals", T.analysisSurvivals, fill(T.analysisHeld, { held: formatNumber(survivals), total: answered }), thresholds.survivals, survivals, verdicts);
+  const rows = [
+    measured("testimonies", T.analysisTestimonies, formatNumber(testimonies), thresholds.testimonies, testimonies),
+    measured("tiers", T.analysisTiers, formatNumber(tiers), thresholds.tiers, tiers),
+    attacks,
+  ];
+  if (gate.has_statement === false) {
+    rows.push({
+      key: "statement", label: T.analysisStatement, value: T.analysisMissing, range: "", min: null, max: null, at: null, flag: "out", flagText: T.analysisOut,
+    });
+  }
+  return { rows, note: gate.per_country === true ? T.analysisPerCountry : null };
 }
 
 // ---- tomoshi: the shell, the stations and the line, in words --------------------------------------------------------

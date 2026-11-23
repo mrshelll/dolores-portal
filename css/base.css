@@ -1,44 +1,46 @@
-/* tomoshi: the page's one stylesheet, in the world of the andon board (.impeccable/surfaces/index-html.md). One token
-   set, two themes chosen by prefers-color-scheme with no toggle: dark is the plant's graphite board, light is «el
-   tablero de día», cool steel, never cream. Flat lamps (amber, green, red, off), each with its state written beside
-   it; in light every lamp has a dark rim so it keeps 3:1 on the panels. Barlow Semi Condensed with tabular figures.
-   Mobile first; the run's line goes beside the stations from 1024 px. Every text colour reaches WCAG AA on the ground,
-   the side panel and the panels in both themes; text is never green or red on the dark ground. */
+/* tomoshi: the page's one stylesheet, in the world of the clinical lab results report (.impeccable/surfaces/
+   index-html.md). One token set, two themes chosen by prefers-color-scheme with no toggle: light is the report on white
+   with the institutional blue band and pale blue-grey section heads; dark is the same report on a deep navy ground,
+   never graphite, never warm. Never yellow or amber: the internal name `amber` (data-lamp) renders as the attention
+   blue. Every state is a small flat dot with its words beside it. Public Sans with tabular figures. Flat: hairline
+   rules, 2-4 px radius, no shadows. Mobile first; the run's line goes beside the stations from 1024 px. Ratios beside
+   each token are WCAG 2.x contrast, checked with a script: text 4.5:1, state marks and control edges 3:1. */
 
 :root {
   color-scheme: light dark;
 
-  /* «El tablero de día» (light). */
-  --ground: #DCDEE0;      /* the page */
-  --side: #E6E8EA;        /* the line's panel */
-  --panel: #F2F3F4;       /* stations, board, notices, fields */
-  --ink: #1A1C1E;         /* 12.7:1 on the ground, 15.4:1 on a panel */
-  --muted: #4A4F55;       /* 6.1:1 on the ground, 7.4:1 on a panel */
-  --line: #C3C7CB;        /* dividers */
-  --edge: #6B7076;        /* control borders: 4.5:1 on a panel */
-  --on-ink: #F2F3F4;      /* text on an ink button */
-  --signal: #7A5000;      /* the current tab's bar and the caret: amber darkened to 5.7:1 */
-  --focus: #1A1C1E;
-  --hover: rgba(26, 28, 30, 0.07);
+  /* The report (light). */
+  --ground: #FFFFFF;      /* the page */
+  --panel: #FFFFFF;       /* result blocks, the line, notices, fields: hairline-bordered on the ground */
+  --section: #E8EEF6;     /* section heads and the tinted strips */
+  --ink: #14213D;         /* 15.97:1 on the ground and a panel, 13.69:1 on a section */
+  --muted: #4A5568;       /* 7.53:1 on the ground, 6.45:1 on a section */
+  --line: #D5DCE6;        /* hairline rules and block borders */
+  --edge: #6B778A;        /* control borders: 4.53:1 on the ground, 3.89:1 on a section */
+  --brand: #1F4E8C;       /* headings, the primary button, the band: 8.31:1 on the ground, 7.12:1 on a section */
+  --on-brand: #FFFFFF;    /* text on the brand: 8.31:1; on its hover mix (#3E679C) 5.79:1 */
+  --band: var(--brand);   /* the masthead's band */
+  --on-band: var(--on-brand); /* the band's text and the current tab's bar; at rest a tab is 85% of it, 6.49:1 */
+  --signal: #2B6CC4;      /* the caret, and the selection's tint (28% on the ground; ink on it 10.80:1) */
+  --focus: #1F4E8C;       /* the focus ring: 8.31:1 on the ground, 7.12:1 on a section; white on the band */
+  --hover: rgba(31, 78, 140, 0.06);
 
-  /* Lamps: the same hues in both themes. */
-  --lamp-amber: #F2A900;
-  --lamp-green: #2E9E4F;
-  --lamp-red: #D7261E;
-  --lamp-off: #B4B8BD;
-  --lamp-rim: rgba(26, 28, 30, 0.78); /* the dark rim of the day board */
-  --lamp-off-rim: rgba(26, 28, 30, 0.55);
-  --on-amber: #1A1C1E;    /* 8.5:1 */
-  --on-red: #FFFFFF;      /* 5.0:1 on #D7261E, 4.54:1 on the dark theme's #E0302A */
+  /* States: a dot (3:1) and, when a state is written in its colour, the -text value (4.5:1). */
+  --state-attention: #2B6CC4; /* 5.19:1 on the ground, 4.45:1 on a section */
+  --state-ok: #2E9E4F;    /* 3.43:1 on the ground; 2.94:1 on a section, so there it sits inside a chip on --panel */
+  --state-fail: #C62828;  /* 5.62:1 on the ground, 4.82:1 on a section */
+  --state-off: #7A8597;   /* 3.73:1 on the ground, 3.20:1 on a section */
+  --on-state: #FFFFFF;    /* text on a solid attention (5.19:1) or fail (5.62:1) fill */
+  --state-attention-text: #2862B3; /* 6.02:1 on the ground, 5.16:1 on a section */
+  --state-ok-text: #1D7A3A;        /* 5.39:1 on the ground, 4.62:1 on a section */
+  --state-fail-text: #C62828;      /* 5.62:1 on the ground, 4.82:1 on a section */
 
   /* Type. */
-  --font: "Barlow Semi Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --font: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --text-xs: 13px;
   --text-small: 14px;
   --text-body: 16px;
-  --text-title-station: 21px;
-  --text-title: 28px;
-  --number-station: 36px;
+  --text-title: 24px;     /* at 320 px «Corrida del 23 nov 2026» fits one line (271 of 288 px), MAR-14 */
 
   /* Spacing, on a 4 px step. */
   --space-1: 8px;
@@ -50,37 +52,45 @@
   --side-width: clamp(22rem, 30vw, 28rem);
   --masthead: 56px;
   --measure-form: 440px;
-  --measure-text: 40rem;
-  --measure-prose: 54ch;  /* about 66 letters a line in this condensed face: its «0» is wider than its average letter */
+  --measure-text: 38rem;  /* about 72 letters of Public Sans at 16 px */
+  --measure-prose: 64ch;  /* about 70 letters a line: Public Sans' «0» is a little wider than its average letter */
 
   --radius: 4px;
   --radius-control: 3px;
+  --radius-chip: 2px;
   --target: 44px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ground: #1A1C1E;
-    --side: #202225;
-    --panel: #2A2D31;
-    --ink: #F4F4F2;       /* 15.5:1 on the ground */
-    --muted: #A9ADB1;     /* 6.1:1 on a panel */
-    --line: #3A3E43;
-    --edge: #767B82;      /* 3.2:1 on a panel */
-    --on-ink: #1A1C1E;
-    --signal: #F2A900;
-    --focus: #F2A900;
-    --hover: rgba(244, 244, 242, 0.06);
-    --lamp-red: #E0302A;  /* #D7261E is 2.76:1 on the panel; this is 3.05:1 (3.51 on the side panel), white on it 4.54:1 */
-    --lamp-off: #4A4E53;
-    --lamp-rim: transparent;
-    --lamp-off-rim: #767B82;
+    --ground: #0D1729;
+    --panel: #111E33;
+    --section: #18294A;
+    --ink: #E6ECF5;       /* 15.09:1 on the ground, 14.06:1 on a panel, 12.15:1 on a section */
+    --muted: #A9B6CA;     /* 8.73:1 on the ground, 8.14:1 on a panel, 7.03:1 on a section */
+    --line: #2A3B5A;
+    --edge: #7486A3;      /* 4.85:1 on the ground, 4.52:1 on a panel, 3.91:1 on a section */
+    --brand: #8DB6EE;     /* 8.58:1 on the ground, 8.00:1 on a panel, 6.91:1 on a section */
+    --on-brand: #0D1729;  /* 8.58:1 on the brand; on its hover mix (#7BA0D2) 6.66:1 */
+    --band: #173763;      /* a deeper blue than the brand, so the band does not glare */
+    --on-band: #FFFFFF;   /* 11.91:1 on the band; a tab at rest (85%) 9.06:1 */
+    --signal: #7FB0F0;    /* selection 28% on the ground; ink on it 8.57:1 */
+    --focus: #8DB6EE;     /* 8.58:1 on the ground, 6.91:1 on a section */
+    --hover: rgba(141, 182, 238, 0.08);
+    --state-attention: #5B9BEA; /* 6.25:1 on the ground, 5.82:1 on a panel, 5.03:1 on a section */
+    --state-ok: #3FB565;  /* 6.84:1 on the ground, 6.37:1 on a panel, 5.50:1 on a section */
+    --state-fail: #F0605A; /* 5.57:1 on the ground, 5.19:1 on a panel, 4.49:1 on a section */
+    --state-off: #7486A3; /* 4.85:1 on the ground, 4.52:1 on a panel, 3.91:1 on a section */
+    --on-state: #0D1729;  /* on a solid attention fill 6.25:1, on a fail fill 5.57:1 */
+    --state-attention-text: #93BEF5; /* 9.32:1 on the ground, 7.51:1 on a section */
+    --state-ok-text: #6FCF8E;        /* 9.38:1 on the ground, 7.55:1 on a section */
+    --state-fail-text: #FF8A84;      /* 7.87:1 on the ground, 6.34:1 on a section */
   }
 }
 
 @media (min-width: 640px) {
-  :root { --pad: 24px; --text-title: 32px; --text-title-station: 22px; --number-station: 52px; }
+  :root { --pad: 24px; --text-title: 30px; }
 }
 @media (min-width: 1024px) {
   :root { --pad: 28px; }
@@ -100,12 +110,13 @@ body {
   overflow-wrap: break-word;
   caret-color: var(--signal);
 }
-::selection { background: var(--lamp-amber); color: var(--on-amber); }
+::selection { background: color-mix(in srgb, var(--signal) 28%, var(--ground)); color: var(--ink); }
 p, h1, h2, h3, ol, ul, dl, dd { margin: 0; }
 h1, h2, h3 { text-wrap: balance; }
 p, li { text-wrap: pretty; } /* no word alone on a paragraph's last line */
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
 a { color: inherit; text-decoration-color: var(--edge); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+h1, h2 { color: var(--brand); } /* the report's headings are the institutional blue; a result's title stays ink */
 a:hover { text-decoration-color: currentColor; }
 
 .visually-hidden {
@@ -117,92 +128,106 @@ a:hover { text-decoration-color: currentColor; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
-/* ---- lamps: flat discs, no bevel or glow; the state is always written beside them ---------- */
+/* ---- state dots: flat, no rim or glow; the state is always written beside them -------------- */
 
+/* `data-lamp` keeps its internal names: amber is the attention blue, green in range, red failed, off grey. Drawn in
+   their final state on the first paint; a mark that changes a pain's state swaps the colour at once. */
 .lamp {
-  --lamp: var(--lamp-off);
+  --lamp: var(--state-off);
   display: inline-block;
   flex: none;
-  width: 14px;
-  height: 14px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--lamp);
-  box-shadow: inset 0 0 0 1.5px var(--lamp-rim);
-  transition: background-color 320ms var(--ease-out), transform 320ms var(--ease-out);
 }
-.lamp[data-lamp="amber"] { --lamp: var(--lamp-amber); }
-.lamp[data-lamp="green"] { --lamp: var(--lamp-green); }
-.lamp[data-lamp="red"] { --lamp: var(--lamp-red); }
-.lamp[data-lamp="off"] { box-shadow: inset 0 0 0 1px var(--lamp-off-rim); }
-/* «tomoshi»: a lamp that waits for the move is drawn off, a step smaller, until it gets data-lit. */
-.lamp[data-wait]:not([data-lit]) {
-  --lamp: var(--lamp-off);
-  box-shadow: inset 0 0 0 1px var(--lamp-off-rim);
-  transform: scale(0.82);
-}
-.lamp--small { width: 10px; height: 10px; }
-.lamp--station { width: 22px; height: 22px; }
-@media (min-width: 640px) { .lamp--station { width: 30px; height: 30px; } }
+.lamp[data-lamp="amber"] { --lamp: var(--state-attention); }
+.lamp[data-lamp="green"] { --lamp: var(--state-ok); }
+.lamp[data-lamp="red"] { --lamp: var(--state-fail); }
+.lamp--small { width: 8px; height: 8px; }
 
 /* ---- the frame and the masthead ---------------------------------------------------------- */
 
 .frame { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
 
-/* On a phone: the brand and «Salir», then the tabs, then the week's data. */
+/* The band: the institutional blue across the top, its text white. On a phone: the brand and «Salir», then the tabs,
+   then the week's data. */
 .masthead {
+  --band-soft: color-mix(in srgb, var(--on-band) 85%, var(--band)); /* the band's quieter text */
+  --band-rule: color-mix(in srgb, var(--on-band) 40%, var(--band)); /* its hairline dividers */
+  --focus: var(--on-band);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas: "brand actions" "tabs tabs" "meta meta";
   align-items: center;
   column-gap: var(--space-2);
   padding-inline: var(--pad);
-  border-bottom: 1px solid var(--line);
+  background: var(--band);
+  color: var(--on-band);
 }
-.brand { grid-area: brand; display: flex; align-items: center; gap: 10px; min-height: var(--target); }
+.masthead ::selection { background: var(--on-band); color: var(--band); }
+/* The name first, then the run's dot and its words (the dot comes first in the markup, for its accessible name). */
+.brand { grid-area: brand; display: flex; align-items: center; gap: 8px; min-width: 0; min-height: var(--target); }
+.brand > .brand-word { order: -1; margin-right: 10px; }
+/* On the band the dot keeps a white ring, so its colour reads against the blue (the ring 8.31:1, 11.91:1 in dark). */
+.lamp--brand { width: 12px; height: 12px; border: 2px solid var(--on-band); }
 .brand-word {
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
   color: inherit;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
   text-decoration: none;
 }
-a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px; }
-/* The lamp's state in words beside the name, from 768 px; below it the lamp's accessible name carries it alone. */
-.brand-state { display: none; }
-@media (min-width: 768px) {
-  .brand-state {
-    display: inline;
-    margin-left: 2px;
-    padding-left: 12px;
-    border-left: 1px solid var(--line);
-    color: var(--muted);
-    font-size: var(--text-small);
-    font-weight: 600;
-    line-height: 1.2;
-    white-space: nowrap;
-  }
-}
+a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
+/* The run's state in words beside its dot, at every width (the dot's accessible name says it to a screen reader).
+   Below 768 px the words may wrap to two short lines, still inside the brand row's 44 px. */
+.brand > .brand-word, .brand > .lamp { flex: none; }
+.brand-state { min-width: 0; color: var(--on-band); font-size: 12px; font-weight: 500; line-height: 1.15; }
+@media (min-width: 768px) { .brand-state { font-size: var(--text-xs); line-height: 1.2; white-space: nowrap; } }
 .masthead-actions { grid-area: actions; display: flex; gap: var(--space-1); }
+/* «Salir»: an outline button on the band. Its box stays a 44 px target; the outline is drawn 32 px tall inside it. */
+.masthead .button {
+  position: relative;
+  padding-inline: 12px;
+  border: 0;
+  background: none;
+  color: var(--on-band);
+  font-size: 14px;
+  text-decoration: none;
+}
+.masthead .button::before {
+  content: "";
+  position: absolute;
+  inset: 6px 0;
+  border: 1px solid color-mix(in srgb, var(--on-band) 70%, var(--band));
+  border-radius: var(--radius-control);
+  transition: background-color 90ms ease-out, border-color 90ms ease-out;
+}
+.masthead .button:is(:hover, :active) { color: var(--on-band); background: none; text-decoration: none; }
+.masthead .button:is(:hover, :active)::before { border-color: var(--on-band); background: color-mix(in srgb, var(--on-band) 12%, transparent); }
+.masthead .button:focus-visible { outline: none; }
+.masthead .button:focus-visible::before { outline: 2px solid var(--on-band); outline-offset: 2px; }
 
-.tabs { grid-area: tabs; display: flex; margin-inline: -10px; }
+.tabs { grid-area: tabs; display: flex; margin-inline: -12px; }
 .tab {
   display: flex;
   align-items: center;
   min-height: var(--target);
-  padding: 3px 10px 0;
+  padding: 3px 12px 0;
   border-bottom: 3px solid transparent;
-  color: var(--muted);
-  font-size: var(--text-body);
+  color: var(--band-soft);
+  font-size: 15px;
   font-weight: 500;
   text-decoration: none;
   white-space: nowrap;
 }
-.tab:hover { color: var(--ink); }
-.tab[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--signal); }
+.tab:hover { color: var(--on-band); }
+.tab[aria-current="page"] { color: var(--on-band); font-weight: 600; border-bottom-color: var(--on-band); }
+.tab:focus-visible { outline-offset: -2px; }
 
 .masthead-meta {
   grid-area: meta;
@@ -210,11 +235,11 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
   flex-wrap: wrap;
   gap: 2px var(--space-2);
   padding-block: 6px 10px;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
+  border-top: 1px solid var(--band-rule);
+  color: var(--band-soft);
   font-size: var(--text-xs);
 }
-.masthead-meta b { color: var(--ink); font-weight: 600; }
+.masthead-meta b { color: var(--on-band); font-weight: 600; }
 /* On a phone the week's data leaves the masthead, so the first decision fits the first screen: the home's line strip
    says it in its summary (.line-strip-week); the other screens do without it. */
 @media (max-width: 767.98px) { .masthead-meta { display: none !important; } }
@@ -233,19 +258,19 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
   .masthead {
     grid-template-columns: auto auto minmax(0, 1fr) auto;
     grid-template-areas: "brand tabs meta actions";
-    column-gap: 36px;
+    column-gap: var(--space-4);
     height: var(--masthead);
   }
-  .tabs { align-self: stretch; margin-inline: 0; gap: 4px; }
-  .tab { padding-inline: 14px; }
+  .tabs { align-self: stretch; margin-inline: 0; }
+  .tab { padding-inline: 16px; }
   .masthead-meta {
     justify-content: flex-end;
     padding: 0;
     border: 0;
     gap: 0;
-    font-size: var(--text-small);
+    color: var(--on-band);
   }
-  .meta-item + .meta-item { margin-left: 20px; padding-left: 20px; border-left: 1px solid var(--line); }
+  .meta-item + .meta-item { margin-left: 16px; padding-left: 16px; border-left: 1px solid var(--band-rule); }
 }
 
 /* The shell: the screen's <main> and, on the home from 1024 px, the line's panel beside it. */
@@ -254,12 +279,12 @@ main { min-width: 0; padding: var(--space-3) var(--pad) var(--space-5); }
 .line-panel { display: none; }
 @media (min-width: 1024px) {
   .shell--line { grid-template-columns: minmax(0, 1fr) var(--side-width); }
-  .shell--line .line-panel { display: block; background: var(--side); border-left: 1px solid var(--line); }
-  .line-panel-inner { padding: 22px 26px var(--space-4); }
+  .shell--line .line-panel { display: block; background: var(--ground); }
+  .line-panel-inner { padding: var(--space-3) var(--pad) var(--space-4) 0; }
 }
 
 /* The title band: the h1, then its lines. More space above a block than inside it. */
-.page-head h1 { font-size: var(--text-title); line-height: 1.05; font-weight: 700; letter-spacing: -0.005em; }
+.page-head h1 { font-size: var(--text-title); line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; }
 .page-head h1:focus { outline: none; } /* it takes the focus on a new screen; it is not a control */
 .page-meta, .page-lead { max-width: var(--measure-text); margin-top: 6px; color: var(--muted); overflow-wrap: anywhere; }
 
@@ -279,10 +304,53 @@ main { min-width: 0; padding: var(--space-3) var(--pad) var(--space-5); }
 .split > .section { margin: 0; }
 @media (min-width: 672px) { .split { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-.steps { list-style: none; padding: 0; display: grid; gap: var(--space-1); }
-.step-number { font-weight: 600; }
+.steps { list-style: none; padding: 0; display: grid; }
+.steps li { padding: 10px var(--space-2); }
+.steps li + li { border-top: 1px solid var(--line); }
+.step-number { color: var(--brand); font-weight: 700; }
+.split > .steps-sheet { align-self: start; max-width: var(--measure-text); }
 
-/* ---- notices: a panel with the lamp of its tone beside its words -------------------------- */
+/* ---- the sheet: one of the report's sections, everywhere but «Esta semana»'s results ------------ */
+
+/* A hairline-bordered panel, its head band on the pale section tint (an h2 in the brand's blue, a small tracked label,
+   or a fold's summary), then its rows divided by hairlines. Nothing inside a sheet is boxed again. On the band a dot
+   keeps a ring of the panel, so a green one reads against the tint (3.43:1 on its ring; 2.94:1 on the tint alone). */
+.sheet { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 4px 10px;
+  min-height: var(--target);
+  margin: 0;
+  padding: 8px var(--space-2);
+  border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  background: var(--section);
+}
+.sheet-head:last-child, details.sheet:not([open]) > .sheet-head { border-bottom: 0; border-radius: calc(var(--radius) - 1px); }
+.sheet-head h2, .section .sheet-head h2 { margin: 0; color: var(--brand); font-size: 17px; font-weight: 600; line-height: 1.3; }
+.sheet-head .lamp { box-sizing: content-box; border: 2px solid var(--panel); }
+.sheet-body { padding: 12px var(--space-2) var(--space-2); }
+/* A fold whose summary is the band: the chevron after its words, drawn like every other fold's. */
+summary.sheet-head { list-style: none; cursor: pointer; }
+summary.sheet-head::-webkit-details-marker { display: none; }
+summary.sheet-head::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+details[open] > summary.sheet-head::after { transform: translateY(25%) rotate(225deg); }
+summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(--section)); }
+/* «Ver 20 más» at a sheet's foot, under a hairline. */
+.sheet > .more-button { display: flex; align-items: center; width: 100%; margin: 0; padding-inline: var(--space-2); border-top: 1px solid var(--line); }
+
+/* ---- notices: a hairline-bordered panel with the dot of its tone beside its words ------------- */
 
 .notice {
   display: grid;
@@ -294,10 +362,11 @@ main { min-width: 0; padding: var(--space-3) var(--pad) var(--space-5); }
   border-radius: var(--radius);
   background: var(--panel);
 }
-.notice > .lamp { margin-top: 4px; }
+.notice > .lamp { margin-top: 7px; }
 .notice > p { max-width: var(--measure-text); }
 .notice > :not(.lamp):first-child { grid-column: 1 / -1; } /* a notice without a lamp (sin permiso, a line card) */
-.notice--warning { border-color: var(--edge); }
+.notice--warning { border-color: color-mix(in srgb, var(--state-attention) 55%, var(--panel)); }
+.notice--error { border-color: var(--state-fail); }
 .notice-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-3); }
 .stack > .notice { justify-self: stretch; }
 
@@ -320,10 +389,10 @@ input, textarea, select {
 }
 input::placeholder, textarea::placeholder { color: var(--muted); }
 input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] {
-  border-color: var(--lamp-red);
-  box-shadow: inset 0 0 0 1px var(--lamp-red);
+  border-color: var(--state-fail);
+  box-shadow: inset 0 0 0 1px var(--state-fail); /* a 2 px border without moving the text */
 }
-/* The error in words, in the text colour, after a red lamp: never red text on the dark ground. */
+/* The error in words, in the text colour, after a red dot. */
 .field-error { display: flex; align-items: baseline; gap: var(--space-1); font-size: var(--text-small); font-weight: 600; }
 .field-error::before, .station-note[data-tone="error"]::before {
   content: "";
@@ -331,8 +400,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--lamp-red);
-  box-shadow: inset 0 0 0 1.5px var(--lamp-rim);
+  background: var(--state-fail);
   transform: translateY(1px);
 }
 .code-input {
@@ -363,15 +431,22 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   cursor: pointer;
   transition: background-color 90ms ease-out, border-color 90ms ease-out, color 90ms ease-out;
 }
-.button--primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+/* Primary: solid brand. Secondary: the brand's outline. Quiet: an underlined link in the brand's blue. */
+.button--primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
 .button--primary:not([aria-disabled="true"]):is(:hover, :active) {
-  background: color-mix(in srgb, var(--ink) 84%, var(--ground));
-  border-color: color-mix(in srgb, var(--ink) 84%, var(--ground));
+  background: color-mix(in srgb, var(--brand) 86%, var(--ground));
+  border-color: color-mix(in srgb, var(--brand) 86%, var(--ground));
 }
-.button--secondary { border-color: var(--edge); }
-.button--secondary:not([aria-disabled="true"]):is(:hover, :active) { background: var(--hover); border-color: var(--ink); }
-.button--quiet { padding-inline: 10px; color: var(--muted); }
-.button--quiet:is(:hover, :active) { color: var(--ink); background: var(--hover); }
+.button--secondary { border-color: var(--brand); background: var(--panel); color: var(--brand); }
+.button--secondary:not([aria-disabled="true"]):is(:hover, :active) { background: color-mix(in srgb, var(--brand) 8%, var(--panel)); }
+.button--quiet {
+  padding-inline: 10px;
+  color: var(--brand);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent);
+  text-underline-offset: 3px;
+}
+.button--quiet:is(:hover, :active) { text-decoration-color: currentColor; background: var(--hover); }
 .button[aria-disabled="true"] { cursor: progress; opacity: 0.72; }
 .form .button--primary { width: 100%; }
 
@@ -383,12 +458,12 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ink);
+  color: var(--brand);
   font: inherit;
   font-weight: 500;
   text-align: start;
   text-decoration: underline;
-  text-decoration-color: var(--edge);
+  text-decoration-color: color-mix(in srgb, var(--brand) 55%, transparent);
   text-underline-offset: 3px;
   cursor: pointer;
 }
@@ -396,84 +471,102 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .secondary-actions { display: grid; justify-items: start; margin-top: var(--space-2); max-width: var(--measure-form); }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 
-/* ---- the run's line (js/line.js) --------------------------------------------------------- */
+/* ---- the run's line (js/line.js): the lab report's processed sample ---------------------- */
 
-.line-head h2 { font-size: 22px; font-weight: 700; line-height: 1.1; }
-.line-facts { margin-top: 4px; color: var(--muted); font-size: var(--text-small); }
+/* On the home's side panel and the run's page, a hairline-bordered box: its head on the section tint (the heading, the
+   run's facts), then the table, the other cuts and the cost on the panel. On a phone the
+   strip is the box, and its head is plain. */
+.line:not(.line-strip) { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+.line:not(.line-strip) > .line-head {
+  padding: 12px var(--space-2);
+  border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  background: var(--section);
+}
+.line:not(.line-strip) > .line-head:last-child { border-bottom: 0; border-radius: calc(var(--radius) - 1px); } /* no stages: the head alone */
+.line:not(.line-strip) > :not(.line-head) { margin-inline: var(--space-2); }
+.line:not(.line-strip) > :not(.line-head):last-child { margin-bottom: 12px; }
+.line-head h2 { font-size: 17px; font-weight: 600; line-height: 1.4; }
+.line-facts { margin-top: 2px; color: var(--muted); font-size: var(--text-xs); }
 .line-note { margin-top: var(--space-1); font-size: var(--text-small); }
 
-/* One station per stage on a rail; the rail stops at each lamp (the lamp's ring is the panel's colour). */
-.line-stations { position: relative; margin-top: var(--space-2); padding: 0; list-style: none; }
-.line-stations::before {
-  content: "";
-  position: absolute;
-  left: 7px;
-  top: 12px;
-  bottom: 14px;
-  width: 2px;
-  background: var(--line);
-}
-.line-station {
-  --ring: var(--side);
-  position: relative;
+/* The table. Its rows are grids on the table's columns (subgrid), so the columns line up with their content and the
+   table's semantics stay with explicit roles (js/line.js). Narrow (by default): «N°», «Etapa», «Cant.» and «Tope» on
+   the row's first line, the indicator under the stage's name. Wide (the sample 20rem or more): the five columns of
+   the report, the indicator last. A source's count spans «Cant.» and «Tope»: a source has no cap. */
+.line-sample { container: sample / inline-size; margin-top: 4px; }
+.line-table {
   display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) auto;
-  align-items: baseline;
-  column-gap: 0;
-  padding-block: 7px;
+  grid-template-columns: min-content minmax(0, 1fr) min-content min-content;
+  column-gap: 10px;
+  width: 100%;
+  font-size: var(--text-xs);
+  line-height: 1.35;
 }
-.line-station > .lamp {
-  position: relative;
-  top: 2px;
-  width: 16px;
-  height: 16px;
-  box-shadow: inset 0 0 0 1.5px var(--lamp-rim), 0 0 0 4px var(--ring);
-}
-.line-station > .lamp[data-lamp="off"], .line-station > .lamp[data-wait]:not([data-lit]) {
-  box-shadow: inset 0 0 0 1px var(--lamp-off-rim), 0 0 0 4px var(--ring);
-}
-.line-station-label { font-size: var(--text-body); font-weight: 600; line-height: 1.25; }
-.line-station-number { margin-right: 6px; color: var(--muted); font-size: var(--text-xs); font-weight: 500; }
-.line-station-count { padding-left: 12px; font-size: 22px; font-weight: 700; line-height: 1; text-align: right; }
-.line-station-count.is-empty { font-size: var(--text-small); font-weight: 500; color: var(--muted); }
-.line-station-notes { grid-column: 2 / 4; margin-top: 2px; color: var(--muted); font-size: var(--text-xs); line-height: 1.4; }
-.line-station-state { color: var(--muted); }
-.line-flag {
-  display: inline-block;
-  padding: 0 6px;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.6;
-  white-space: nowrap;
-}
-.line-flag--amber { background: var(--lamp-amber); color: var(--on-amber); box-shadow: inset 0 0 0 1px var(--lamp-rim); }
-.line-flag--red { background: var(--lamp-red); color: var(--on-red); }
+.line-table > thead, .line-table > tbody, .line-table tr { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; }
+.line-table th, .line-table td { padding: 0; font-weight: inherit; text-align: start; }
+.line-table .line-number { grid-column: 1; grid-row: 1; }
+.line-table .line-stage { grid-column: 2; grid-row: 1; }
+.line-table .line-count { grid-column: 3; grid-row: 1; justify-self: end; text-align: end; }
+.line-table .line-cap { grid-column: 4; grid-row: 1; justify-self: end; text-align: end; }
+.line-table .line-flag-cell { grid-column: 2 / -1; grid-row: 2; }
+.line-row--source .line-count { grid-column: 3 / span 2; grid-row: 1 / span 2; } /* narrow, beside the name and its indicator */
+.line-row-note .line-row-note-text { grid-column: 2 / -1; grid-row: 1; }
 
-/* The sources under the first station. */
-.line-sources {
-  grid-column: 2 / 4;
-  display: grid;
-  gap: 6px;
-  margin: var(--space-1) 0 4px;
-  padding: 10px 12px;
-  list-style: none;
-  border-radius: var(--radius-control);
-  background: var(--panel);
-  font-size: var(--text-small);
+.line-table-head {
+  align-items: end;
+  padding-block: 6px 4px;
+  border-bottom: 1px solid var(--ink);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
-.line-source { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-1); row-gap: 2px; }
-.line-source-figure { font-weight: 600; text-align: right; white-space: nowrap; }
-.line-source-of { color: var(--muted); font-weight: 400; }
-.line-source-state, .line-source > .line-flag { grid-column: 2 / -1; justify-self: start; }
-.line-source-state { color: var(--muted); font-size: var(--text-xs); }
-/* The state gets its own column only when the box itself is wide enough for a name beside the figures: it lays out by
-   its own width, not the viewport's, because the same box sits in the side panel (22-28rem) and in the full-width
-   strip. Narrower, the state goes under the name. */
-.line-sources { container: sources / inline-size; }
-@container sources (min-width: 25rem) {
-  .line-source { grid-template-columns: 10px minmax(7rem, 1fr) auto 6.5rem; }
-  .line-source-state, .line-source > .line-flag { grid-column: auto; justify-self: end; }
+/* Narrow, the indicator's head is for a screen reader only: the dot and its words under each name say what they are. */
+.line-table-head > .line-flag-cell {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.line-row, .line-row-note { align-items: baseline; row-gap: 2px; padding-block: 7px; border-bottom: 1px solid var(--line); }
+.line-row:has(+ .line-row-note) { border-bottom: 0; padding-bottom: 2px; }
+.line-row .line-number { color: var(--brand); font-size: 12px; font-weight: 700; }
+.line-row .line-stage { color: var(--ink); font-size: var(--text-small); }
+.line-row .line-count { font-size: var(--text-small); font-weight: 600; white-space: nowrap; }
+.line-row .line-cap { color: var(--muted); font-size: var(--text-small); white-space: nowrap; }
+/* A source: indented under stage 01 on a lighter tint (the green dot on it is still 3.26:1), its figures smaller. */
+.line-row--source { padding-block: 5px; background: color-mix(in srgb, var(--section) 35%, var(--panel)); }
+.line-row--source .line-stage, .line-row--source .line-flag-cell { padding-left: 12px; }
+.line-row--source .line-stage { font-size: var(--text-xs); }
+.line-row--source .line-count { font-size: var(--text-xs); white-space: normal; }
+.line-figure, .line-count-of { white-space: nowrap; }
+.line-count-of { color: var(--muted); font-weight: 400; }
+.line-row-note { padding-block: 0 7px; color: var(--muted); font-size: var(--text-xs); }
+
+/* The indicator: the dot, then the state in its colour. Attention blue for a cut, green complete, red for nothing or a
+   failure, grey with no data. */
+.line-indicator { display: inline-flex; align-items: flex-start; gap: 6px; font-size: 12px; font-weight: 600; line-height: 16px; }
+.line-indicator > .lamp { margin-top: 4px; }
+.line-indicator[data-lamp="amber"] { color: var(--state-attention-text); }
+.line-indicator[data-lamp="green"] { color: var(--state-ok-text); }
+.line-indicator[data-lamp="red"] { color: var(--state-fail-text); }
+.line-indicator[data-lamp="off"] { color: var(--muted); }
+
+@container sample (min-width: 20rem) {
+  .line-table { grid-template-columns: min-content minmax(6rem, 1fr) min-content min-content fit-content(7.5rem); }
+  .line-table .line-flag-cell { grid-column: 5; grid-row: 1; }
+  .line-table-head > .line-flag-cell { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
+  .line-row { padding-block: 6px; }
+  .line-row--source { padding-block: 5px; }
+  .line-row:has(+ .line-row-note) { padding-bottom: 0; }
+  .line-row--source .line-flag-cell { padding-left: 0; }
+  .line-row--source .line-count { grid-row: 1; }
+}
+/* With room to spare, a source's figures stay on one line («240 → 29 de 1830»). */
+@container sample (min-width: 28rem) {
+  .line-table { grid-template-columns: min-content minmax(6rem, 1fr) auto auto fit-content(7.5rem); }
 }
 
 .line-other { margin-top: var(--space-2); font-size: var(--text-small); }
@@ -496,9 +589,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .line-costs dd { color: var(--ink); font-weight: 600; }
 
 /* On a phone and a tablet, the line is a folded strip under the title; from 1024 px it is the side panel instead. */
-.line-strip { margin-top: var(--space-2); border-radius: var(--radius); background: var(--panel); }
-.line-strip .line-station { --ring: var(--panel); }
-.line-strip .line-sources { background: var(--ground); }
+.line-strip { margin-top: var(--space-2); border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
 .line-strip-summary {
   display: flex;
   flex-wrap: wrap;
@@ -533,7 +624,9 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .line-strip--empty .line-strip-week { margin-top: 6px; }
 @media (max-width: 767.98px) { .line-strip-week { display: block; } }
 .line-strip-body { padding: 0 var(--space-2) var(--space-2); border-top: 1px solid var(--line); }
+.line-strip-summary:hover { background: var(--hover); }
 .line-strip-body .line-head { padding-top: 12px; }
+.line-strip-body .line-sample { margin-top: 12px; }
 .line-strip--empty { padding: 12px var(--space-2); }
 .line-strip--empty h2 { font-size: var(--text-body); }
 @media (min-width: 1024px) {
@@ -541,23 +634,35 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   .line-strip--empty { max-width: var(--measure-text); }
 }
 
-/* ---- «Esta semana»: the board and the stations ------------------------------------------- */
+/* ---- «Esta semana»: the summary strip and the results ------------------------------------ */
+
+/* A small tracked section label: «RESULTADOS», «QUIÉN LO SUFRE», the analysis table's caption and column heads. */
+.section-label, .analysis-caption, .analysis thead th {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: start;
+}
 
 .decide-empty { margin-bottom: var(--space-3); }
-/* Below 640 px the stations come first and the board's counters after them, so the first decision is on the first
-   screen; the counters are a way into Catálogo, not the decision. */
+/* Below 640 px the results come first and the strip's counts after them, so the first decision is on the first
+   screen; the counts are a way into Catálogo, not the decision. */
 @media (max-width: 639.98px) {
   .home-body { display: flex; flex-direction: column; }
   .home-body > .board { order: 1; margin-top: var(--space-3); }
-  .home-body > .stations { margin-top: 0; }
+  .home-body > .results { margin-top: 0; }
 }
 
-/* The catalog by state, as the board's counters; each opens the catalog. */
+/* The summary strip: the catalog by state, a dot, the count and its words in each cell; each opens the catalog. */
 .board ul {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 0;
   list-style: none;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
   overflow: hidden;
@@ -568,127 +673,129 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .board-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 60px;
-  padding: 10px var(--space-2);
+  gap: 8px;
+  min-height: 48px;
+  padding: 6px var(--space-2);
   color: inherit;
   text-decoration: none;
 }
 .board-cell:hover { background: var(--hover); }
-.board-count { font-size: 26px; font-weight: 700; line-height: 1; }
-.board-label { color: var(--muted); font-size: var(--text-small); line-height: 1.2; }
+.board-count { font-size: 20px; font-weight: 700; line-height: 1; }
+.board-label { color: var(--muted); font-size: var(--text-xs); line-height: 1.2; }
 @media (min-width: 720px) {
   .board ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .board li:nth-child(3) { border-left: 1px solid var(--line); }
   .board li:nth-child(n + 3) { border-top: 0; }
-  .board-cell { padding-inline: 18px; }
-  .board-count { font-size: 28px; }
 }
 
-.stations {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
-  gap: var(--space-2);
-  margin-top: var(--space-2);
-  padding: 0;
-  list-style: none;
-}
+/* «RESULTADOS», with a hairline to the edge, then one result per row. */
+.results { margin-top: var(--space-2); }
+.results-label { display: flex; align-items: center; gap: 12px; margin-bottom: var(--space-1); }
+.results-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.stations { display: grid; gap: 12px; padding: 0; list-style: none; }
 
-/* A station: its plate (number, lamp and its state written beside the lamp), then its body. On a phone the plate is a
-   row on top; from 640 px a column at the left, the state under its lamp. */
+/* A result: a hairline-bordered block, its head on the pale section tint, its body on the panel. The block is the
+   container its body lays out by: two columns from 601 px of its own width, stacked below. */
 .station {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-self: start;
+  container: result / inline-size;
+  position: relative;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--panel);
 }
-.station-plate {
+.station-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
-  padding: 12px var(--space-2) 0;
+  gap: 4px 8px;
+  min-height: var(--target);
+  padding: 6px var(--space-2);
+  border-bottom: 1px solid var(--line);
+  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
+  background: var(--section);
 }
-.station-number { font-size: var(--number-station); font-weight: 700; line-height: 0.9; letter-spacing: -0.01em; }
-.station-state { display: flex; align-items: center; gap: 8px; font-size: var(--text-small); font-weight: 600; line-height: 1.2; }
-.station-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px var(--space-2) var(--space-2); }
-@media (min-width: 640px) {
-  .station { grid-template-columns: 96px minmax(0, 1fr); }
-  .station-plate { flex-direction: column; gap: 14px; padding: 18px 8px; border-right: 1px solid var(--line); }
-  .station-state { flex-direction: column; gap: 8px; text-align: center; font-size: var(--text-xs); }
-  .station-body { gap: 12px; padding: 18px 22px 18px 20px; }
-}
-/* The full stations of a row end at the same height (their actions at the foot); a compact one starts its own row, so
-   it never sits beside a full one, and an odd last full station spans the row (station--span, from the station list). */
-.station:not(.station--compact) { align-self: stretch; }
-.station:not(.station--compact) + .station--compact { grid-column-start: 1; }
-.station--span { grid-column: 1 / -1; }
-/* The compact station (the ones without weight that did not win the duel): a smaller number, the plate always a row
-   on top, no «Quién lo sufre» and no trend line. */
-.station--compact { --number-station: 28px; }
-.station--compact .lamp--station { width: 22px; height: 22px; }
-@media (min-width: 640px) {
-  .station--compact { grid-template-columns: minmax(0, 1fr); }
-  .station--compact .station-plate { flex-direction: row; gap: 12px; padding: 14px 22px 0 20px; border-right: 0; }
-  .station--compact .station-state { flex-direction: row; text-align: start; font-size: var(--text-small); }
-  .station--compact .station-body { padding-top: 10px; }
-}
-
-.station-tags { display: flex; flex-wrap: wrap; gap: 6px 8px; }
-.station-tag {
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.station-tag--winner { background: var(--ink); color: var(--on-ink); }
-.station-tag--fresh { background: var(--lamp-amber); color: var(--on-amber); box-shadow: inset 0 0 0 1px var(--lamp-rim); }
-
+/* The number and the title stay together: a long title wraps beside its number, never under it. */
+.station-name { display: flex; align-items: baseline; gap: 12px; min-width: 0; margin-right: 4px; }
+.station-number { flex: none; min-width: 20px; color: var(--brand); font-size: var(--text-xs); font-weight: 700; }
 /* Titles wrap, never cut (Review Focus 5). */
-.station-title { font-size: var(--text-title-station); font-weight: 600; line-height: 1.15; }
+.station-title { min-width: 0; color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.3; }
 /* A one-line title is shorter than a target: the link's box grows to 44 px a line and gives the room back with a
-   negative margin, so the station's rhythm does not change. */
+   negative margin, so the head's rhythm does not change. */
 .station-title a {
   --grow: max(0px, calc((var(--target) - 1lh) / 2));
-  display: inline-block;
+  display: block; /* a block, so the title's baseline is its first line and the number sits beside it */
   padding-block: var(--grow);
   margin-block: calc(-1 * var(--grow));
   text-decoration: none;
 }
 .station-title a:hover { text-decoration: underline; text-decoration-color: var(--edge); }
-.station--compact .station-title { font-size: 19px; }
-/* Why it is there: the duel's line under its tag, then the station's figures in its ink. */
-.station-facts { font-size: var(--text-small); font-weight: 600; font-variant-numeric: tabular-nums; }
-.station-duel { font-size: var(--text-small); }
-.station-duel-label { font-weight: 600; }
-.station-who { font-size: 15px; }
-.station-label { color: var(--muted); font-weight: 600; }
-.station-meta { color: var(--muted); font-size: var(--text-small); }
 
-.station-foot {
-  display: flex;
-  flex-wrap: wrap;
+.station-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+/* A tag: a 1 px outline chip on the panel, its words in the brand's blue; «Evidencia nueva» in the attention blue. */
+.station-tag, .station-state {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
+  gap: 6px;
+  min-height: 24px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  background: var(--panel);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
 }
+.station-tag--fresh { color: var(--state-attention-text); border-color: color-mix(in srgb, var(--state-attention) 45%, var(--panel)); }
+/* The state flag at the head's right: its dot and words on a panel chip, so a green dot never sits on the tint. */
+.station-state { margin-left: auto; color: var(--muted); }
+.station-state[data-lamp="green"] { color: var(--state-ok-text); border-color: color-mix(in srgb, var(--state-ok) 45%, var(--panel)); }
+.station-state[data-lamp="amber"] { color: var(--state-attention-text); border-color: color-mix(in srgb, var(--state-attention) 45%, var(--panel)); }
+/* Why it is there, in the head of a compact result. */
+.station-head .station-facts { color: var(--muted); font-size: var(--text-xs); }
+
+.station-body { display: grid; grid-template-columns: minmax(0, 1fr); }
+.station-main, .station-side { min-width: 0; padding: 12px var(--space-2); }
+.station-side { padding-bottom: var(--space-2); }
+/* The left column is the analysis table's container: the table takes its wide layout by the column's width. */
+.station-main { container-type: inline-size; display: grid; align-content: start; gap: 10px; }
+.station-main + .station-side { border-top: 1px solid var(--line); }
+.station-side { display: flex; flex-direction: column; gap: 10px; }
+/* Stacked, the marks and the actions come right under the analysis, so the first decision fits a phone's first
+   screen; «Quién lo sufre» and the trend follow them (text only: the focus order does not change). */
+@container result (max-width: 600px) {
+  .station-side > .station-who, .station-side > .station-meta { order: 1; }
+}
+/* The right column is wide enough at 1440 for «Quitar «Nos interesa»», «Descartar» and «Comentar» on one row, and the
+   left one, at 1280, for the analysis table's wide layout. */
+@container result (min-width: 601px) {
+  .station-body:not(.station-body--single) { grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 1fr); }
+  .station-main + .station-side { border-top: 0; border-left: 1px solid var(--line); }
+}
+/* The duel's line, said as what it is: its label in the brand's blue. */
+.station-duel { font-size: var(--text-small); }
+.station-duel-label { color: var(--brand); font-weight: 600; }
+.station-main .station-facts { font-size: var(--text-small); font-weight: 600; }
+.station-who { font-size: var(--text-small); }
+.station-who .section-label { display: block; margin-bottom: 2px; }
+.station-meta { color: var(--muted); font-size: var(--text-xs); }
+
+/* The marks, then the actions at the foot of the column. */
+.station-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); margin-top: auto; }
 .station-marks { flex-basis: 100%; color: var(--muted); font-size: var(--text-small); }
-/* «Comentar» at the start, the two marks together at the end (.station-pair). A label never breaks inside its
-   guillemets («Quitar «Nos interesa»» stays on one line): when the row is too narrow, the pair moves to its own row,
-   and below 400 px each mark takes a row of its own if they do not fit side by side. */
-.station-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); width: 100%; }
-.station-actions > .button--quiet { justify-content: flex-start; margin-left: -10px; margin-right: auto; }
-.station-pair { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-left: auto; }
-.station-pair > .button { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
-@media (max-width: 399.98px) {
-  .station-actions > .button--quiet { flex-basis: 100%; }
-  .station-pair { flex-basis: 100%; }
-  .station-pair > .button { padding-inline: 10px; }
+/* «Nos interesa», «Descartar» and «Comentar» share a row while they fit, and wrap one by one when they do not. A label
+   never breaks inside its guillemets («Quitar «Nos interesa»» stays on one line). «Comentar» gives its padding and
+   border back (11 px each side): starting a row its words line up with the buttons' edge, and beside «Descartar» they
+   sit the row's gap away from it, while its target keeps 44 px. */
+.station-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) 12px; width: 100%; }
+.station-actions > .button:not(.button--quiet) { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
+.station-actions > .button--quiet { margin-inline: -11px; }
+/* A compact result with room: its marks at the left, its actions at the right, on one row. */
+@container result (min-width: 601px) {
+  .station--compact .station-marks { flex: 1 1 12rem; }
+  .station--compact .station-actions { width: auto; }
 }
-.station { position: relative; }
 .station-note { flex-basis: 100%; font-size: var(--text-small); }
 /* The live region stays in the accessibility tree while empty (display: none would drop it and lose the first
    announcement); it is only hidden from the eye. */
@@ -698,43 +805,112 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 }
 .station-note[data-tone="error"] { display: flex; align-items: baseline; gap: var(--space-1); font-weight: 600; }
 
+/* ---- the analysis table (js/analysis.js) ------------------------------------------------- */
+
+/* Rows are laid out as grids, so each row keeps its words together at any width; the table's semantics stay with
+   explicit roles (js/analysis.js). Narrow (by default): the label and the value on a line, the range bar, its words and
+   the flag under them. Wide (its container 27rem or more): four columns under a head row, the caption in its corner,
+   the flag on one line. */
+.analysis { position: relative; display: block; width: 100%; border-collapse: collapse; font-size: var(--text-small); }
+.analysis > thead, .analysis > tbody, .analysis > tfoot { display: block; }
+.analysis-caption { display: block; padding-bottom: 4px; border-bottom: 1px solid var(--ink); }
+.analysis > thead {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.analysis-row {
+  display: grid;
+  grid-template-columns: minmax(auto, 1fr) auto auto; /* the bar and its words never narrower than they need */
+  grid-template-areas: "label label value" "range flag flag";
+  align-items: center;
+  gap: 2px 12px;
+  padding-block: 5px;
+  border-bottom: 1px solid var(--line);
+}
+.analysis-label { grid-area: label; font-weight: 400; text-align: start; }
+.analysis-value { grid-area: value; justify-self: end; font-size: var(--text-body); font-weight: 700; line-height: 1.25; }
+.analysis-range { grid-area: range; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
+.analysis-range-text { white-space: nowrap; }
+.analysis-flag { grid-area: flag; }
+/* Incomplete attacks: no result to judge, so its words take the value's and the flag's room. */
+.analysis-row[data-flag="none"] { grid-template-areas: "label label label" "value value value" "range range range"; }
+.analysis-row[data-flag="none"] .analysis-value { justify-self: start; font-size: var(--text-small); font-weight: 600; }
+/* Out of range, the value is marked as a lab report marks it: bold, in the failing state's text colour. */
+.analysis-row[data-flag="out"] .analysis-value { color: var(--state-fail-text); font-weight: 700; }
+.analysis-note { display: block; padding-top: 4px; color: var(--muted); font-size: var(--text-xs); }
+/* No gate on the pain: one line in words where the table would be (a full result, a pain's page). */
+.analysis-none { color: var(--muted); font-size: var(--text-small); }
+
+/* The flag in words, in the state's text colour, after its dot. */
+.range-flag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.3; }
+.range-flag--in { color: var(--state-ok-text); }
+.range-flag--out { color: var(--state-fail-text); }
+
+/* The reference-range bar: a track from 0 to the row's top, the in-range part shaded from the threshold with a green
+   edge, and a mark at the value. Hidden from a screen reader; the row's words carry it. */
+.range-bar {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-width: 48px;
+  max-width: 200px;
+  height: 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: var(--section);
+}
+.range-bar-in {
+  position: absolute;
+  top: -1px;
+  bottom: -1px;
+  right: -1px;
+  left: var(--from);
+  border-left: 2px solid var(--state-ok);
+  border-radius: 0 2px 2px 0;
+  background: color-mix(in srgb, var(--state-ok) 24%, var(--panel));
+}
+.range-bar-at {
+  position: absolute;
+  top: -5px;
+  left: clamp(-1px, calc(var(--at) - 1.5px), calc(100% - 2px));
+  width: 3px;
+  height: 16px;
+  border-radius: 1px;
+  background: var(--ink);
+}
+
+@container (min-width: 27rem) {
+  .analysis-caption { position: absolute; top: 0; left: 0; padding: 0; border: 0; line-height: 24px; }
+  .analysis > thead { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
+  .analysis > thead > tr, .analysis-row {
+    display: grid;
+    /* The flag's column fits «DENTRO DEL RANGO» on one line (138 px at 11 px); the four minimums and the gaps fit 27rem. */
+    grid-template-columns: minmax(6rem, 1.1fr) minmax(3.5rem, 0.55fr) minmax(6rem, 1fr) minmax(9rem, 0.9fr);
+    column-gap: 12px;
+  }
+  .analysis > thead > tr { align-items: center; min-height: 24px; border-bottom: 1px solid var(--ink); }
+  .analysis-row { grid-template-areas: "label value range flag"; min-height: 44px; padding-block: 6px; }
+  .analysis-value { justify-self: start; }
+  .analysis-range { flex-direction: column; align-items: stretch; gap: 6px; }
+  .analysis-row[data-flag="none"] { grid-template-areas: "label value value flag" ". range range flag"; }
+  .range-flag { white-space: nowrap; }
+}
+
 /* ---- Catálogo: every pain by state, one dense row per pain ------------------------------- */
 
 .week-sentence { max-width: var(--measure-text); }
-.catalog-body { display: grid; gap: var(--space-4); }
-.catalog-heading { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; line-height: 1.2; }
-.catalog-section > .catalog-heading { margin-bottom: 10px; }
-.catalog-empty { padding: 14px var(--space-2); border-radius: var(--radius); background: var(--panel); color: var(--muted); }
-
-/* The discarded ones' fold: its summary is the heading, with a drawn chevron after it. */
-.catalog-summary {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: var(--target);
-  list-style: none;
-  cursor: pointer;
-}
-.catalog-summary::-webkit-details-marker { display: none; }
-.catalog-summary::after {
-  content: "";
-  width: 8px;
-  height: 8px;
-  margin-left: 4px;
-  border-right: 2px solid var(--muted);
-  border-bottom: 2px solid var(--muted);
-  transform: translateY(-25%) rotate(45deg);
-  transition: transform 200ms var(--ease-out);
-}
-.catalog-fold[open] > .catalog-summary { margin-bottom: 10px; }
-.catalog-fold[open] > .catalog-summary::after { transform: translateY(25%) rotate(225deg); }
+/* Each state is a sheet: its lamp and its heading with the count on the band, then its rows. */
+.catalog-body { display: grid; gap: var(--space-3); }
+.catalog-heading { display: flex; align-items: center; gap: 10px; }
+.catalog-empty { padding: 14px var(--space-2); color: var(--muted); }
 .catalog-summary:hover .catalog-heading { text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
 
-/* The rows sit on one panel, divided by rules. The title's link covers its whole row, so the row is the target. */
-.pain-list { padding: 0; list-style: none; border-radius: var(--radius); background: var(--panel); }
+/* The rows sit on the sheet, divided by rules. The title's link covers its whole row, so the row is the target. */
+.pain-list { padding: 0; list-style: none; }
 .pain-row { position: relative; display: grid; gap: 4px; padding: 10px var(--space-2) 12px; }
 .pain-row + .pain-row { border-top: 1px solid var(--line); }
 .pain-row:hover { background: var(--hover); }
+.pain-row:last-child { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
 .pain-state {
   display: flex;
   align-items: center;
@@ -743,7 +919,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   font-weight: 600;
   line-height: 1.3;
 }
-.pain-title { font-size: 17px; font-weight: 600; line-height: 1.25; }
+.pain-title { color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.25; }
 .pain-title a { text-decoration: none; }
 .pain-title a::after { content: ""; position: absolute; inset: 0; }
 .pain-title a:focus-visible { outline: none; }
@@ -779,15 +955,27 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   .has-context .back-link { margin-block: calc(-1 * var(--space-2)); }
 }
 
+/* A pain's or a run's state under its title: a chip, its dot and its words in the state's text colour, as a result's
+   flag on «Esta semana». */
 .detail-status {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  width: fit-content;
+  min-height: 26px;
   margin-top: var(--space-1);
-  font-size: var(--text-small);
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: var(--text-xs);
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.2;
 }
+.detail-status[data-lamp="green"] { color: var(--state-ok-text); border-color: color-mix(in srgb, var(--state-ok) 45%, var(--panel)); }
+.detail-status[data-lamp="amber"] { color: var(--state-attention-text); border-color: color-mix(in srgb, var(--state-attention) 45%, var(--panel)); }
+.detail-status[data-lamp="red"] { color: var(--state-fail-text); border-color: color-mix(in srgb, var(--state-fail) 45%, var(--panel)); }
 .key-data { margin-top: var(--space-1); padding: 0; list-style: none; max-width: var(--measure-text); }
 .key-label { color: var(--muted); font-size: var(--text-small); }
 .key-value { color: var(--ink); }
@@ -802,9 +990,11 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
     clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
 }
+/* With room, the key data read as the report's header: each label small, tracked and uppercase over its value. */
 @media (min-width: 672px) {
-  .key-data { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
-  .key { display: grid; }
+  .key-data { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); max-width: none; margin-top: 12px; }
+  .key { display: grid; gap: 2px; }
+  .key-label { font-size: 11px; font-weight: 600; line-height: 16px; letter-spacing: 0.12em; text-transform: uppercase; }
 }
 
 .fold > summary {
@@ -833,37 +1023,67 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 }
 .fold[open] > summary::after { transform: translateY(25%) rotate(225deg); }
 
+/* The card: its «Análisis» on a panel, then each section a sheet, the index beside them from 672 px (a sheet too). */
 .detail-layout { display: grid; gap: var(--space-4); }
+.detail-sections { display: grid; gap: var(--space-3); align-content: start; min-width: 0; }
+.detail-sections > *, .detail-sections > .section + .section { margin: 0; }
 .detail-index ul { list-style: none; padding: 0; display: grid; }
 .detail-index a { display: inline-flex; align-items: center; min-height: var(--target); }
 .detail-index--wide { display: none; }
+.detail-index--wide .sheet-head { min-height: 0; padding-block: 8px; }
+.detail-index--wide li + li { border-top: 1px solid var(--line); }
+.detail-index--wide a { display: flex; padding: 6px var(--space-2); color: var(--ink); font-size: var(--text-small); line-height: 1.3; text-decoration: none; }
+.detail-index--wide a:hover { background: var(--hover); color: var(--brand); text-decoration: underline; text-decoration-color: currentColor; }
+.detail-index--wide li:last-child a { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
 @media (min-width: 672px) {
   .detail-layout { grid-template-columns: minmax(0, var(--measure-prose)) 14rem; justify-content: start; align-items: start; }
   .detail-sections { grid-column: 1; grid-row: 1; }
   .detail-index--wide { display: block; grid-column: 2; grid-row: 1; position: sticky; top: var(--space-2); }
   .detail-index--fold { display: none; }
 }
-.detail-section { max-width: var(--measure-prose); }
-.detail-section h2 { font-size: 26px; line-height: 1.15; font-weight: 700; margin-bottom: 10px; }
-.detail-section + .detail-section { margin-top: var(--space-5); }
+.detail-analysis {
+  container-type: inline-size; /* the analysis table takes its wide layout by the panel's width */
+  max-width: var(--measure-prose);
+  padding: 12px var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.detail-section, .detail-notice { max-width: var(--measure-prose); }
 .detail-section h2:focus { outline: none; }
-.detail-section > p + p { margin-top: var(--space-1); }
-.detail-notice + .section { margin-top: var(--space-4); }
+.detail-section .sheet-body > p + p { margin-top: var(--space-1); }
 
 .quotes { list-style: none; padding: 0; display: grid; gap: var(--space-2); margin-top: var(--space-2); max-width: var(--measure-text); }
 .quote blockquote { margin: 0; padding-inline-start: var(--space-2); border-inline-start: 3px solid var(--line); }
 .quote-source { display: inline-flex; align-items: center; min-height: var(--target); }
 .original > p { color: var(--muted); }
 
-.glossary { margin: 0; max-width: var(--measure-text); border-top: 1px solid var(--line); }
-.glossary-row { padding-block: var(--space-1); border-bottom: 1px solid var(--line); }
+.glossary { margin: 0; max-width: var(--measure-text); }
+.glossary-row + .glossary-row { border-top: 1px solid var(--line); }
+.glossary-row:first-child { padding-top: 0; }
+.glossary-row:last-child { padding-bottom: 0; }
+.glossary-row { padding-block: var(--space-1); }
 .glossary dt { font-weight: 600; }
 .glossary dd { margin: 0; }
 
-.detail-section h3 { margin-top: var(--space-3); margin-bottom: var(--space-1); font-size: 20px; line-height: 1.2; font-weight: 600; }
+/* Inside a section, its parts («Marcas», «Comentarios», «Lo que dice la gente»…) are the report's small tracked labels,
+   with a hairline to the sheet's edge. */
+.detail-section h3, .detail-section .how-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: var(--space-3) 0 var(--space-1);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.detail-section h3::after, .detail-section .how-heading::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.detail-section .sheet-body > h3:first-child { margin-top: 0; }
 .detail-section h3:focus { outline: none; }
 .mark-list, .comment-list { list-style: none; padding: 0; max-width: var(--measure-text); }
-.comment-list { border-top: 1px solid var(--line); }
 .comment { padding-block: var(--space-1); border-bottom: 1px solid var(--line); }
 .comment-meta { color: var(--muted); font-size: var(--text-small); }
 .comment-body { white-space: pre-wrap; }
@@ -874,9 +1094,8 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 
 /* «Cómo llegamos a este dolor»: the quotes by source, then the attacks and the duels as rows on one panel, each with its
    lamp and its result in words (the catalog's rows, in the detail's column). */
-.how-part { margin-top: var(--space-2); }
 .how-part + .how-part { margin-top: var(--space-4); }
-.detail-section .how-heading { margin: 0 0 6px; color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; }
+.detail-section .how-part:first-child .how-heading { margin-top: 0; }
 .how-lead { color: var(--muted); font-size: var(--text-small); }
 
 .how-sources { display: grid; gap: var(--space-3); margin-top: var(--space-2); max-width: var(--measure-text); }
@@ -898,11 +1117,10 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   max-width: var(--measure-text);
   padding: 0;
   list-style: none;
-  border-radius: var(--radius);
-  background: var(--panel);
   container: how / inline-size;
 }
-.how-row { display: grid; align-items: start; gap: 4px; padding: 12px var(--space-2) 14px; }
+.how-row { display: grid; align-items: start; gap: 4px; padding-block: 12px 14px; }
+.how-row:last-child { padding-bottom: 0; }
 .how-row + .how-row { border-top: 1px solid var(--line); }
 .how-result {
   display: flex;
@@ -912,7 +1130,7 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   font-weight: 600;
   line-height: 1.3;
 }
-.how-question { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.how-question { font-size: 16px; font-weight: 600; line-height: 1.35; }
 .how-plain { margin-top: 2px; color: var(--muted); line-height: 1.4; }
 /* With room, the result is a column at the left, as in the catalog. */
 @container how (min-width: 30rem) {
@@ -922,8 +1140,11 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 
 /* ---- Corridas: every run week by week, and one run opened --------------------------------- */
 
-/* The list: one dense row per run on one panel, as in Catálogo. The date's link covers its whole row. */
-.run-list { padding: 0; list-style: none; border-radius: var(--radius); background: var(--panel); }
+/* The list: one dense row per run on a sheet, as in Catálogo, under a band that names the columns once the rows have
+   them. The date's link covers its whole row. */
+.run-list { padding: 0; list-style: none; }
+.run-columns { display: none; }
+.run-row:last-child { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
 .run-row { position: relative; display: grid; gap: 6px; padding: 12px var(--space-2) 14px; }
 .run-row + .run-row { border-top: 1px solid var(--line); }
 .run-row:hover { background: var(--hover); }
@@ -935,13 +1156,13 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   font-weight: 600;
   line-height: 1.3;
 }
-.run-title { font-size: 19px; font-weight: 600; line-height: 1.2; }
+.run-title { color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.25; }
 .run-title a { text-decoration: none; }
 .run-title a::after { content: ""; position: absolute; inset: 0; }
 .run-title a:focus-visible { outline: none; }
 .run-title a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius); }
 .run-row:hover .run-title a { text-decoration: underline; text-decoration-color: var(--edge); }
-.run-facts { margin-top: 2px; color: var(--muted); font-size: 15px; line-height: 1.35; }
+.run-facts { margin-top: 2px; color: var(--muted); font-size: var(--text-small); line-height: 1.35; }
 
 /* The mini line: one small lamp per stage on a rail, its count under it, and in words how many stages had a cut. Ten
    to a row when the row has room for them; five to a row on a narrow phone. */
@@ -976,79 +1197,68 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 
 /* From 720 px the state is a column at the left; from 1200 px the mini line is a column at the right. */
 @media (min-width: 720px) {
-  .run-row { grid-template-columns: 11rem minmax(0, 1fr); column-gap: var(--space-3); }
+  .run-columns, .run-row { grid-template-columns: 11rem minmax(0, 1fr); column-gap: var(--space-3); }
+  .run-columns { display: grid; min-height: 0; padding-block: 6px; }
+  .run-columns-mini { display: none; }
   .run-state { grid-row: 1 / span 2; align-self: start; min-height: 24px; }
   .run-main, .run-mini { grid-column: 2; }
 }
 @media (min-width: 1200px) {
-  .run-row { grid-template-columns: 11rem minmax(0, 1fr) minmax(24rem, 32rem); align-items: start; padding-block: 14px; }
+  .run-columns, .run-row { grid-template-columns: 11rem minmax(0, 1fr) minmax(24rem, 32rem); }
+  .run-row { align-items: start; padding-block: 14px; }
+  .run-columns-mini { display: block; }
   .run-state { grid-row: auto; }
   .run-main { grid-column: 2; }
   .run-mini { grid-column: 3; margin-top: 2px; }
 }
 
-/* One run opened: its line on the board's side panel colour, then the cost, the cuts, the duels and the technical
+/* One run opened: its line in a hairline-bordered panel, then the cost, the cuts, the duels and the technical
    detail. From 1024 px the line is a column at the left and the rest reads beside it. */
 .run-head .key-data { margin-top: var(--space-1); }
 .run-detail { display: grid; gap: var(--space-4); }
-.run-line { padding: 18px var(--space-2) 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--side); }
-@media (min-width: 640px) { .run-line { padding-inline: 22px; } }
 @media (min-width: 1024px) {
   .run-detail { grid-template-columns: minmax(24rem, 30rem) minmax(0, var(--measure-text)); align-items: start; gap: var(--space-5); }
 }
-.run-section + .run-section, .run-tech { margin-top: var(--space-4); }
-.run-section h2 { margin-bottom: var(--space-1); font-size: 18px; font-weight: 600; line-height: 1.3; }
+/* Beside the line, the cost, the cuts, the duels and «Detalle técnico», each a sheet of the report. */
+.run-sections { display: grid; gap: var(--space-3); align-content: start; max-width: var(--measure-text); }
 .run-empty { max-width: var(--measure-text); color: var(--muted); }
+.run-section > .run-empty { padding: 12px var(--space-2); }
 
-.run-costo-list { max-width: 24rem; border-top: 1px solid var(--line); }
+.run-costo-list { padding-inline: var(--space-2); }
 .run-cost { display: flex; justify-content: space-between; gap: var(--space-2); padding-block: 8px; border-bottom: 1px solid var(--line); }
 .run-cost dt { color: var(--muted); }
 .run-cost dd { font-weight: 600; }
-.run-cost--total { border-bottom: 0; }
+.run-cost--total { border-bottom: 0; border-top: 1px solid var(--ink); margin-top: -1px; }
 .run-cost--total dt { color: var(--ink); font-weight: 700; }
 .run-cost--total dd { font-weight: 700; }
 
-.run-recortes-list, .run-duelos-list {
-  max-width: var(--measure-text);
-  padding: 0;
-  list-style: none;
-  border-radius: var(--radius);
-  background: var(--panel);
-}
+.run-recortes-list, .run-duelos-list { padding: 0; list-style: none; }
 .run-recortes-list li, .run-duelos-list li { padding: 12px var(--space-2); line-height: 1.4; }
 .run-recortes-list li + li, .run-duelos-list li + li { border-top: 1px solid var(--line); }
 
-/* «Detalle técnico»: closed, its summary says it is technical; inside, the raw texts on panels, as the run wrote them. */
-.run-tech { max-width: var(--measure-text); border-top: 1px solid var(--line); }
-.run-tech > summary {
+/* «Detalle técnico»: closed, its band says it is technical; inside, the raw texts as hairline rows, as the run wrote
+   them, each part under a small tracked label. */
+.run-tech > summary { color: var(--brand); font-size: 17px; font-weight: 600; }
+.run-tech-body { padding: 12px var(--space-2) var(--space-2); }
+.run-tech-lead { color: var(--muted); font-size: var(--text-small); }
+.run-tech-body > .run-empty { margin-top: var(--space-1); }
+.tech-part { margin-top: var(--space-3); }
+.tech-part h3 {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: var(--target);
-  padding-top: 4px;
+  margin-bottom: 2px;
+  color: var(--muted);
+  font-size: 11px;
   font-weight: 600;
-  list-style: none;
-  cursor: pointer;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
-.run-tech > summary::-webkit-details-marker { display: none; }
-.run-tech > summary::after {
-  content: "";
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid var(--muted);
-  border-bottom: 2px solid var(--muted);
-  transform: translateY(-25%) rotate(45deg);
-  transition: transform 200ms var(--ease-out);
-}
-.run-tech[open] > summary::after { transform: translateY(25%) rotate(225deg); }
-.run-tech > summary:hover { text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
-.run-tech-body { padding-bottom: var(--space-2); }
-.run-tech-lead { color: var(--muted); font-size: var(--text-small); }
-.run-tech-body > .run-empty { margin-top: var(--space-1); }
-.tech-part { margin-top: var(--space-2); }
-.tech-part h3 { margin-bottom: 6px; font-size: var(--text-small); font-weight: 600; }
-.tech-part ul { display: grid; gap: 6px; padding: 0; list-style: none; }
-.tech-part li { padding: 10px 12px; border-radius: var(--radius-control); background: var(--panel); }
+.tech-part h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.tech-part ul { display: grid; padding: 0; list-style: none; }
+.tech-part li { padding-block: 8px; }
+.tech-part li + li { border-top: 1px solid var(--line); }
 .raw { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
 .raw-label { margin-bottom: 2px; color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
 

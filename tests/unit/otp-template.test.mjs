@@ -18,9 +18,10 @@ test("the subject has no {{ .Token }} and is at most 50 characters", () => {
 });
 
 // The code first (the factory's «code first»), before the wordmark and before any other sentence: the inbox preview
-// shows it. The board's band closes the email: the lowercase wordmark «tomoshi», text only, on the dark board
-// (#1A1C1E) under the amber lamp's line.
-test("the body opens with {{ .Token }}, exactly once, and closes with tomoshi's band in the board's colours", () => {
+// shows it. The lab report's band closes the email: the lowercase wordmark «tomoshi», text only, near-white on the
+// report's blue (#1F4E8C), the portal's masthead. Nothing of the andon board is left: no amber line, no graphite, no
+// Barlow.
+test("the body opens with {{ .Token }}, exactly once, and closes with tomoshi's band in the lab report's colours", () => {
   assert.equal(body.split("{{ .Token }}").length - 1, 1);
   assert.equal(text.filter((line) => line.includes("{{")).length, 1);
   assert.equal(text[0], "{{ .Token }}");
@@ -28,8 +29,17 @@ test("the body opens with {{ .Token }}, exactly once, and closes with tomoshi's 
   assert.ok(body.indexOf("{{ .Token }}") < body.search(/>\s*tomoshi\s*</), "the code comes before the wordmark");
   const band = body.match(/<[^>]*style="([^"]*)"[^>]*>\s*tomoshi\s*</);
   assert.ok(band, "the wordmark is its own element");
-  assert.match(band[1], /background-color:\s*#1A1C1E/i);
-  assert.match(band[1], /border-top:\s*4px solid #F2A900/i);
+  assert.match(band[1], /background-color:\s*#1F4E8C/i);
+  assert.doesNotMatch(html, /#F2A900|#1A1C1E|Barlow|amber|border-top/i);
+});
+
+// The lab report's type and ink: Public Sans when the reader has it, else Arial (no web font is loaded); the text in
+// the report's ink (#14213D).
+test("the sentences are in the lab report's font stack and ink", () => {
+  const sentences = [...body.matchAll(/<p style="([^"]*)">([^<{]*)<\/p>/g)];
+  assert.ok(sentences.length >= 3, `${sentences.length} sentences`);
+  for (const [, style] of sentences) assert.match(style, /font-family:\s*'Public Sans', Arial, sans-serif/, style);
+  assert.match(body, /color:\s*#14213D/i);
 });
 
 test("the email says tomoshi, never dolores as the product's name", () => {
