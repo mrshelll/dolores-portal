@@ -321,7 +321,7 @@ function fullRunTrace() {
     funnel: base.funnel.map((stage) => (stage.stage === "duel" ? { ...stage, count: 3 } : stage)),
     cuts: [
       ...base.cuts,
-      { kind: "candidate-cap", count: 5, cap: 12, text: "5 candidatos no se pusieron a prueba por el tope de 12 por corrida; quedan en el catálogo con su evidencia", original: null },
+      { kind: "candidate-cap", count: 3, cap: 12, text: "3 candidatos no se pusieron a prueba por el tope de 12 por corrida; quedan en el catálogo con su evidencia", original: null },
       { kind: "other", count: null, cap: null, text: "Hubo un recorte más", original: "RAW-ORIGINAL second sentence the page cannot explain" },
     ],
     duels: [
