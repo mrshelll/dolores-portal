@@ -1,8 +1,9 @@
 # dolores-portal
 
-The page where the dolores team (Miguel, Jaime and Fabio) reads the week's pains. Each person signs in with their email
-and an 8-digit code that arrives by email; only addresses on the team's list (the `people` table in Supabase) see
-anything. Someone who signs in with another address sees a «sin permiso» screen that tells them whom to ask.
+tomoshi: the page where the team on the access list reads the week's pains and decides which to work on. Each person
+signs in with their email and an 8-digit code that arrives by email; only addresses on the team's list (the `people`
+table in Supabase) see anything. Someone who signs in with another address sees a «sin permiso» screen that tells them
+whom to ask.
 
 It is a static site (HTML, CSS and ES modules, no build, no npm dependencies) published with GitHub Pages at
 `https://mrshelll.github.io/dolores-portal/`. It talks to the Supabase project `dolores` with the publishable key and
@@ -48,8 +49,9 @@ npm test
 ```
 
 Runs `node --test tests/unit/` (Node 25 or newer, no browser, no install). The tests cover the auth error mapping, the
-access rule, the home's and a pain's logic, reads and writes (with a fake client), the visible strings (none carries an internal word such as a pain id, a territory slug, «tier», «lente»,
-«score», «underserved» or «corrida», which the page calls «revisión»; whole words only, so «excelente» is fine), the
+access rule, the home's and a pain's logic, reads and writes (with a fake client), the visible strings (none carries an
+internal word such as a pain id, a territory slug, «tier», «lente», «score» or «underserved», whole words only, so
+«excelente» is fine; and each weekly run is a «corrida», as the «Corridas» tab calls it, never a «revisión»), the
 territory names and the code email's rules.
 
 To look at the page locally, serve the folder and open it (signing in needs the real Supabase project):
@@ -60,58 +62,86 @@ python3 -m http.server 8000
 
 ## Browser checks
 
-Every screen is also measured in Chrome with the software factory's verifiers, so the page is known to follow the
-visual manual before it is published:
+Every screen is also measured in Chrome, so the page is known to work at every width and in both colour schemes
+before it is published:
 
 ```sh
 node tests/browser/run-checks.mjs --factory "<software-factory repo>" --out <dir> [--url <base>]
 ```
 
-- `--factory` (required): the software-factory repo. The runner imports `verificarPagina` from
-  `design-system/assets/reglas-pantalla.mjs` and `abrirNavegador` from `design-system/assets/playwright-cache.mjs`, which
-  loads playwright-core 1.63.0 and axe-core 4.13.0 from `~/.cache/fabrica-software` and uses the installed Google
-  Chrome (or `FABRICA_CHROME`). Nothing is installed in this repo.
+- `--factory` (required): the software-factory repo. The runner imports `abrirNavegador` and `rutaAxe` from
+  `design-system/assets/playwright-cache.mjs`, which loads playwright-core 1.63.0 and axe-core 4.13.0 from
+  `~/.cache/fabrica-software` and uses the installed Google Chrome (or `FABRICA_CHROME`). Nothing is installed in this
+  repo. The factory retired its screen rules (`reglas-pantalla.mjs`) on 2026-11-18; the checks below are the page's own.
 - `--out` (required): where the screenshots go, one per screen as `<scenario>-<width>-<scheme>.png` (full page). The
   folder is created if missing. Keep it outside the repo; screenshots are never committed.
 - `--url` (optional): the page to measure. By default the runner serves this folder on 127.0.0.1 at a free port
   (`tests/browser/static-server.mjs`). To check the published page, pass `--url https://mrshelll.github.io/dolores-portal/`.
 
 Exit codes: `0` everything passed; `1` a check failed (each failure is printed under its `FAIL` line); `2` a usage
-error (a missing or unknown flag, a `--factory` without the verifiers); `3` Chrome or playwright is missing or Chrome
-did not start.
+error (a missing or unknown flag, a `--factory` without `playwright-cache.mjs`); `3` Chrome, playwright or axe is
+missing or Chrome did not start.
 
-The page loads the real supabase-js from jsDelivr, so the run needs internet. Every request to the Supabase project
-is answered by a fake (`tests/browser/fixtures.mjs`, through `page.route`), also with `--url`: no screen ever touches
-the real base, and a signed-in screen gets a session injected into `localStorage` under supabase-js's own key. The data
-has the base's shapes (a full card, a version-1 line card and its version-2 rewrite, 55 rows under watch), but every
-text in it is invented: this repository is public, and quotes, comments and marks are only for the people on the list.
-No catalog text, source address or real email may ever be copied into it.
+The page loads the real supabase-js from jsDelivr and its font from Google Fonts, so the run needs internet; the runner
+fetches each once and serves it from memory to every screen. Every request to the Supabase project is answered by a
+fake (`tests/browser/fixtures.mjs`, through `page.route`), also with `--url`: no screen ever touches the real base,
+and a signed-in screen gets a session injected into `localStorage` under supabase-js's own key. The data has the base's
+shapes (run traces, a version-3 card, a version-2 card, a version-1 line card and its version-2 rewrite, 55 rows under
+watch), but every text in it is invented and the people are fictional (Ana, Beto and Carla, at example.com): this
+repository is public, and quotes, comments and marks are only for the people on the list. No catalog text, source
+address, real name or real email may ever be copied into it.
 
 What runs:
 
-- **Screens**, each at 320 × 640, 768 × 1024 and 1440 × 900 in light mode, and 320 and 1440 again in dark mode:
-  `sign-in-email` and `sign-in-code` (pattern `formulario`); `home`, `home-failed-run`, `home-empty` and `home-error`
-  (`lista`); `detail-full`, `detail-long-title` (a title of 48 characters, the longest allowed), `detail-line` and
-  `detail-line-v1` (`detalle`); `no-access` and `detail-missing` («no está en la lista o todavía no tiene ficha»)
-  (`otro`). The home has 55 pains under watch, so it shows 20 and «Ver 20 más» (LIS-04), and the check asserts the
-  button shows. Each scenario waits for a selector and an `<h1>` that only its own screen has, so it never measures
-  another screen (an error in its place, say). A screen fails on any rule of `verificarPagina` with `ok: false`, any
-  axe violation, a console error or page error, a request the fake does not know, a different `<h1>`, a page wider
-  than the window (NAV-04), or at 320 × 640 an `<h1>` that ends below 160 px (MAR-14).
-- **Behaviours** a screenshot cannot show, on the full card at 320 × 640: a comment with markup shows as literal
-  text; the base refusing a comment (22023) says so in the field and keeps the text; a session that expires while
-  publishing (401, `PGRST303`) says «Tu sesión terminó», keeps the comment, and after signing in again (email, then
-  code) the comment is back in its field on the same pain. Each behaviour also fails on a request the fake does not
-  know.
+- **Screens**, each at 320 × 640, 390 × 844, 768 × 1024 and 1440 × 900, in light and in dark:
+  - signing in: `sign-in-email`, `sign-in-code`; «sin permiso»: `no-access`;
+  - the home: `home` (this week's run and its line), `home-old-trace` (the week's run left no trace: the line is the
+    one before, labelled with its date), `home-failed-run`, `home-long-title` (a 48-character title of long Spanish
+    words), `home-nothing-to-decide`, `home-empty`, `home-error`;
+  - Catálogo: `catalog` (55 under watch, so it shows 20 and «Ver 20 más», and the check asserts the button shows),
+    `catalog-empty`;
+  - a pain: `detail-v2` and `detail-v3` (a version-3 card opened by direct link, its duel rivals named by title, by
+    what hurts for a version-1 card, or as «otro dolor del catálogo»), `detail-long-title`, `detail-line`,
+    `detail-line-v1`, `detail-missing`;
+  - Corridas: `runs`, `runs-empty`, `run-detail` (the unmapped cuts counted in one line), `run-detail-technical`
+    (the same run with «Detalle técnico» open), `run-failed`, `run-missing`.
+
+  Each scenario waits for a selector and an `<h1>` that only its own screen has, so it never measures another screen
+  (an error in its place, say), and lets the «tomoshi» move light every lamp before measuring. A screen fails on any
+  serious or critical axe violation (moderate and minor ones are printed as a count), a page wider than the window
+  (`scrollWidth` over `clientWidth`), a link, button, field or fold smaller than 44 × 44 px, a console error or page
+  error, a request the fake does not know, a different `<h1>`, a raw run text (the fixtures mark them `RAW-`) anywhere
+  outside «Detalle técnico», a text the scenario expects to read missing (or one it must not read present), or at
+  320 × 640 an `<h1>` that ends below 160 px (MAR-14).
+- **Behaviours** a screenshot cannot show, at 320 × 640: a comment with markup shows as literal text; the base refusing
+  a comment (22023) says so in the field and keeps the text; a session that expires while publishing (401,
+  `PGRST303`) says «Tu sesión terminó», keeps the comment, and after signing in again (email, then code) the comment is
+  back in its field on the same pain; an unpublished comment asks before a tab leaves the pain, «Seguir escribiendo»
+  keeps it and «Salir sin publicar» goes on; a mark from the home is undone and saved again with the same button, in
+  the base and in words; «Ver más» under a source puts the focus on the first quote added; at 390 × 844 the first
+  station's «Nos interesa» shows without scrolling; the home's line says the cuts nobody mapped once, as a link to that
+  run's page; the «tomoshi» move lights a run's lamps once per session, and back on the home (or on that run's page)
+  they are drawn lit; the top bar says the same week, niche and cost on the home and on a pain opened first. And
+  Review Focus 5: at
+  320 px with the long title the line is the folded strip, the title wraps whole with no ellipsis and no sideways
+  scroll; under `prefers-reduced-motion` the lamps are drawn lit with no sequence, while the same screen with motion
+  lights them in sequence. Each behaviour also fails on a request the fake does not know.
 
 Exceptions, each printed at the end of every run (no check is removed):
 
+- **MAR-14 holds a pain's screens to 187 px.** At 320 × 640, `detail-v2`, `detail-v3`, `detail-long-title` and
+  `detail-line` end their h1 at 187 px: under the two-row masthead (89 px: the brand, then the tabs), «← Volver» and a
+  title on two lines. Every other screen ends its h1 within 160 px; these are held to 187 exactly, so any growth fails.
 - **MAR-14 skips `detail-line-v1`.** A version-1 card has no `line.title`, so its h1 is `what_hurts`, a full sentence of
   several lines. This is transitional: the next run rewrites every card with a title. The screen is still measured
   and screenshotted; only the h1 height is not held to 160 px (the runner prints a `NOTE` saying so).
 - **Console errors from failures the fake makes on purpose.** When the fake answers with an error (the failed read of
   `home-error`, the 400 and 401 of the behaviours), Chrome logs its own «Failed to load resource» line. That line is not
   counted for exactly those URLs; every other console error fails the screen.
+- **A link inside a sentence** (other words in the same block) is not held to 44 × 44, as WCAG 2.5.8 allows: its
+  height is the line's. Every other target is.
+- **axe's moderate and minor violations** are printed as a count and do not fail, as in the factory's
+  `measure-pieces.mjs`.
 
 Rubric: on 2026-11-11 the screenshots of every screen were judged against the factory's rubric, «juzgada por un
 revisor, no cumplida por máquina»: a reviewer read them, no script scored them. Eight items came out «no pasa» and were
@@ -129,14 +159,17 @@ quotes' «Texto original» fold at a third level (DET-07). The factory's `indice
 The email with the one-time code is `supabase/templates/otp-code.html` (HTML only: Supabase Auth's mailer sends no
 plain-text part) and its subject is `supabase/templates/otp-code.subject.txt`. The rules are COR-10 to COR-13 of the
 factory's visual manual (`patrones/correo-aviso.md`): the code first, large and as real text; how long it lasts; what
-to do if it was not asked for; no links, no images. `tests/unit/otp-template.test.mjs` checks what is mechanical.
+to do if it was not asked for; no links, no images. It says tomoshi in the board's colours: the code first, on the day board's
+panel, then a dark band (#1A1C1E) under an amber line that closes the email with the lowercase wordmark as text; every
+text colour reaches WCAG AA on its own background. `tests/unit/otp-template.test.mjs` checks what is mechanical, contrast
+included.
 
 Steps in the Supabase panel, project `dolores` (Miguel does them; the app password is typed in the panel, never in
 this repository):
 
 1. **Authentication > SMTP Settings** > enable custom SMTP: host `smtp.gmail.com`, port `465`, username the factory's
    Gmail address, password an app password of that Gmail (Google account > Security > App passwords), sender address
-   that same Gmail, sender name `dolores`.
+   that same Gmail, sender name `tomoshi`.
 2. **Authentication > Rate Limits:** set «emails per hour» to 20, well below Gmail's limit of 500 a day.
 3. **Authentication > Sign In / Providers > Email:** turn «Confirm email» on, and «Allow new users to sign up» on (the
    page creates each user the first time they ask for a code). No password sign-up or sign-in is ever used. Why

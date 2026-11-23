@@ -1,23 +1,31 @@
 // The page's entry point: the session, the hash router and the screens. Signing in is two screens (email, then the
 // 8-digit code) with the manual's «formulario» pattern. Once in, every screen first checks that the person is on the
 // team's list (`people`); someone who is not, or who was taken off it, sees the «sin permiso» state (EST-05).
-// Routes: #/ is home; #/dolor/<id> is a pain. Without a session the page shows the sign-in.
+// Routes: #/ is «Esta semana» (the home: «Para decidir» and the run's line), #/catalogo every pain by state, #/corridas
+// the runs week by week, #/corridas/<run_id> one run opened, #/dolor/<id> a pain. Without a session the page shows the
+// sign-in.
 // A pain's detail asks before leaving with a comment not yet published (NAV-06), and keeps that comment in the tab when
 // the session ends, so it comes back after signing in again (Review Focus 3).
 
 import { supabase } from "./supabase-client.js";
 import { EMAIL_OTP_LENGTH } from "../config.js";
 import { h, replaceChildren } from "./dom.js";
-import { T, fill } from "./text.js";
+import { T, fill, formatNumber } from "./text.js";
 import { classifyAuthError, isEmailInvalid, isNetworkError, retryAfterSeconds } from "./auth-errors.js";
 import { accessState } from "./access.js";
-import { buildSections, weekSentence, emptySentence, onlyDiscardedSentence, homeNotice, sentenceTense, runNotice, classifyError, rowMeta, firstPage, nextPage, PAGE_SIZE } from "./model.js";
-import { loadHome, loadPain, setMark, addComment, deleteComment } from "./api.js";
+import {
+  emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, sectionOf, decideList, catalogSections,
+  catalogView, latestTrace, brandLamp, brandLampText, brandLampShort, painLamp, lineView, lineHeading, weekMeta, decideLead,
+  stationMarks, stationMeta, stationTags, rowMarks, stationFactLines,
+} from "./model.js";
+import { loadHome, loadWeek, loadPain, loadRuns, loadTitles, setMark, addComment, deleteComment } from "./api.js";
 import {
   nextMark, keyData, validComment, cardTitle, painStatus, statusLabel, cardSections, isLineCard, markLines, commentItems,
   sendErrorKind, draftKey, draftValue, readDraft, isDraftKey, discardNote, markErrorText, commentErrorText, COMMENT_MAX,
-  markButtonLabels, ownMarkLine, lineNoticeText,
+  markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
+import { renderLine, lightUp, lamp, firstLighting } from "./line.js";
+import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 
 const root = document.getElementById("app");
 
@@ -27,6 +35,7 @@ const CLOCK_SKEW_MS = 60 * 1000; // a «sent» time this far in the future is a 
 const RESEND_SECONDS = 60; // Supabase allows one email per 60 s
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PAIN_ID = /^[A-Za-z0-9_-]{1,64}$/;
+const RUN_ID = /^[A-Za-z0-9._-]{1,64}$/;
 
 const state = {
   session: null,
@@ -35,6 +44,11 @@ const state = {
   cleanup: null, // stops the current screen's timers
   signingOut: false,
   guard: null, // { blocks(), ask(proceed) } while a pain has a comment not yet published
+  week: null, // { summary, latest }, kept for the session: the brand lamp and the masthead's data on every screen
+  weekLoad: null, // the read of `week` a pain or Corridas started (ensureWeek); dropped when the session ends
+  masthead: null, // { lamp, words, meta } of the masthead on screen, so a load can fill them in
+  focusComment: null, // the pain whose comment field takes the focus when it opens («Comentar» on a station)
+  titles: null, // each pain's title by its id, from the last home or Catálogo load; a pain adds its rivals' own (loadPain)
 };
 
 const t = (key, params) => fill(T[key], params);
@@ -52,26 +66,59 @@ function runCleanup() {
 
 const atHome = () => ["", "#", "#/"].includes(location.hash);
 
-// The header: «dolores» in its own type style (NAV-08) and, after signing in, «Salir». The name links home on every
-// screen with a session (NAV-09); on the sign-in screens it is plain text, because there is no home yet and tapping it
-// would only wipe the code being typed.
-function masthead({ brandLink, actions }) {
-  const brand = brandLink
-    ? h("a", { class: "brand", "data-rol": "marca-producto", href: "#/", "aria-label": T.brandHome,
-      "aria-current": atHome() ? "page" : null }, T.brand)
-    : h("div", { class: "brand", "data-rol": "marca-producto" }, T.brand);
+const TABS = [["week", "#/", "tabWeek"], ["catalog", "#/catalogo", "tabCatalog"], ["runs", "#/corridas", "tabRuns"]];
+
+// The masthead (NAV-08): the brand, lowercase «tomoshi» with the lamp of how the latest run went at its left; after
+// signing in the tabs, the week's data and «Salir». The name links home on every screen with a session (NAV-09); on
+// the sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being
+// typed. The lamp is off and silent until a load says how the run went; then its state is accessible text, and from
+// 768 px it is also written beside the name in two or three words (hidden from a screen reader, which has the lamp's).
+function masthead({ brandLink, actions, tab }) {
+  const brandLight = h("span", { class: "lamp lamp--brand", "data-lamp": "off", "data-lit": true, "aria-hidden": "true" });
+  const word = brandLink
+    ? h("a", { class: "brand-word", href: "#/", "aria-label": T.brandHome, "aria-current": atHome() ? "page" : null }, T.brand)
+    : h("span", { class: "brand-word" }, T.brand);
+  const words = h("span", { class: "brand-state", "aria-hidden": "true", hidden: true });
+  const meta = h("p", { class: "masthead-meta", hidden: true });
+  state.masthead = { lamp: brandLight, words, meta };
+  refreshMasthead();
   return h("header", { class: "masthead" },
-    brand,
+    h("div", { class: "brand", "data-rol": "marca-producto" }, brandLight, word, words),
+    brandLink ? h("nav", { class: "tabs", "aria-label": T.tabsLabel }, TABS.map(([key, href, label]) =>
+      h("a", { class: "tab", href, "aria-current": key === tab ? "page" : null }, T[label]))) : null,
+    brandLink ? meta : null,
     actions.length ? h("div", { class: "masthead-actions" }, actions) : null);
 }
 
+// The brand lamp and the week's data from the session's week (state.week); until it is known the lamp stays off.
+function refreshMasthead() {
+  const parts = state.masthead;
+  if (!parts) return;
+  const week = state.week;
+  if (week) {
+    const color = brandLamp(week.summary);
+    const words = brandLampText(color);
+    parts.lamp.dataset.lamp = color;
+    parts.lamp.removeAttribute("aria-hidden");
+    parts.lamp.setAttribute("role", "img");
+    parts.lamp.setAttribute("aria-label", words);
+    parts.lamp.title = words;
+    parts.words.textContent = brandLampShort(week.summary);
+    parts.words.hidden = false;
+  }
+  const rows = week ? weekMeta(week.summary, week.latest) : [];
+  replaceChildren(parts.meta, rows.map((row) => h("span", { class: "meta-item" }, `${row.label} `, h("b", {}, row.value))));
+  parts.meta.hidden = !rows.length;
+}
+
 // «Salir» leaves the screen too: with a comment not yet published it asks first (NAV-06).
-const signOutButton = () => h("button", { type: "button", class: "button button--secondary", onclick: () => leaveThen(signOut) },
+const signOutButton = () => h("button", { type: "button", class: "button button--quiet", onclick: () => leaveThen(signOut) },
   T.signOut);
 
-// One frame for every screen (marco.md): the header, then inside <main> the context («← Volver», optional), the title
-// band, the notice zone and the body.
-function frameLayout({ title, meta = [], brandLink = true, actions = [], context = null }) {
+// One frame for every screen (marco.md): the masthead, then the shell: inside <main> the context («← Volver»,
+// optional), the title band, the notice zone and the body; beside it, from 1024 px, the side panel the home fills with
+// the run's line (hidden on every other screen).
+function frameLayout({ title, meta = [], brandLink = true, actions = [], context = null, tab = null, pageTitle = null }) {
   runCleanup(); // a new screen drops the last one's timers and its leave guard
   const heading = h("h1", { tabindex: "-1" }, title);
   const head = h("div", { class: "page-head", "data-rol": "cabecera" },
@@ -79,17 +126,22 @@ function frameLayout({ title, meta = [], brandLink = true, actions = [], context
     meta.filter(Boolean).map((line) => h("p", { class: "page-meta" }, line)));
   const notices = h("div", { class: "notices", "data-rol": "avisos" });
   const body = h("div", { class: "body", "data-rol": "cuerpo" });
-  replaceChildren(root, h("div", { class: "frame" },
-    masthead({ brandLink, actions }),
+  const side = h("aside", { class: "line-panel", "aria-label": T.lineLabel, hidden: true });
+  const shell = h("div", { class: "shell" },
     h("main", { id: "main", class: context ? "has-context" : null },
-      h("div", { "data-rol": "marco" }, context, head, notices, body))));
-  setTitle(title);
-  return { heading, head, notices, body };
+      h("div", { "data-rol": "marco" }, context, head, notices, body)),
+    side);
+  replaceChildren(root, h("div", { class: "frame" }, masthead({ brandLink, actions, tab }), shell));
+  setTitle(pageTitle || title);
+  return { heading, head, notices, body, side, shell };
 }
 
 // A notice in the page, one at a time in its zone (MAR-04), never floating (COM-17).
+// The notice carries a lamp of its tone (off for information, amber for a warning, red for an error) beside its words.
+const NOTICE_LAMP = { info: "off", warning: "amber", error: "red" };
 function showNotice(container, { tone = "info", text, actions = [] }) {
-  const notice = h("div", { class: `notice notice--${tone}`, role: tone === "error" ? "alert" : "status" }, h("p", {}, text));
+  const notice = h("div", { class: `notice notice--${tone}`, role: tone === "error" ? "alert" : "status" },
+    lamp(NOTICE_LAMP[tone] || "off"), h("p", {}, text));
   if (actions.length) {
     notice.append(h("div", { class: "notice-actions" },
       actions.map((a) => h("button", { type: "button", class: "link-button", onclick: a.onClick }, a.label))));
@@ -108,12 +160,16 @@ function setFieldError(input, errorEl, text) {
 
 // ---- router ---------------------------------------------------------------------------------
 
+const SCREENS = new Map([["#/catalogo", "catalog"], ["#/catalogo/", "catalog"], ["#/corridas", "runs"], ["#/corridas/", "runs"]]);
+
 function parseRoute(hash) {
-  const match = /^#\/dolor\/([^/?#]+)\/?$/.exec(hash || "");
+  if (SCREENS.has(hash)) return { name: SCREENS.get(hash) };
+  const match = /^#\/(dolor|corridas)\/([^/?#]+)\/?$/.exec(hash || "");
   if (match) {
     let id = "";
-    try { id = decodeURIComponent(match[1]); } catch { /* malformed: home */ }
-    if (PAIN_ID.test(id)) return { name: "pain", id };
+    try { id = decodeURIComponent(match[2]); } catch { /* malformed: home */ }
+    if (match[1] === "dolor" && PAIN_ID.test(id)) return { name: "pain", id };
+    if (match[1] === "corridas" && RUN_ID.test(id)) return { name: "run", id };
   }
   return { name: "home" };
 }
@@ -124,13 +180,17 @@ async function route() {
   runCleanup();
   if (!state.session) return showSignIn();
   const target = parseRoute(location.hash);
-  // Anything that is not a pain is home.
+  // Anything that is not a screen of its own is home.
   if (target.name === "home" && !atHome()) history.replaceState(null, "", `${location.pathname}${location.search}#/`);
+  if (target.name !== "pain") state.focusComment = null;
 
   const email = state.session.user && state.session.user.email;
+  const screen = ROUTE_SCREEN[target.name];
   const layout = frameLayout({
-    title: t(target.name === "pain" ? "painTitle" : "homeTitle"),
-    context: target.name === "pain" ? backLink() : null,
+    title: T[screen.title],
+    pageTitle: screen.pageTitle ? T[screen.pageTitle] : null,
+    tab: screen.tab,
+    context: target.name === "pain" ? backLink() : target.name === "run" ? backLink("#/corridas", T.runsBack, T.runsBackLabel) : null,
     actions: [signOutButton()],
   });
   layout.body.setAttribute("aria-busy", "true");
@@ -141,9 +201,22 @@ async function route() {
   if (access.kind === "expired") return sessionEnded();
   if (access.kind === "error") return showAccessError(access.error);
   if (access.kind === "no-access") return showNoAccess(email);
+  if (target.name === "pain" || target.name === "runs") ensureWeek();
   if (target.name === "pain") return showPain(layout, target.id, email);
+  if (target.name === "catalog") return showCatalog(layout, email);
+  if (target.name === "runs") return showRuns(layout, email);
+  if (target.name === "run") return showRun(layout, target.id, email);
   return showHome(layout, email);
 }
+
+// Each route's h1, the tab's title when it differs, and which tab is current.
+const ROUTE_SCREEN = {
+  home: { title: "homeTitle", pageTitle: "tabWeek", tab: "week" },
+  catalog: { title: "catalogTitle", tab: "catalog" },
+  runs: { title: "runsTitle", tab: "runs" },
+  run: { title: "runTitle", tab: "runs" },
+  pain: { title: "painTitle", tab: null },
+};
 
 // ---- access ---------------------------------------------------------------------------------
 
@@ -184,27 +257,77 @@ function showNoAccess(email) {
   layout.heading.focus({ preventScroll: true });
 }
 
-// ---- home: the week's pains (the manual's «lista» pattern) ----------------------------------
+// ---- the session's week: the masthead on every screen ----------------------------------------
+
+// A pain or Corridas opened first (a link, a reload) reads the week once for the session, so the brand lamp and the
+// week's data are right there too; the home and Catálogo read it again with every load (loadInto). It never holds the
+// screen up, and a failure only leaves the lamp off: the next such screen tries again. An answer that comes after the
+// session ended, or after a home load already filled the week, is dropped. Returns what resolves to the session's week
+// once known, or null when the read failed; it never rejects (an opened run waits on it to know if it is this week's).
+function ensureWeek() {
+  if (state.week) return Promise.resolve(state.week);
+  if (!state.weekLoad) {
+    const load = loadWeek(supabase);
+    state.weekLoad = load;
+    load.then((week) => {
+      if (state.weekLoad !== load) return;
+      state.weekLoad = null;
+      if (state.week) return;
+      state.week = { summary: week.summary, latest: latestTrace(week.traces, week.summary) };
+      refreshMasthead();
+    }, () => { if (state.weekLoad === load) state.weekLoad = null; });
+  }
+  return state.weekLoad.then(() => state.week, () => null);
+}
+
+// ---- home: «Esta semana» -------------------------------------------------------------------
 
 // A run that failed or is incomplete is a warning, also when it is old (then the tone follows its status).
 const NOTICE_TONE = { failed: "warning", incomplete: "warning", "ingest-only": "info", none: "info" };
 
-// The home keeps the frame route() drew while checking access (same title), so the screen does not flash. While the
-// pains load the body is busy and says so; it never says «no hay» before the answer (EST-02).
-async function showHome(layout, email) {
-  state.view = "home";
+const lower = (value) => String(value ?? "").trim().toLowerCase();
+const pad = (n) => String(n).padStart(2, "0");
+
+// The home and the catalog keep the frame route() drew while checking access (same title), so the screen does not
+// flash. While the pains load the body is busy and says so; it never says «no hay» before the answer (EST-02). A load
+// also tells the masthead how the latest run went.
+async function loadInto(layout, email, { loading, error: errorText }, render) {
   const viewId = state.viewId;
   layout.body.setAttribute("aria-busy", "true");
-  replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.homeLoading));
+  replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, loading));
   layout.heading.focus({ preventScroll: true });
   let home;
   try { home = await loadHome(supabase); }
   catch (error) {
     if (viewId !== state.viewId) return;
-    return showLoadError(layout, error, email, T.homeError);
+    return showLoadError(layout, error, email, errorText);
   }
   if (viewId !== state.viewId) return;
-  renderHome(layout, home);
+  state.week = { summary: home.summary, latest: latestTrace(home.traces, home.summary) };
+  state.titles = titleMap(home.cards);
+  refreshMasthead();
+  render(layout, home, email);
+}
+
+function showHome(layout, email) {
+  state.view = "home";
+  return loadInto(layout, email, { loading: T.homeLoading, error: T.homeError }, renderHome);
+}
+
+function showCatalog(layout, email) {
+  state.view = "catalog";
+  return loadInto(layout, email, { loading: T.catalogLoading, error: T.homeError }, renderCatalog);
+}
+
+// The notice about the run (runNotice, homeNotice): failed, incomplete, only gathered, old. Returns runNotice's.
+function showRunNotice(layout, home, { empty }) {
+  const notice = runNotice(home.summary, new Date());
+  const visible = homeNotice(notice, { empty });
+  if (visible) {
+    const tone = NOTICE_TONE[visible.kind === "stale" ? home.summary.status : visible.kind] || "info";
+    showNotice(layout.notices, { tone, text: visible.text });
+  }
+  return notice;
 }
 
 // A session that ended goes back to signing in; someone the base refuses sees «sin permiso»; anything else says what
@@ -219,75 +342,234 @@ function showLoadError(layout, error, email, otherText) {
     h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.retry));
 }
 
-// The week's sentence opens the body, not the title band: on a 320 × 640 phone the band stays the masthead and the h1
-// (MAR-14), and the sentence scrolls with the list.
-function renderHome(layout, home) {
-  const sections = buildSections(home);
-  const shown = [["weighty", T.sectionWeighty], ["interested", T.sectionInterested], ["watching", T.sectionWatching]]
-    .filter(([key]) => sections[key].length);
-  const empty = !shown.length && !sections.discarded.length;
-  const notice = runNotice(home.summary, new Date());
-  const visibleNotice = homeNotice(notice, { empty });
-  if (visibleNotice) {
-    const tone = NOTICE_TONE[visibleNotice.kind === "stale" ? home.summary.status : visibleNotice.kind] || "info";
-    showNotice(layout.notices, { tone, text: visibleNotice.text });
+// «Para decidir» (decideList) as numbered stations, with the run's line beside them from 1024 px and as a folded strip
+// under the title below. Over the stations, the board counts the whole catalog by state, each count a way into it.
+// The lamps of the line light in stage order, and then those of the pains with new evidence from this week's run.
+function renderHome(layout, home, email) {
+  const me = lower(email);
+  const { latest } = state.week;
+  const heading = lineHeading(latest, home.summary);
+  const view = latest.trace ? lineView(latest.trace) : null;
+  const items = decideList(home);
+  const sections = catalogSections(home);
+  const inCatalog = Object.values(sections).some((list) => list.length);
+  const notice = showRunNotice(layout, home, { empty: !inCatalog });
+  // This week's line lights up with the «tomoshi» move the first time this session draws it; after that it is drawn
+  // already lit, like an older run's.
+  const light = latest.isThisWeek && firstLighting(latest.trace && latest.trace.run_id);
+
+  // The panel only when there are stations to draw; otherwise the strip under the title says why, at every width.
+  if (view && view.stages.length) {
+    layout.side.hidden = false;
+    layout.shell.classList.add("shell--line");
+    replaceChildren(layout.side, h("div", { class: "line-panel-inner" },
+      renderLine(latest.trace, { title: heading.title, note: heading.note, idPrefix: "linea", light })));
   }
+  const lead = h("p", { class: "page-lead", hidden: !items.length });
+  layout.head.append(lead,
+    renderLine(latest.trace, { compact: true, title: heading.title, note: heading.note, idPrefix: "franja", light,
+      week: weekMeta(home.summary, latest) }));
 
   const blocks = [];
-  // LIS-05 and EST-01: an empty list says so in one sentence and offers to load again, the way out last (MAR-06). With
-  // only discarded pains the week's sentence stays and points to them instead of saying the list is empty.
-  if (empty) {
+  // LIS-05 and EST-01: an empty catalog says so in one sentence and offers to load again, the way out last (MAR-06).
+  if (!inCatalog) {
     blocks.push(h("div", { class: "stack", "data-rol": "vacio" },
       h("p", { class: "week-sentence" }, emptySentence(home.summary, notice)),
       h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
   } else {
-    // A list from a run that failed, stayed incomplete or only gathered, or from an old run: the sentence speaks of
-    // that run or of the last review.
-    const tense = sentenceTense(notice);
-    const sentence = h("p", { class: "week-sentence" },
-      weekSentence(home.summary, { weighty: sections.weighty.length, past: tense === "past", latest: tense === "latest" }));
-    blocks.push(sentence, ...shown.map(([key, title]) => painSection(key, title, sections[key])));
-    if (!shown.length) {
-      blocks.push(h("div", { class: "section stack", "data-rol": "vacio" },
-        h("p", {}, onlyDiscardedSentence(notice)),
-        h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
+    const counts = board(sections);
+    const refresh = () => {
+      lead.textContent = decideLead(items, home.marks, me);
+      counts.refresh(catalogSections(home));
+    };
+    if (!items.length) {
+      blocks.push(h("div", { class: "stack decide-empty", "data-rol": "vacio" },
+        h("p", {}, T.decideEmpty),
+        h("a", { class: "button button--primary", "data-rol": "accion-principal", href: "#/catalogo" }, T.seeCatalog)));
     }
-  }
-  // The discarded ones are folded away: few need them (COM-06). The summary holds their h2, so their rows are always h3.
-  if (sections.discarded.length) {
-    blocks.push(h("details", { class: "section" },
-      h("summary", { class: "section-summary" },
-        h("h2", {}, t("sectionCount", { title: T.sectionDiscarded, count: sections.discarded.length }))),
-      painList(sections.discarded)));
+    blocks.push(counts.element);
+    if (items.length) blocks.push(stationList(items, { home, email, me, latest, view, light, onChange: refresh }));
+    refresh();
   }
   layout.body.removeAttribute("aria-busy");
   layout.body.classList.add("home-body");
   replaceChildren(layout.body, blocks);
+  state.cleanup = lightUp(root);
 }
 
-function painSection(key, title, items) {
-  const id = `section-${key}`;
-  return h("section", { class: "section", "aria-labelledby": id },
-    h("h2", { id }, t("sectionCount", { title, count: items.length })),
-    painList(items));
+// The whole catalog by state: four counts, each a link to Catálogo. `refresh` recounts after a mark.
+const BOARD = [["weighty", "boardWeighty"], ["interested", "boardInterested"], ["watching", "boardWatching"], ["discarded", "boardDiscarded"]];
+function board(sections) {
+  const figures = new Map(BOARD.map(([key]) => [key, h("strong", { class: "board-count" })]));
+  const element = h("section", { class: "board", "aria-label": T.boardLabel },
+    h("ul", { role: "list" }, BOARD.map(([key, label]) => h("li", {},
+      h("a", { class: "board-cell", href: "#/catalogo" }, lamp(painLamp(key)), figures.get(key), h("span", { class: "board-label" }, T[label]))))));
+  const refresh = (next) => BOARD.forEach(([key]) => { figures.get(key).textContent = formatNumber(next[key].length); });
+  refresh(sections);
+  return { element, refresh };
 }
 
-// One row per pain: its title as the link to it, who suffers it, and a line with the trend, the topic and the marks
-// (LIS-01). The pain id only travels in the link's address.
-function painRow(item) {
+// The stations in decideList's order, numbered 01, 02… A pain with new evidence from this week's run waits for the
+// move: it lights after the line's last stage. (An older run's line and its pains are drawn already lit.)
+function stationList(items, ctx) {
+  const pains = new Map(ctx.home.pains.filter((p) => p && p.id).map((p) => [p.id, p]));
+  let step = ctx.view ? ctx.view.stages.length : 0;
+  // An odd last full station spans its row, so no hole is left beside it (the compact ones start their own row).
+  const full = items.filter((item) => item.full);
+  const spans = full.length % 2 === 1 ? full[full.length - 1] : null;
+  return h("ol", { class: "stations", role: "list", "aria-label": T.homeTitle }, items.map((item, index) => {
+    const lights = item.fresh && ctx.light;
+    const element = station(item, index, { ...ctx, pain: pains.get(item.id), step: lights ? step++ : null });
+    if (item === spans) element.classList.add("station--span");
+    return element;
+  }));
+}
+
+// One station: its plate (number, lamp and its state written beside it), the title as the link to the pain, its tags,
+// why it is there (its testimonies, the attacks it held, and for the duel's winner why it won), who suffers it, the
+// trend and topic, the team's marks, and «Comentar», «Descartar» and «Nos interesa». The duel's winner and the pains with
+// weight are full stations; the rest are compact (`station--compact`): no «Quién lo sufre» and no trend line. Each
+// button says what pressing it does, and names its pain for a screen reader (aria-describedby). A mark changes the
+// station in place: a discarded pain stays until the next load, lamp off, so it can be undone with the same button.
+function station(item, index, ctx) {
+  const { home, me, pain } = ctx;
+  const viewId = state.viewId;
+  const titleId = `estacion-${index + 1}`;
+  const href = `#/dolor/${encodeURIComponent(item.id)}`;
+  const light = lamp(item.lamp, { step: ctx.step, size: "station" });
+  const stateText = h("span", { class: "station-state-text" });
+  const tags = stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" })
+    .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
+  const meta = item.full ? stationMeta(item) : [];
+  const facts = stationFactLines(item.facts);
+  const reason = item.facts && item.facts.duelReason;
+  const marksLine = h("p", { class: "station-marks" });
+  const interested = h("button", { type: "button", class: "button button--primary", "aria-describedby": titleId });
+  const discard = h("button", { type: "button", class: "button button--secondary", "aria-describedby": titleId });
+  const note = h("p", { class: "station-note", role: "status" });
+  const comment = h("a", { class: "button button--quiet", href, "aria-describedby": titleId,
+    onclick: () => { state.focusComment = item.id; } }, T.commentAction);
+
+  const mine = () => {
+    const own = home.marks.find((m) => m && m.pain_id === item.id && lower(m.author) === me);
+    return own ? own.mark : null;
+  };
+  function refresh() {
+    const section = pain ? sectionOf(pain, home.marks) : item.section;
+    light.dataset.lamp = painLamp(section);
+    stateText.textContent = stationStateText(section);
+    const labels = stationButtonLabels(mine());
+    interested.textContent = labels.interested;
+    discard.textContent = labels.discard;
+    const lines = stationMarks(item.id, home.marks, home.people);
+    marksLine.textContent = lines.length ? lines.join(" · ") : T.noMarksYet;
+  }
+
+  let busy = false;
+  async function press(pressed) {
+    if (busy) return;
+    const next = nextMark(mine(), pressed);
+    busy = true;
+    [interested, discard].forEach((b) => b.setAttribute("aria-disabled", "true"));
+    note.textContent = "";
+    delete note.dataset.tone;
+    let error = null;
+    try { await setMark(supabase, item.id, next); } catch (err) { error = err; }
+    busy = false;
+    if (viewId !== state.viewId) return;
+    [interested, discard].forEach((b) => b.removeAttribute("aria-disabled"));
+    if (error) {
+      const kind = sendErrorKind(error);
+      if (kind === "expired") return sessionEnded();
+      if (kind === "no-access") return showNoAccess(ctx.email);
+      note.dataset.tone = "error";
+      note.textContent = markErrorText(kind).text;
+      return;
+    }
+    // The base keeps one mark per person; the page mirrors it without reading everything again.
+    home.marks = home.marks.filter((m) => !m || m.pain_id !== item.id || lower(m.author) !== me);
+    if (next) home.marks.push({ pain_id: item.id, author: me, mark: next, created_at: new Date().toISOString() });
+    refresh();
+    ctx.onChange();
+    note.textContent = next === "discarded" ? discardNote(pain, home.marks) : next === "interested" ? T.markSavedInterested : T.markRemoved;
+  }
+  interested.addEventListener("click", () => press("interested"));
+  discard.addEventListener("click", () => press("discarded"));
+  refresh();
+
+  return h("li", { class: item.full ? "station" : "station station--compact", "aria-labelledby": titleId },
+    h("div", { class: "station-plate" },
+      h("span", { class: "station-number", "aria-hidden": "true" }, pad(index + 1)),
+      h("p", { class: "station-state" }, light, stateText)),
+    h("div", { class: "station-body" },
+      h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title)),
+      tags.length ? h("p", { class: "station-tags" }, tags) : null,
+      // The duel's line, said as what it is, right under its «Ganó el duelo» tag.
+      reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
+      facts.length ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null,
+      item.full && item.who ? h("p", { class: "station-who" }, h("span", { class: "station-label" }, `${T.whoLabel}:`), " ", item.who) : null,
+      meta.length ? h("p", { class: "station-meta" }, meta.join(" · ")) : null,
+      h("div", { class: "station-foot" },
+        marksLine,
+        h("div", { class: "station-actions" }, comment, h("span", { class: "station-pair" }, discard, interested)),
+        note)));
+}
+
+// ---- Catálogo: every pain by state --------------------------------------------------------
+
+// Every pain by state (catalogView): one section per state with its count, in the board's order, each a list of dense
+// rows. A section with no pain says so; with no pain anywhere the screen says so once and offers to load again, the way
+// out last (LIS-05, EST-01, MAR-06). The run's notice stays: it says how old the list is.
+function renderCatalog(layout, home) {
+  const view = catalogView(home);
+  const notice = showRunNotice(layout, home, { empty: view.empty });
+  const blocks = view.empty
+    ? [h("div", { class: "stack", "data-rol": "vacio" },
+      h("p", { class: "week-sentence" }, emptySentence(home.summary, notice)),
+      h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload))]
+    : view.sections.map(catalogSection);
+  layout.body.removeAttribute("aria-busy");
+  layout.body.classList.add("catalog-body");
+  replaceChildren(layout.body, blocks);
+}
+
+// A section: its lamp and its heading with the count, then its rows or the sentence that says it has none. The
+// discarded ones are folded away, since few need them (COM-06); their h2 is in the fold's summary.
+function catalogSection(section) {
+  const id = `seccion-${section.key}`;
+  const heading = h("h2", { id, class: "catalog-heading" }, lamp(section.lamp), h("span", {}, section.heading));
+  if (!section.count) {
+    return h("section", { class: "catalog-section", "aria-labelledby": id }, heading, h("p", { class: "catalog-empty" }, section.emptyText));
+  }
+  const rows = painList(section.items, (item) => painRow(item, section));
+  if (section.key === "discarded") {
+    return h("details", { class: "catalog-section catalog-fold" }, h("summary", { class: "catalog-summary" }, heading), rows);
+  }
+  return h("section", { class: "catalog-section", "aria-labelledby": id }, heading, rows);
+}
+
+// One row per pain, dense: its lamp and its state in words, the title as the link to it (the whole row is its target),
+// who suffers it, then the trend and topic and the team's marks (LIS-01). The pain id only travels in the address.
+function painRow(item, section) {
+  const meta = stationMeta(item);
+  const marks = rowMarks(item);
   return h("li", { class: "pain-row" },
-    h("h3", { class: "pain-title" }, h("a", { href: `#/dolor/${encodeURIComponent(item.id)}` }, item.title)),
-    item.who ? h("p", { class: "pain-who" }, item.who) : null,
-    h("p", { class: "pain-meta" }, rowMeta(item).join(" · ")));
+    h("p", { class: "pain-state" }, lamp(section.lamp), h("span", {}, section.state)),
+    h("div", { class: "pain-main" },
+      h("h3", { class: "pain-title" }, h("a", { href: `#/dolor/${encodeURIComponent(item.id)}` }, item.title)),
+      item.who ? h("p", { class: "pain-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null),
+    h("div", { class: "pain-side" },
+      meta.length ? h("p", { class: "pain-meta" }, meta.join(" · ")) : null,
+      h("p", { class: marks.length ? "pain-marks" : "pain-marks is-empty" }, marks.length ? marks.join(" · ") : T.noMarksYet)));
 }
 
 // LIS-04: past 50 rows the list shows 20, and «Ver 20 más» adds the next ones; the focus goes to the first row added.
-function painList(items) {
+function painList(items, row) {
   const list = h("ul", { class: "pain-list", role: "list" });
-  const more = h("button", { type: "button", class: "link-button" });
+  const more = h("button", { type: "button", class: "link-button more-button" });
   let count = 0;
   function showUpTo(next) {
-    const added = items.slice(count, next).map(painRow);
+    const added = items.slice(count, next).map(row);
     list.append(...added);
     count = next;
     const left = items.length - count;
@@ -304,10 +586,156 @@ function painList(items) {
   return [list, more];
 }
 
+// ---- Corridas: what the workflow did, week by week -----------------------------------------
+
+// Corridas keeps the frame route() drew (same title), so the screen does not flash. Only runs that left their trace
+// come back (run_traces), newest first.
+async function showRuns(layout, email) {
+  state.view = "runs";
+  const viewId = state.viewId;
+  layout.body.setAttribute("aria-busy", "true");
+  replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.runsLoading));
+  layout.heading.focus({ preventScroll: true });
+  let traces;
+  try { traces = await loadRuns(supabase); }
+  catch (error) {
+    if (viewId !== state.viewId) return;
+    return showLoadError(layout, error, email, T.runsError);
+  }
+  if (viewId !== state.viewId) return;
+  const rows = runRows(traces);
+  layout.body.removeAttribute("aria-busy");
+  layout.body.classList.add("runs-body");
+  if (!rows.length) {
+    // EST-01: no run yet says so and offers to load again, the way out last (MAR-06).
+    replaceChildren(layout.body, h("div", { class: "stack", "data-rol": "vacio" },
+      h("p", { class: "week-sentence" }, T.runsEmpty),
+      h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
+    return;
+  }
+  layout.head.append(h("p", { class: "page-lead" }, T.runsLead));
+  // LIS-04: past 50 runs the list shows 20 at a time (painList).
+  const [list, more] = painList(rows, runListRow);
+  list.className = "run-list";
+  list.setAttribute("aria-label", T.runsListLabel);
+  replaceChildren(layout.body, list, more);
+}
+
+// One run, dense: its lamp and its state in words, its date as the link to it (the whole row is its target), its niche,
+// how long it took, its cost and its new pains; then the mini line, each stage's lamp and count, and how many stages had
+// a cut in words (the lamps are only drawn: the words beside them say it). Every lamp here is drawn lit.
+function runListRow(row) {
+  const mini = row.hasCounts
+    ? h("div", { class: "run-mini" },
+      h("ol", { class: "run-mini-stages", role: "list", "aria-label": T.runMiniLabel }, row.stages.map((stage) => h("li", {},
+        lamp(stage.lamp, { size: "small" }),
+        h("span", { class: "visually-hidden" }, `${stage.label}: `),
+        h("span", { class: stage.count === null ? "run-mini-count is-empty" : "run-mini-count" }, stage.count ?? "–"),
+        stage.count === null ? h("span", { class: "visually-hidden" }, T.stageNoData) : null))),
+      h("p", { class: "run-mini-state" }, row.cutStages))
+    : h("p", { class: "run-mini run-mini--none" }, T.runMiniNone);
+  return h("li", { class: "run-row" },
+    h("p", { class: "run-state" }, lamp(row.lamp), h("span", {}, row.state)),
+    h("div", { class: "run-main" },
+      h("h2", { class: "run-title" }, h("a", { href: row.href }, row.title)),
+      row.facts.length ? h("p", { class: "run-facts" }, row.facts.join(" · ")) : null),
+    mini);
+}
+
+// One run opened: it reads the runs again (the list is a year at most) and the session's week, to know whether it is
+// this week's run: only that one's line lights up with the «tomoshi» move, and only if this session has not lit it yet
+// (on the home or here). A run not in the list (no trace, or an address typed by hand) says so and points back to the
+// list.
+async function showRun(layout, id, email) {
+  state.view = "run";
+  const viewId = state.viewId;
+  layout.body.setAttribute("aria-busy", "true");
+  replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.runsLoading));
+  layout.heading.focus({ preventScroll: true });
+  let traces;
+  let week;
+  try { [traces, week] = await Promise.all([loadRuns(supabase), ensureWeek()]); }
+  catch (error) {
+    if (viewId !== state.viewId) return;
+    return showLoadError(layout, error, email, T.runsError);
+  }
+  if (viewId !== state.viewId) return;
+  const trace = traces.find((t) => t.run_id === id);
+  if (!trace) {
+    layout.body.removeAttribute("aria-busy");
+    showNotice(layout.notices, { tone: "info", text: T.runMissing });
+    replaceChildren(layout.body, h("a", { class: "button button--primary", "data-rol": "accion-principal", href: "#/corridas" }, T.seeAllRuns));
+    return;
+  }
+  // The duels go by the cards' titles: the last home's, and a fresh read of the ones this run names (it wins). A failed
+  // read only leaves them in plain words.
+  const fresh = await loadTitles(supabase, duelIds(trace));
+  if (viewId !== state.viewId) return;
+  const titles = new Map([...(state.titles ?? []), ...fresh]);
+  const thisWeek = Boolean(week && week.latest && week.latest.isThisWeek && week.latest.trace && week.latest.trace.run_id === trace.run_id);
+  renderRun(layout, trace, titles, thisWeek);
+}
+
+// The run's sections: the cost, the cuts and the duels in words, each with what it says when it has none; then
+// «Detalle técnico», closed, the only place where the run's raw texts show.
+function runSection(key, title, items, emptyText, list = "ul") {
+  const id = `corrida-${key}`;
+  return h("section", { class: "run-section", "aria-labelledby": id },
+    h("h2", { id }, title),
+    items.length ? h(list, { class: `run-${key}-list`, role: list === "ul" ? "list" : null }, items) : h("p", { class: "run-empty" }, emptyText));
+}
+
+function technicalPart(title, items) {
+  return items.length ? h("div", { class: "tech-part" }, h("h3", {}, title), h("ul", { role: "list" }, items)) : null;
+}
+
+function renderRun(layout, trace, titles, thisWeek) {
+  const title = runTitle(trace);
+  layout.heading.textContent = title;
+  setTitle(title);
+  const status = runState(trace.status);
+  const keys = runKeys(trace);
+  layout.head.classList.add("run-head");
+  // Element.append writes a null as the text «null»: only what exists goes in.
+  layout.head.append(...[
+    h("p", { class: "detail-status" }, lamp(status.lamp), h("span", {}, status.text)),
+    keys.length ? h("ul", { class: "key-data", role: "list" }, keys.map(keyItem)) : null,
+  ].filter(Boolean));
+
+  const costs = runCostLines(trace);
+  const cuts = runCutLines(trace);
+  const duels = runDuelLines(trace, titles);
+  const tech = runTechnical(trace, titles);
+  const counted = Array.isArray(trace.funnel) && trace.funnel.some((stage) => stage && typeof stage.count === "number");
+  const technical = h("details", { class: "run-tech" },
+    h("summary", {}, T.techTitle),
+    h("div", { class: "run-tech-body" },
+      h("p", { class: "run-tech-lead" }, T.techLead),
+      tech.empty ? h("p", { class: "run-empty" }, T.techNone) : null,
+      technicalPart(T.techCuts, tech.cuts.map((line) => h("li", {}, h("p", { class: "raw" }, line)))),
+      technicalPart(T.techNotes, tech.notes.map((n) => h("li", {}, h("p", { class: "raw-label" }, n.label), h("p", { class: "raw" }, n.text)))),
+      technicalPart(T.techReasons, tech.reasons.map((r) => h("li", {}, h("p", { class: "raw-label" }, r.label), h("p", { class: "raw" }, r.text))))));
+
+  layout.body.removeAttribute("aria-busy");
+  layout.body.classList.add("run-body");
+  replaceChildren(layout.body, h("div", { class: "run-detail" },
+    h("div", { class: "run-line" }, renderLine(trace, {
+      idPrefix: "corrida-linea", light: thisWeek && firstLighting(trace.run_id), costs: false, otherCuts: false,
+      note: counted ? null : T.runMiniNone })),
+    h("div", { class: "run-sections" },
+      runSection("costo", T.runCostTitle, costs.map((row) => h("div", { class: row.total ? "run-cost run-cost--total" : "run-cost" },
+        h("dt", {}, row.label), h("dd", {}, row.value))), T.runCostNone, "dl"),
+      runSection("recortes", T.runCutsTitle, cuts.map((line) => h("li", {}, line)), T.runCutsNone),
+      runSection("duelos", T.runDuelsTitle, duels.map((line) => h("li", {}, line)), T.runDuelsNone),
+      technical)));
+  state.cleanup = lightUp(root);
+}
+
 // ---- a pain: its card, the team's marks and comments (the manual's «detalle» pattern) ------
 
-// «← Volver» on one line; its accessible name says where it goes (MAR-14).
-const backLink = () => h("a", { class: "back-link", href: "#/", "aria-label": T.backToList }, T.back);
+// «← Volver» on one line; its accessible name says where it goes (MAR-14). A pain goes back to the list, an opened run
+// to Corridas.
+const backLink = (href = "#/", text = T.back, label = T.backToList) => h("a", { class: "back-link", href, "aria-label": label }, text);
 
 // The comment being written, kept in the tab under its pain and its author (Review Focus 3).
 function saveDraft(painId, email, body) {
@@ -394,6 +822,68 @@ function cardSection(section, ...extra) {
     extra);
 }
 
+// ---- «Cómo llegamos a este dolor» ----
+
+// One row of the attacks or the duels: its lamp and its result in words, then what was asked (or whom it faced) and,
+// when the card has it, its plain line. No plain line, no empty box (Review Focus 4).
+function howRow(color, result, main, plain) {
+  return h("li", { class: "how-row" },
+    h("p", { class: "how-result" }, lamp(color), h("span", {}, result)),
+    h("div", { class: "how-main" },
+      h("p", { class: "how-question" }, main),
+      plain ? h("p", { class: "how-plain" }, plain) : null));
+}
+
+// One quote, verbatim and in its language (its lang attribute), with its day and its link.
+function howQuote(quote) {
+  return h("li", { class: "how-quote" },
+    h("blockquote", { lang: quote.language }, h("p", {}, quote.quote)),
+    quote.date || quote.url ? h("p", { class: "how-quote-meta" },
+      quote.date ? h("span", {}, quote.date) : null,
+      quote.url ? h("a", { class: "how-quote-link", href: quote.url, target: "_blank", rel: "noopener noreferrer" }, T.seeSource) : null) : null);
+}
+
+// A source: its name and kind, how many quotes, the newest three and «Ver N más» for the rest. The focus goes to the
+// first quote added (its item, so a screen reader starts at the quote and not at its «Ver la fuente» link).
+function howSource(group, index) {
+  const id = `fuente-${index + 1}`;
+  const list = h("ul", { class: "how-quotes", role: "list" }, group.quotes.slice(0, group.shown).map(howQuote));
+  const more = group.more ? h("button", { type: "button", class: "link-button more-button" }, t("showMore", { count: group.more })) : null;
+  if (more) {
+    more.addEventListener("click", () => {
+      const added = group.quotes.slice(group.shown).map(howQuote);
+      list.append(...added);
+      more.remove();
+      added[0].setAttribute("tabindex", "-1");
+      added[0].focus();
+    });
+  }
+  const count = group.quotes.length === 1 ? T.quoteCountOne : t("quoteCountMany", { count: formatNumber(group.quotes.length) });
+  return h("section", { class: "how-source", "aria-labelledby": id },
+    h("div", { class: "how-source-head" },
+      h("h4", { id }, group.source),
+      h("p", { class: "how-source-kind" }, `${group.kind} · ${count}`)),
+    list, more);
+}
+
+// The section's body: the quotes by source, the attacks of the latest run, and its duels; each part only when it has
+// something to tell.
+function howBody(view) {
+  const part = (key, title, ...content) => h("div", { class: "how-part" }, h("h3", { class: "how-heading", id: `como-${key}` }, title), content);
+  return [
+    view.sources.length ? part("citas", T.howQuotesTitle,
+      h("p", { class: "how-lead" }, T.howQuotesLead),
+      h("div", { class: "how-sources" }, view.sources.map(howSource))) : null,
+    view.attacks.length ? part("preguntas", T.howAttacksTitle,
+      h("ul", { class: "how-rows", role: "list", "aria-labelledby": "como-preguntas" },
+        view.attacks.map((a) => howRow(a.held ? "green" : "red", a.result, a.question, a.plain)))) : null,
+    view.duels.length ? part("duelos", view.duels.length === 1 ? T.howDuelTitle : T.howDuelsTitle,
+      h("ul", { class: "how-rows", role: "list", "aria-labelledby": "como-duelos" },
+        view.duels.map((d) => howRow(d.won ? "green" : "amber", d.result,
+          d.known ? t("duelAgainst", { title: d.againstTitle }) : T.duelAgainstOther, d.plain)))) : null,
+  ];
+}
+
 // The index of the sections (DET-04): folded at the top on a phone, sticky beside the sections from 672 px (the
 // frame's side panel, `lateral`). The CSS
 // shows one of the two, so a screen reader meets only one. Its links scroll to their section without touching the
@@ -422,8 +912,9 @@ function renderPain(layout, id, email, data) {
   setTitle(title);
 
   // ---- the header (DET-01, DET-12): the status tag, the key data, then the marks as its actions (MAR-06) ----
-  const tag = h("span", { class: "tag" });
-  const statusRow = h("p", { class: "detail-status" }, tag);
+  const tag = h("span", {});
+  const statusLamp = lamp("off");
+  const statusRow = h("p", { class: "detail-status" }, statusLamp, tag);
   const interested = h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal" },
     T.markInterestedAction);
   const discard = h("button", { type: "button", class: "button button--secondary" }, T.markDiscardAction);
@@ -443,8 +934,10 @@ function renderPain(layout, id, email, data) {
   // The buttons say what pressing them does, and the line under them your own mark in words with its day. A button whose
   // label changes with the state carries no aria-pressed (ARIA: a toggle keeps a fixed label).
   function refreshHeader() {
-    const label = statusLabel(painStatus(data.pain, view.marks));
+    const section = painStatus(data.pain, view.marks);
+    const label = statusLabel(section);
     tag.textContent = label || "";
+    statusLamp.dataset.lamp = painLamp(section);
     statusRow.hidden = !label; // a pain that just left every list (a dead one no longer kept): no tag
     const mine = myMark();
     const labels = markButtonLabels(mine);
@@ -617,14 +1110,22 @@ function renderPain(layout, id, email, data) {
     h("div", { class: "field" }, h("label", { for: "comment" }, T.commentLabel), textarea, counter, fieldErr),
     h("div", {}, publishButton));
 
-  // ---- the body: the line card's notice, or the index; then the sections ----
+  // ---- the body: the line card's notice, or the index; then the sections, «Cómo llegamos» before the marks ----
+  // The rivals' titles read with the pain win over the last home's (a pain opened from the email has only those).
+  const titles = new Map([...(state.titles ?? []), ...(data.titles ?? [])]);
+  const how = howWeGot(data.card, data.pain, titles);
   const sections = cardSections(data.card);
-  const blocks = sections.map((section) => (section.id === "marcas"
-    ? cardSection(section,
-      h("h3", {}, T.marksTitle), marksList, noMarks,
-      commentsHeading, commentList, noComments,
-      form, live)
-    : cardSection(section)));
+  if (how) sections.splice(sections.length - 1, 0, { id: "como-llegamos", title: T.secHowWeGot, paragraphs: [] });
+  const blocks = sections.map((section) => {
+    if (section.id === "marcas") {
+      return cardSection(section,
+        h("h3", {}, T.marksTitle), marksList, noMarks,
+        commentsHeading, commentList, noComments,
+        form, live);
+    }
+    if (section.id === "como-llegamos") return cardSection(section, howBody(how));
+    return cardSection(section);
+  });
   layout.body.removeAttribute("aria-busy");
   if (isLineCard(data.card)) {
     replaceChildren(layout.body, h("div", { class: "notice detail-notice" }, lineNotice), blocks);
@@ -635,6 +1136,12 @@ function renderPain(layout, id, email, data) {
   refreshHeader();
   refreshMarks();
   refreshComments();
+  // «Comentar» on a station of the home opens the pain with its comment field ready.
+  if (state.focusComment === id) {
+    state.focusComment = null;
+    textarea.focus({ preventScroll: true });
+    textarea.scrollIntoView({ block: "center" });
+  }
 
   // NAV-06: a comment not yet published stops the way out and asks, in the notice zone; leaving drops it.
   state.guard = {
@@ -886,6 +1393,9 @@ async function signOut() {
   try { ({ error } = await supabase.auth.signOut({ scope: "local" })); } catch (err) { error = err; }
   state.signingOut = false;
   state.session = null;
+  state.week = null;
+  state.weekLoad = null;
+  state.titles = null;
   clearPendingSignIn();
   clearDrafts(); // whoever signs in next in this tab must not find this person's comments
   history.replaceState(null, "", `${location.pathname}${location.search}`);
@@ -899,6 +1409,9 @@ async function signOut() {
 // same screen, and a comment being written stays kept for its author (saveDraft).
 async function sessionEnded() {
   state.session = null;
+  state.week = null;
+  state.weekLoad = null;
+  state.titles = null;
   state.viewId += 1;
   const viewId = state.viewId;
   runCleanup();

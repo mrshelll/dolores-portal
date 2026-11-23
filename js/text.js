@@ -3,9 +3,27 @@
 // The only visible text outside this file is index.html's fallback, which must work when no module loads.
 
 export const T = Object.freeze({
-  brand: "dolores",
-  brandHome: "dolores, ir al inicio",
-  pageTitle: "{title} · dolores",
+  brand: "tomoshi",
+  brandHome: "tomoshi, ir a Esta semana",
+  pageTitle: "{title} · tomoshi",
+
+  // The shell: the tabs, the lamp beside the brand (how the latest run went) and the week's data at the right.
+  tabsLabel: "Secciones",
+  tabWeek: "Esta semana",
+  tabCatalog: "Catálogo",
+  tabRuns: "Corridas",
+  brandLampGreen: "La última corrida terminó completa",
+  brandLampAmber: "La última corrida quedó a medias, es vieja o todavía no hay ninguna",
+  brandLampRed: "La última corrida falló",
+  // The same state in two or three words, shown beside the brand from 768 px (the lamp's label keeps the long one).
+  brandShortComplete: "Corrida completa",
+  brandShortPartial: "Corrida a medias",
+  brandShortOld: "Corrida vieja",
+  brandShortFailed: "Corrida fallida",
+  brandShortNone: "Sin corridas aún",
+  metaWeek: "Semana del",
+  metaNiche: "Nicho:",
+  metaCost: "Costó",
 
   // Sign-in: the email.
   signInPageTitle: "Entrar",
@@ -53,51 +71,160 @@ export const T = Object.freeze({
   accessErrorTitle: "No pudimos abrir la página",
   accessError: "No pudimos comprobar tu acceso. Revisa tu conexión y vuelve a intentarlo.",
   noAccessTitle: "No tienes acceso",
-  noAccess: "Esta página es solo para el equipo de dolores. Si deberías entrar, pídele a Miguel que agregue tu correo.",
+  noAccess: "Esta página es solo para el equipo. Si deberías entrar, pídele a Miguel que agregue tu correo.",
   signedInAs: "Entraste como {email}.",
 
-  // Home: the week's pains.
-  homeTitle: "Dolores de la semana",
+  // Home («Esta semana»): «Para decidir», the stations waiting for a mark.
+  homeTitle: "Para decidir",
+  leadNoPending: "Ya marcaste todos los de esta lista.",
+  leadPendingOne: "1 espera tu marca.",
+  leadPendingMany: "{count} esperan tu marca.",
+  leadOrderWinnerWeighty: "Primero, el ganador del duelo; luego, los que tienen peso para trabajar.",
+  leadOrderWinner: "Primero, el ganador del duelo.",
+  leadOrderWeighty: "Primero, los que tienen peso para trabajar.",
+  decideEmpty: "No hay nada para decidir ahora. Los demás dolores están en el catálogo.",
+  seeCatalog: "Ver el catálogo",
+  boardLabel: "El catálogo completo",
+  boardWeighty: "con peso para trabajar",
+  boardInterested: "marcados «Nos interesa»",
+  boardWatching: "en observación",
+  boardDiscarded: "descartados por el equipo",
+  whoLabel: "Quién lo sufre",
+  tagWinner: "Ganó el duelo",
+  tagWinnerDated: "Ganó el duelo del {date}",
+  tagFresh: "Evidencia nueva",
+  noMarksYet: "Sin marcas aún",
+  // Why a station is there: its testimonies, the attacks it held and, for the duel's winner, why it won.
+  factsLabel: "Por qué está aquí",
+  factTestimoniesOne: "1 testimonio",
+  factTestimoniesMany: "{count} testimonios",
+  factAttacks: "Resistió {held} de {total} ataques",
+  factAttacksOne: "Resistió {held} de 1 ataque",
+  duelReasonLabel: "En el duelo:",
+  commentAction: "Comentar",
+  stationInterested: "Nos interesa",
+  markSavedInterested: "Guardamos tu marca «Nos interesa».",
+  markRemoved: "Quitaste tu marca.",
+
+  // The run's line: one station per stage, the sources under the first.
+  lineLabel: "Línea de la corrida",
+  lineTitle: "Línea de la corrida",
+  lineTitleOld: "Recorrido de la corrida del {date}",
+  lineTitleOldUndated: "Recorrido de una corrida anterior",
+  lineNoTrace: "Esta corrida no dejó su recorrido.",
+  lineOlderNote: "La última corrida no dejó su recorrido. Este es el de la última que sí lo dejó.",
+  lineNoRun: "Todavía no hay ninguna corrida.",
+  lineStripCutsOne: "1 etapa con recorte",
+  lineStripCuts: "{count} etapas con recorte",
+  lineStripClean: "Sin recortes",
+  durationMinutes: "duró {minutes} min",
+  durationHours: "duró {hours} h {minutes} min",
+  durationShort: "duró menos de un minuto",
+  costUsd: "{amount} USD",
+  costCards: "Fichas",
+  costLabel: "Costo por modelo",
+  stageOk: "Sin recortes",
+  stageCut: "Con recorte",
+  stageNoData: "Sin dato",
+  stageCap: "tope de {cap}",
+  sourcesLabel: "Fuentes",
+  sourceOk: "completa",
+  sourceTruncated: "recortada",
+  sourceEmpty: "no aportó nada",
+  sourceFailed: "falló",
+  sourceUnknown: "sin dato",
+  sourceOf: "de {available}",
+  otherCuts: "Otros recortes",
+  // The cuts the page cannot explain, said once on the home's line, as a link to the run's page.
+  cutOtherLinkOne: "Hubo un recorte más; míralo en su corrida",
+  cutsOtherLinkMany: "Hubo {count} recortes más; míralos en su corrida",
+
+  // Catálogo: every pain by state, one section per state with its count; an empty section says so.
+  catalogTitle: "Catálogo",
+  catalogLoading: "Cargando el catálogo…",
+  catalogEmptyWeighty: "Ahora ningún dolor tiene peso para trabajar.",
+  catalogEmptyInterested: "Ahora no hay ninguno. Aquí van los dolores marcados «Nos interesa» que todavía no tienen peso para trabajar.",
+  catalogEmptyWatching: "Ahora no hay ningún dolor en observación.",
+  catalogEmptyDiscarded: "Nadie del equipo ha descartado ningún dolor.",
+  // Corridas: every run that left its trace, week by week, and each one opened.
+  runsTitle: "Corridas",
+  runsLead: "Lo que hizo cada corrida, semana a semana, la más reciente primero. Abre una para ver su línea completa, sus recortes y sus duelos.",
+  runsLoading: "Cargando las corridas…",
+  runsError: "No pudimos cargar las corridas. Vuelve a intentarlo en un momento.",
+  runsEmpty: "Todavía ninguna corrida dejó su recorrido. Cuando termine la del lunes, aparece aquí.",
+  runsListLabel: "Corridas, la más reciente primero",
+  runMissing: "Esta corrida no está en la lista: puede que no haya dejado su recorrido.",
+  runsBack: "← Corridas",
+  runsBackLabel: "Volver a las corridas",
+  seeAllRuns: "Ver todas las corridas",
+  runTitle: "Corrida",
+  runTitleDated: "Corrida del {date}",
+  runTitleUndated: "Corrida sin fecha",
+  runStateComplete: "Completa",
+  runStateIncomplete: "Incompleta",
+  runStateIngestOnly: "Solo juntó publicaciones",
+  runStateFailed: "Falló",
+  runStateUnknown: "Sin dato del estado",
+  runMiniLabel: "Conteos de cada etapa",
+  runMiniNone: "Esta corrida no dejó conteos.",
+  newPainsNone: "Ningún dolor nuevo",
+  newPainsOne: "1 dolor nuevo",
+  newPainsMany: "{count} dolores nuevos",
+  keyNiche: "Nicho",
+  keyAgents: "Agentes",
+  keyFound: "Encontró",
+  agentsOfCap: "{used} usados de {cap}",
+  agentsUsed: "{used} usados",
+  runCostTitle: "Costo",
+  costTotal: "Total",
+  runCostNone: "Esta corrida no dejó su costo.",
+  runCutsTitle: "Lo que se recortó",
+  runCutsNone: "Esta corrida no anotó recortes.",
+  cutsOtherMany: "Hubo {count} recortes más",
+  runCutsOtherOne: "Hubo un recorte más; lo verás en el detalle técnico",
+  runCutsOtherMany: "Hubo {count} recortes más; los verás en el detalle técnico",
+  runDuelsTitle: "Duelos",
+  runDuelsNone: "Esta corrida no anotó duelos.",
+  duelLine: "{a} contra {b} · {winner}",
+  duelOnePain: "un dolor del catálogo",
+  duelWinner: "ganó {name}",
+  duelWinnerFirst: "ganó el primero",
+  duelWinnerSecond: "ganó el segundo",
+  duelNoWinner: "sin ganador anotado",
+  techTitle: "Detalle técnico",
+  techLead: "Los textos internos de la corrida, tal como los anotó, sin traducir ni revisar. Sirven para buscar un problema; para decidir no hace falta leerlos.",
+  techCuts: "Recortes sin explicar",
+  techNotes: "Notas de las fuentes",
+  techReasons: "Razones de los duelos",
+  techNone: "Esta corrida no dejó textos internos.",
+  techSourceUnnamed: "Fuente sin nombre",
+
+  // The empty states and the sections by state (the home and Catálogo).
   homeLoading: "Cargando los dolores…",
-  emptyReviewedOne: "Revisamos 1 publicación y no trajo ningún dolor. La próxima revisión es el lunes.",
-  emptyReviewedOneTopic: "Revisamos 1 publicación sobre «{topic}» y no trajo ningún dolor. La próxima revisión es el lunes.",
-  emptyReviewedMany: "Revisamos {count} publicaciones y ninguna trajo un dolor. La próxima revisión es el lunes.",
-  emptyReviewedManyTopic: "Revisamos {count} publicaciones sobre «{topic}» y ninguna trajo un dolor. La próxima revisión es el lunes.",
-  emptyNoRun: "Todavía no hay ninguna revisión. La primera es el lunes.",
-  emptyNoItems: "Esta semana no apareció ningún dolor. La próxima revisión es el lunes.",
-  emptyNoItemsLatest: "En la última revisión no apareció ningún dolor. La próxima revisión es el lunes.",
-  emptyUnfinished: "La revisión de esta semana no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
-  emptyUnfinishedLatest: "La última revisión no terminó, así que no hay dolores nuevos. La próxima revisión es el lunes.",
-  homeOnlyDiscarded: "No hay dolores activos esta semana. Los descartados están abajo.",
-  homeOnlyDiscardedLatest: "No hay dolores activos. Los descartados están abajo.",
+  emptyReviewedOne: "Revisamos 1 publicación y no trajo ningún dolor. La próxima corrida es el lunes.",
+  emptyReviewedOneTopic: "Revisamos 1 publicación sobre «{topic}» y no trajo ningún dolor. La próxima corrida es el lunes.",
+  emptyReviewedMany: "Revisamos {count} publicaciones y ninguna trajo un dolor. La próxima corrida es el lunes.",
+  emptyReviewedManyTopic: "Revisamos {count} publicaciones sobre «{topic}» y ninguna trajo un dolor. La próxima corrida es el lunes.",
+  emptyNoRun: "Todavía no hay ninguna corrida. La primera es el lunes.",
+  emptyNoItems: "Esta semana no apareció ningún dolor. La próxima corrida es el lunes.",
+  emptyNoItemsLatest: "En la última corrida no apareció ningún dolor. La próxima corrida es el lunes.",
+  emptyUnfinished: "La corrida de esta semana no terminó, así que no hay dolores nuevos. La próxima corrida es el lunes.",
+  emptyUnfinishedLatest: "La última corrida no terminó, así que no hay dolores nuevos. La próxima corrida es el lunes.",
   reload: "Volver a cargar",
   homeError: "No pudimos cargar los dolores. Vuelve a intentarlo en un momento.",
-  weekNone: "Esta semana ningún dolor tiene peso suficiente para trabajar.",
-  weekOne: "Esta semana hay 1 dolor con peso para trabajar.",
-  weekMany: "Esta semana hay {count} dolores con peso para trabajar.",
-  pastNone: "En esa revisión no hubo ningún dolor con peso para trabajar.",
-  pastOne: "En esa revisión hubo 1 dolor con peso para trabajar.",
-  pastMany: "En esa revisión hubo {count} dolores con peso para trabajar.",
-  lastNone: "En la última revisión no hubo ningún dolor con peso para trabajar.",
-  lastOne: "En la última revisión hubo 1 dolor con peso para trabajar.",
-  lastMany: "En la última revisión hubo {count} dolores con peso para trabajar.",
-  reviewedOne: "Revisamos 1 publicación.",
-  reviewedOneTopic: "Revisamos 1 publicación sobre «{topic}».",
-  reviewedMany: "Revisamos {count} publicaciones.",
-  reviewedManyTopic: "Revisamos {count} publicaciones sobre «{topic}».",
-  runFailed: "La revisión de esta semana falló. Ves la lista de la última revisión que terminó.",
-  runIncomplete: "La revisión de esta semana quedó incompleta: puede faltar algún dolor.",
-  runIncompleteDated: "La revisión de esta semana quedó incompleta: puede faltar algún dolor. Ves la lista del {date}.",
+  runFailed: "La corrida de esta semana falló. Ves la lista de la última corrida que terminó.",
+  runIncomplete: "La corrida de esta semana quedó incompleta: puede faltar algún dolor.",
+  runIncompleteDated: "La corrida de esta semana quedó incompleta: puede faltar algún dolor. Ves la lista del {date}.",
   runIngestOnly: "Esta semana solo se juntaron publicaciones; no se revisaron.",
-  runStale: "La última revisión es del {date}.",
-  runStaleFailed: "La última revisión es del {date} y falló.",
-  runStaleIncomplete: "La última revisión es del {date} y quedó incompleta: puede faltar algún dolor.",
-  runStaleIngestOnly: "La última revisión es del {date} y solo juntó publicaciones; no llegó a leerlas.",
-  runNone: "Todavía no hay ninguna revisión.",
+  runStale: "La última corrida es del {date}.",
+  runStaleFailed: "La última corrida es del {date} y falló.",
+  runStaleIncomplete: "La última corrida es del {date} y quedó incompleta: puede faltar algún dolor.",
+  runStaleIngestOnly: "La última corrida es del {date} y solo juntó publicaciones; no llegó a leerlas.",
+  runNone: "Todavía no hay ninguna corrida.",
   sectionWeighty: "Con peso para trabajar",
   sectionInterested: "Nos interesa",
   sectionWatching: "En observación",
-  sectionDiscarded: "Descartados",
+  sectionDiscarded: "Descartados por el equipo",
   sectionCount: "{title} ({count})",
   trendNew: "Dolor nuevo",
   trendRising: "Gana fuerza",
@@ -121,11 +248,12 @@ export const T = Object.freeze({
   statusWatching: "En observación",
   statusInterested: "Nos interesa",
   statusDiscarded: "Descartado por el equipo",
+  statusOut: "Fuera de la lista",
   keyTrend: "Cómo viene",
   keyEvidence: "Última evidencia",
   keyTopic: "Tema",
   keyRuns: "Visto en",
-  keyRunsValue: "{count} revisiones",
+  keyRunsValue: "{count} corridas",
   markInterestedAction: "Marcar «Nos interesa»",
   unmarkInterestedAction: "Quitar «Nos interesa»",
   markDiscardAction: "Descartar",
@@ -134,7 +262,7 @@ export const T = Object.freeze({
   ownInterestedUndated: "Marcaste «Nos interesa».",
   ownDiscarded: "Lo descartaste el {date}.",
   ownDiscardedUndated: "Lo descartaste.",
-  discardedNote: "Lo descartaste. La próxima revisión no lo volverá a presentar. Puedes deshacerlo con el mismo botón.",
+  discardedNote: "Lo descartaste. La próxima corrida no lo volverá a presentar. Puedes deshacerlo con el mismo botón.",
   discardedKept: "Lo descartaste, pero alguien del equipo lo marcó «Nos interesa», así que sigue en la lista.",
   markPainGone: "Este dolor ya no está en la lista y tu marca no se guardó.",
   markError: "No pudimos guardar tu marca. Vuelve a intentarlo en un momento.",
@@ -154,8 +282,31 @@ export const T = Object.freeze({
   secMarks: "Marcas y comentarios",
   seeSource: "Ver la fuente",
   originalText: "Texto original",
-  lineNotice: "Este dolor está en observación y por ahora solo tiene este resumen. Si lo marcas «Nos interesa», la próxima revisión escribe su ficha completa.",
-  lineNoticeMarked: "Ya está marcado «Nos interesa». La próxima revisión, el lunes, escribe su ficha completa.",
+  lineNotice: "Este dolor está en observación y por ahora solo tiene este resumen. Si lo marcas «Nos interesa», la próxima corrida escribe su ficha completa.",
+  lineNoticeMarked: "Ya está marcado «Nos interesa». La próxima corrida, el lunes, escribe su ficha completa.",
+
+  // A pain: «Cómo llegamos a este dolor», the quotes by source, the attacks and the duels of its latest run.
+  secHowWeGot: "Cómo llegamos a este dolor",
+  howQuotesTitle: "Lo que dice la gente",
+  howQuotesLead: "Las citas van textuales y en su idioma, las más recientes primero.",
+  quoteCountOne: "1 cita",
+  quoteCountMany: "{count} citas",
+  howAttacksTitle: "Las preguntas que le hicimos",
+  lensExistingSolution: "¿Ya existe una solución?",
+  lensEvidence: "¿Alcanza la evidencia?",
+  lensBuyer: "¿Hay quién pague?",
+  lensRootCause: "¿Es la causa de fondo?",
+  lensFeasibility: "¿Se puede construir?",
+  lensOther: "Otra pregunta",
+  attackHeld: "Resistió",
+  attackRefuted: "Lo tumbó",
+  howDuelTitle: "El duelo",
+  howDuelsTitle: "Los duelos",
+  duelWon: "Ganó",
+  duelLost: "Perdió",
+  duelAgainst: "Contra «{title}»",
+  duelAgainstOther: "Contra otro dolor del catálogo",
+  duelOtherPain: "otro dolor del catálogo",
 
   // A pain: marks and comments.
   marksTitle: "Marcas",
@@ -185,6 +336,8 @@ export const T = Object.freeze({
   leaveUnsent: "Tienes un comentario sin publicar. Si sales ahora, lo pierdes.",
   leaveAnyway: "Salir sin publicar",
   keepWriting: "Seguir escribiendo",
+  // A cut of the run that came with no plain words (the run's own: dolores/scripts/lib/i18n.mjs, trace.cut.other).
+  cutOther: "Hubo un recorte más",
 });
 
 // «Código de {length} números» → «Código de 8 números». A placeholder without a value stays as it is.
@@ -208,6 +361,35 @@ export function topicName(territory) {
   return TOPICS.get(territory) ?? OTHER_TOPIC;
 }
 
+// Each source of evidence by the run's own name and kind (dolores/scripts/lib/i18n.mjs, trace.source and trace.country,
+// as lib/trace.mjs names them): the run's line and a pain's quotes call a source the same. Evidence comes as `hn`,
+// `github`, `cfpb`, `socrata` (SECOP's open data) or `adzuna` with its country apart; the trace's `adzuna:US` and
+// `socrata:p6dx-8zbt` (SECOP's dataset) are read too. Another Socrata dataset is not SECOP. A source the page does not
+// know keeps its id as its name, as the run does.
+const SOURCES = new Map([
+  ["hn", { name: "Hacker News", kind: "Foro de programadores" }],
+  ["github", { name: "GitHub", kind: "Proyectos de código libre" }],
+  ["secop", { name: "SECOP · Colombia", kind: "Contratos públicos" }],
+  ["cfpb", { name: "CFPB", kind: "Quejas de consumidores" }],
+]);
+const SECOP_IDS = new Set(["socrata", "socrata:p6dx-8zbt"]);
+const JOBS = "Ofertas de empleo";
+const OTHER_SOURCE = "Otra fuente";
+export const COUNTRIES = new Map([["US", "Estados Unidos"], ["MX", "México"], ["BR", "Brasil"], ["CO", "Colombia"]]);
+
+export function sourceName(source, country = null) {
+  const id = typeof source === "string" ? source.trim() : "";
+  if (!id) return { name: OTHER_SOURCE, kind: OTHER_SOURCE };
+  if (SECOP_IDS.has(id)) return SOURCES.get("secop");
+  if (SOURCES.has(id)) return SOURCES.get(id);
+  const jobs = /^adzuna(?::(.+))?$/.exec(id);
+  if (jobs) {
+    const code = String(jobs[1] ?? country ?? "").trim().toUpperCase();
+    return { name: code ? `${JOBS} · ${COUNTRIES.get(code) ?? code}` : JOBS, kind: JOBS };
+  }
+  return { name: id, kind: OTHER_SOURCE };
+}
+
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric" });
 // A date without a time ("2026-09-18") is UTC midnight: read it in UTC, or west of Greenwich it shows the day before.
 const DATE_UTC = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
@@ -220,3 +402,20 @@ export function formatDate(iso) {
   if (Number.isNaN(date.getTime())) return "";
   return (DATE_ONLY.test(iso) ? DATE_UTC : DATE).format(date);
 }
+
+// «16 de noviembre» (no year: it says a week, next to the run's own date in full where that matters). A date without a
+// time is read in UTC, like formatDate. "" for nothing or a bad date.
+const DAY_MONTH = new Intl.DateTimeFormat("es", { day: "numeric", month: "long" });
+const DAY_MONTH_UTC = new Intl.DateTimeFormat("es", { day: "numeric", month: "long", timeZone: "UTC" });
+export function formatDayMonth(iso) {
+  if (typeof iso !== "string" || !iso) return "";
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return (DATE_ONLY.test(iso) ? DAY_MONTH_UTC : DAY_MONTH).format(date);
+}
+
+const NUMBER = new Intl.NumberFormat("es");
+const USD = new Intl.NumberFormat("es", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+export const formatNumber = (value) => NUMBER.format(value);
+// «3,66» for 3.6649; null for anything that is not a finite number.
+export const formatUsd = (value) => (typeof value === "number" && Number.isFinite(value) ? USD.format(value) : null);

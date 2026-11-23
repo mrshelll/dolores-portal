@@ -2,7 +2,7 @@
 // week, the notice about the run, and what kind of failure a read was. Pure, so tests/unit/model.test.mjs runs it in
 // Node.
 
-import { T, TOPICS, fill, topicName, formatDate } from "./text.js";
+import { T, TOPICS, fill, topicName, formatDate, formatDayMonth, formatUsd, formatNumber } from "./text.js";
 import { isNetworkError } from "./auth-errors.js";
 
 // The same rule as the run (dolores/scripts/lib/marks.mjs, effectiveMark): one «interested» mark keeps a pain in play;
@@ -116,18 +116,60 @@ export function buildSections({ pains = [], cards = [], marks = [], people = [] 
   return sections;
 }
 
+// Catálogo: every pain by its section, the same as buildSections.
+export const catalogSections = (input) => buildSections(input);
+
+// Catálogo's sections in order, each with its title, its heading with the count, its lamp and its state in words (the
+// same words as a pain's tag), its pains, and what it says when it has none. `empty` when no section has a pain.
+const CATALOG = [
+  ["weighty", "sectionWeighty", "statusWeighty", "catalogEmptyWeighty"],
+  ["interested", "sectionInterested", "statusInterested", "catalogEmptyInterested"],
+  ["watching", "sectionWatching", "statusWatching", "catalogEmptyWatching"],
+  ["discarded", "sectionDiscarded", "statusDiscarded", "catalogEmptyDiscarded"],
+];
+export function catalogView(input) {
+  const sections = catalogSections(input);
+  const list = CATALOG.map(([key, title, state, empty]) => ({
+    key,
+    title: T[title],
+    heading: fill(T.sectionCount, { title: T[title], count: formatNumber(sections[key].length) }),
+    count: sections[key].length,
+    lamp: painLamp(key),
+    state: T[state],
+    emptyText: T[empty],
+    items: sections[key],
+  }));
+  const total = list.reduce((sum, section) => sum + section.count, 0);
+  return { sections: list, total, empty: total === 0 };
+}
+
 const TREND_LABEL = new Map([["new", "trendNew"], ["rising", "trendRising"], ["falling", "trendFalling"], ["steady", "trendSteady"]]);
 const MARK_LABEL = [["interested", "markInterested"], ["discarded", "markDiscarded"]];
 const NAMES = new Intl.ListFormat("es", { style: "long", type: "conjunction" });
 
-// The parts of a row's meta line: «Sube», the topic, «Nos interesa: Jaime y Miguel», «Descartado: Fabio».
-export function rowMeta(item) {
+// «Nos interesa: Beto y Carla», «Descartado: Ana», from a pain's marks by name ({ name, mark }).
+const markGroups = (marks) => MARK_LABEL
+  .map(([mark, key]) => [key, marks.filter((m) => m.mark === mark).map((m) => m.name)])
+  .filter(([, names]) => names.length)
+  .map(([key, names]) => fill(T.markedBy, { mark: T[key], names: NAMES.format(names) }));
+
+// The trend and the topic of a row: «Gana fuerza», «Sin tema».
+export function stationMeta(item) {
   const trend = TREND_LABEL.get(item.trend && item.trend.direction);
-  const marks = MARK_LABEL
-    .map(([mark, key]) => [key, item.marks.filter((m) => m.mark === mark).map((m) => m.name)])
-    .filter(([, names]) => names.length)
-    .map(([key, names]) => fill(T.markedBy, { mark: T[key], names: NAMES.format(names) }));
-  return [trend ? T[trend] : null, item.topic, ...marks].filter(Boolean);
+  return [trend ? T[trend] : null, item.topic].filter(Boolean);
+}
+
+// A row's marks: «Nos interesa: Beto y Carla», «Descartado: Ana»; [] when nobody marked it.
+export const rowMarks = (item) => markGroups(item && Array.isArray(item.marks) ? item.marks : []);
+
+// The parts of a row's meta line: «Sube», the topic, «Nos interesa: Beto y Carla», «Descartado: Ana».
+export function rowMeta(item) {
+  return [...stationMeta(item), ...rowMarks(item)];
+}
+
+// A station's marks from the base's rows, so the home can say them again after a mark changes.
+export function stationMarks(painId, marks, people) {
+  return markGroups(marksOf(painId, Array.isArray(marks) ? marks : [], nameMap(people)));
 }
 
 const NUMBER = new Intl.NumberFormat("es");
@@ -146,37 +188,6 @@ function reviewed(summary) {
   if (!Number.isInteger(count) || count <= 0) return null;
   const territory = summary.territory;
   return { count, topic: territory !== null && TOPICS.has(territory) ? topicName(territory) : null };
-}
-
-// «Esta semana hay 1 dolor con peso para trabajar. Revisamos 480 publicaciones sobre «…».» The second sentence needs a
-// count of publications from a run that reviewed them; the topic only when it has a plain name. With `past` (this
-// week's run failed or stayed incomplete, which the notice above names) the first sentence speaks of that run: «En esa
-// revisión hubo…». With `latest` (an old run, or this week's that only gathered publications) it speaks of the last
-// review: «En la última revisión hubo…».
-const FIRST_SENTENCE = {
-  week: ["weekNone", "weekOne", "weekMany"],
-  past: ["pastNone", "pastOne", "pastMany"],
-  latest: ["lastNone", "lastOne", "lastMany"],
-};
-export function weekSentence(summary, counts = {}) {
-  const weighty = Number.isInteger(counts && counts.weighty) && counts.weighty > 0 ? counts.weighty : 0;
-  const [none, one, many] = FIRST_SENTENCE[counts && counts.past ? "past" : counts && counts.latest ? "latest" : "week"];
-  const first = weighty === 0 ? T[none] : weighty === 1 ? T[one] : fill(T[many], { count: NUMBER.format(weighty) });
-  const seen = reviewed(summary);
-  if (!seen) return first;
-  const key = seen.count === 1 ? (seen.topic ? "reviewedOneTopic" : "reviewedOne") : (seen.topic ? "reviewedManyTopic" : "reviewedMany");
-  return `${first} ${fill(T[key], { count: NUMBER.format(seen.count), topic: seen.topic ?? "" })}`;
-}
-
-// Which run the home's sentence speaks of, from the notice about the run (runNotice): «past» for this week's run that
-// failed or stayed incomplete (the notice names it); «latest» for any run more than 8 days old, whatever its status
-// («esta semana» would be false), and for this week's run that only gathered publications (it reviewed nothing); null
-// for this week's complete run.
-export function sentenceTense(notice) {
-  if (!notice) return null;
-  if (notice.kind === "failed" || notice.kind === "incomplete") return "past";
-  if (notice.kind === "stale" || notice.kind === "ingest-only") return "latest";
-  return null;
 }
 
 const isStale = (notice) => Boolean(notice && notice.kind === "stale");
@@ -202,12 +213,6 @@ export function emptySentence(summary, notice = null) {
 export function homeNotice(notice, { empty = false } = {}) {
   if (!notice) return null;
   return empty && notice.kind === "none" ? null : notice;
-}
-
-// The home whose pains are all discarded points to them, without «esta semana» whenever the week's run did not end
-// well (sentenceTense is not null: failed, incomplete, ingest-only or stale).
-export function onlyDiscardedSentence(notice = null) {
-  return sentenceTense(notice) ? T.homeOnlyDiscardedLatest : T.homeOnlyDiscarded;
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -256,14 +261,15 @@ export function runNotice(summary, today = new Date()) {
   return key ? { kind: summary.status, text: T[key] } : null;
 }
 
-// The functions that raise 42501 for someone who is not on the list (Task 1's migration).
-const MEMBER_RPCS = new Set(["week_summary", "set_mark", "add_comment", "delete_comment"]);
+// The functions that raise 42501 for someone who is not on the list (Task 1's migration, and run_traces from the
+// traces' migration).
+const MEMBER_RPCS = new Set(["week_summary", "run_traces", "set_mark", "add_comment", "delete_comment"]);
 
 // What a failed read or write means for the reader. The token is no longer accepted (HTTP 401, PostgREST
-// PGRST301/PGRST303): sign in again. 42501 from a function (week_summary, set_mark, add_comment, delete_comment) is
-// the base refusing someone who is not on the list. On a table read (api.js tags each one in `source`) it is a lost
-// grant instead, since RLS filters rows and never raises: an error. A fetch that never reached the server is the
-// connection.
+// PGRST301/PGRST303): sign in again. 42501 from a function (week_summary, run_traces, set_mark, add_comment,
+// delete_comment) is the base refusing someone who is not on the list. On a table read (api.js tags each one in
+// `source`) it is a lost grant instead, since RLS filters rows and never raises: an error. A fetch that never reached
+// the server is the connection.
 export function classifyError(error) {
   if (!error || typeof error !== "object") return "other";
   const code = String(error.code ?? "");
@@ -279,4 +285,340 @@ export const PAGE_SIZE = 20;
 export const firstPage = (total) => (total > PAGED_ABOVE ? PAGE_SIZE : total);
 export const nextPage = (shown, total) => Math.min(total, shown + PAGE_SIZE);
 
+// ---- tomoshi: the run traces (dolores/scripts/lib/trace.mjs, buildTrace) and the home -------------------------------
 
+const isTrace = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value)
+  && typeof value.run_id === "string" && value.run_id);
+const traceList = (traces) => (Array.isArray(traces) ? traces.filter(isTrace) : []);
+const historyOf = (pain) => (pain && Array.isArray(pain.history) ? pain.history.filter((h) => h && typeof h === "object") : []);
+const count = (value) => (typeof value === "number" && Number.isFinite(value) ? value : null);
+
+// The latest traced run (run_traces() hands them newest first), and whether it is the run week_summary speaks of. When
+// this week's run left no trace (it failed early, or only gathered), the home shows the last traced run by its own
+// date, never as this week's (Review Focus 2).
+export function latestTrace(traces, summary) {
+  const [trace = null] = traceList(traces);
+  const isThisWeek = Boolean(trace && summary && typeof summary === "object" && summary.run_id === trace.run_id);
+  return { trace, isThisWeek };
+}
+
+// The lamp beside the brand: how the latest run went. Green complete, red failed, amber anything else: incomplete,
+// only gathered, older than 8 days (runNotice), or no run at all. A failed run stays red however old it is.
+export function brandLamp(summary, today = new Date()) {
+  if (!summary || typeof summary !== "object") return "amber";
+  if (summary.status === "failed") return "red";
+  if (summary.status !== "complete") return "amber";
+  const notice = runNotice(summary, today);
+  return notice && notice.kind === "stale" ? "amber" : "green";
+}
+
+// A pain's lamp has one meaning, its section: green with weight, amber under watch (or kept by an «interested» mark),
+// off when discarded or out.
+export function painLamp(section) {
+  if (section === "weighty") return "green";
+  if (section === "interested" || section === "watching") return "amber";
+  return "off";
+}
+
+// «Evidencia nueva»: the pain has a history entry from that run.
+export function hasNewEvidence(pain, trace) {
+  if (!isTrace(trace)) return false;
+  return historyOf(pain).some((h) => h.run_id === trace.run_id);
+}
+
+// How many complete traced runs a pain may go without showing up before it leaves the home (it stays in Catálogo).
+// With fewer traced complete runs than that, the window is these many days before the latest traced run.
+export const QUIET_RUNS = 4;
+export const QUIET_DAYS = 28;
+
+// Whether a pain that is not alive has gone quiet: none of the last QUIET_RUNS complete traced runs is in its history,
+// or, with fewer of them, no history entry dated within QUIET_DAYS before the latest traced run. Without traces (or
+// without a date to measure from) nothing is quiet: the page cannot tell.
+function quietTest(traces) {
+  const complete = traces.filter((t) => t.status === "complete");
+  if (complete.length >= QUIET_RUNS) {
+    const recent = new Set(complete.slice(0, QUIET_RUNS).map((t) => t.run_id));
+    return (pain) => !historyOf(pain).some((h) => recent.has(h.run_id));
+  }
+  const latestDay = traces.length ? dayNumber(traces[0].date) : null;
+  if (latestDay === null) return () => false;
+  return (pain) => !historyOf(pain).some((h) => {
+    const day = dayNumber(h.date);
+    return day !== null && day >= latestDay - QUIET_DAYS;
+  });
+}
+
+// The pains the latest traced run touched: new in it (its first history entry is that run), in any of its duels, or in
+// its final order when the duel was between survivors. And the winner, the first of that order, only then.
+function touchedBy(trace) {
+  if (!trace) return { touched: () => false, winner: null };
+  const ids = new Set();
+  for (const duel of Array.isArray(trace.duels) ? trace.duels : []) {
+    if (!duel || typeof duel !== "object") continue;
+    for (const id of [duel.a, duel.b]) if (typeof id === "string") ids.add(id);
+  }
+  const survivors = trace.duel_kind === "survivors";
+  const ranking = survivors && Array.isArray(trace.ranking) ? trace.ranking.filter((id) => typeof id === "string") : [];
+  for (const id of ranking) ids.add(id);
+  const isNew = (pain) => {
+    const [first] = historyOf(pain);
+    return Boolean(first && first.run_id === trace.run_id);
+  };
+  return { touched: (pain) => ids.has(pain.id) || isNew(pain), winner: ranking[0] ?? null };
+}
+
+// «Para decidir»: every alive pain, the pains the latest traced run touched, and the ones marked «Nos interesa». A pain
+// leaves when the team discards it (sectionOf is discarded, or null: dead, discarded by hand) or, unless alive or
+// touched by the latest run, when it has gone quiet (quietTest), interested or not; it stays in Catálogo. First the
+// survivors' duel winner, then the alive ones, then the rest, newest evidence first. Each item is buildSections' row
+// plus its section, lamp, whether it has new evidence from the latest run (`fresh`) and whether it won the duel.
+export function decideList({ pains = [], cards = [], marks = [], people = [], traces = [] } = {}) {
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const allMarks = list(marks);
+  const names = nameMap(people);
+  const runs = traceList(traces);
+  const latest = runs[0] ?? null;
+  const quiet = quietTest(runs);
+  const { touched, winner } = touchedBy(latest);
+  const cardOf = new Map(list(cards).filter((row) => row && row.pain_id).map((row) => [row.pain_id, row.card]));
+  const items = [];
+  for (const pain of list(pains)) {
+    if (!pain || !pain.id) continue;
+    const section = sectionOf(pain, allMarks);
+    if (section === null || section === "discarded") continue;
+    const alive = section === "weighty";
+    const byRun = touched(pain);
+    const interested = effectiveMark(pain.id, allMarks) === "interested";
+    if (!alive && !byRun && !(interested && !quiet(pain))) continue;
+    const item = itemOf(pain, cardOf.get(pain.id), allMarks, names);
+    if (!item) continue;
+    const won = pain.id === winner;
+    items.push({
+      ...item, section, lamp: painLamp(section), fresh: hasNewEvidence(pain, latest), winner: won,
+      // The ranked board: the duel's winner and the pains with weight are full stations, the rest compact.
+      full: won || section === "weighty",
+      facts: stationFacts(pain, cardOf.get(pain.id), { winner: won }),
+    });
+  }
+  const rank = (item) => (item.winner ? 0 : item.section === "weighty" ? 1 : 2);
+  return items.sort((a, b) => rank(a) - rank(b) || byEvidence(a, b));
+}
+
+// Why a station is there, from what the home already read: the testimonies of the pain's latest history entry
+// (`inputs.testimonies`, as record-run.mjs writes it), the attacks a version-3 card says it held (null for an older
+// card: the page never guesses a result), and, for the survivors' duel winner only, its card's line about the duel it
+// won. Anything missing or odd is null.
+export function stationFacts(pain, card, { winner = false } = {}) {
+  const entries = historyOf(pain);
+  let latest = null;
+  for (const h of entries) if (!latest || String(h.date ?? "") >= String(latest.date ?? "")) latest = h;
+  const inputs = latest && latest.inputs && typeof latest.inputs === "object" ? latest.inputs : null;
+  const n = inputs ? inputs.testimonies : null;
+  const testimonies = Number.isInteger(n) && n >= 0 ? n : null;
+  const ok = card && typeof card === "object";
+  const attacks = ok && Array.isArray(card.attacks) ? card.attacks.filter((a) => a && typeof a === "object" && typeof a.held === "boolean") : [];
+  const won = winner && ok && Array.isArray(card.duels)
+    ? card.duels.find((d) => d && typeof d === "object" && d.won === true && text(d.plain)) : null;
+  return {
+    testimonies,
+    attacks: attacks.length ? { held: attacks.filter((a) => a.held).length, total: attacks.length } : null,
+    duelReason: won ? text(won.plain) : null,
+  };
+}
+
+// A station's facts in words: «5 testimonios», «Resistió 4 de 5 ataques». [] when there is none.
+export function stationFactLines(facts) {
+  if (!facts || typeof facts !== "object") return [];
+  const lines = [];
+  const n = facts.testimonies;
+  if (Number.isInteger(n)) lines.push(n === 1 ? T.factTestimoniesOne : fill(T.factTestimoniesMany, { count: formatNumber(n) }));
+  const a = facts.attacks;
+  if (a && Number.isInteger(a.held) && Number.isInteger(a.total) && a.total > 0) {
+    lines.push(fill(a.total === 1 ? T.factAttacksOne : T.factAttacks, { held: formatNumber(a.held), total: formatNumber(a.total) }));
+  }
+  return lines;
+}
+
+// The stage of the line each cut kind of the run happened at (i18n.mjs, trace.cut); a cut of the whole run has none.
+const CUT_STAGE = new Map([
+  ["incomplete-coverage", "read"],
+  ["extraction-cap", "analyzed"],
+  ["extraction-budget", "analyzed"],
+  ["no-quote", "quotes_checked"],
+  ["gate-missing", "quotes_checked"],
+  ["gate-partial", "quotes_checked"],
+  ["candidate-cap", "candidates"],
+  ["below-threshold", "attacked"],
+  ["missing-verdicts", "attacked"],
+  ["duels-unplayed", "duel"],
+]);
+
+// A source's lamp and state: red when it failed or brought nothing («No aportó nada»), amber when it came truncated
+// («Recortada»), off when the run did not count it, green otherwise.
+function sourceState(source) {
+  if (source.ok === false) return ["red", "failed"];
+  const collected = count(source.collected);
+  if (collected === 0) return ["red", "empty"];
+  if (source.truncated === true) return ["amber", "truncated"];
+  if (collected === null) return ["off", "unknown"];
+  return ["green", "ok"];
+}
+
+// The run's production line for the page, or null without a trace: one station per stage with its count, cap and lamp
+// (off with no count, «sin dato»; amber when the cap was hit or a cut happened there; the first station amber when a
+// source came truncated or brought nothing; green otherwise), the sources with their lamp, the cuts in plain words with
+// the stage they happened at (`explained` false for one with no plain words of its own: kind `other`, or no text), and
+// the run's date. Raw text stays out (sources' `note`, cuts' `original`, duels'
+// `reason`): the page shows it only in Corridas' «Detalle técnico», from the trace itself.
+export function lineView(trace) {
+  if (!isTrace(trace)) return null;
+  const sources = (Array.isArray(trace.sources) ? trace.sources : [])
+    .filter((s) => s && typeof s === "object")
+    .map((s) => {
+      const [lamp, state] = sourceState(s);
+      return {
+        name: text(s.name) ?? "", kind: text(s.kind) ?? "", collected: count(s.collected), kept: count(s.kept),
+        available: count(s.available), truncated: s.truncated === true, ok: s.ok !== false, lamp, state,
+      };
+    });
+  const cuts = (Array.isArray(trace.cuts) ? trace.cuts : [])
+    .filter((c) => c && typeof c === "object")
+    .map((c) => {
+      const kind = typeof c.kind === "string" ? c.kind : "other";
+      const own = kind === "other" ? null : text(c.text);
+      return { kind, count: count(c.count), cap: count(c.cap), text: own ?? text(c.text) ?? T.cutOther, explained: own !== null, stage: CUT_STAGE.get(kind) ?? null };
+    });
+  const cutAt = new Set(cuts.map((c) => c.stage).filter(Boolean));
+  const sourcesCut = sources.some((s) => s.lamp === "red" || s.lamp === "amber");
+  const stages = (Array.isArray(trace.funnel) ? trace.funnel : [])
+    .filter((s) => s && typeof s === "object" && typeof (s.stage ?? s.key) === "string")
+    .map((s) => {
+      const key = s.stage ?? s.key;
+      const n = count(s.count);
+      const cap = count(s.cap);
+      const hit = (cap !== null && n !== null && n >= cap) || cutAt.has(key) || (key === "collected" && sourcesCut);
+      return { key, label: text(s.label) ?? "", count: n, cap, lamp: n === null ? "off" : hit ? "amber" : "green" };
+    });
+  return { stages, sources, cuts, dateLabel: formatDate(trace.date) };
+}
+
+// ---- tomoshi: the shell, the stations and the line, in words --------------------------------------------------------
+
+// The sentence under «Para decidir»: how many wait for your own mark, and what goes first (decideList's order).
+export function decideLead(items, marks, email) {
+  const list = Array.isArray(items) ? items : [];
+  const me = lower(email);
+  const mine = new Set((Array.isArray(marks) ? marks : [])
+    .filter((m) => m && MARKS.has(m.mark) && me && lower(m.author) === me).map((m) => m.pain_id));
+  const pending = list.filter((item) => !mine.has(item.id)).length;
+  const count = pending === 0 ? T.leadNoPending : pending === 1 ? T.leadPendingOne : fill(T.leadPendingMany, { count: formatNumber(pending) });
+  const winner = Boolean(list[0] && list[0].winner);
+  const weighty = list.some((item) => item.section === "weighty");
+  const order = winner && weighty ? T.leadOrderWinnerWeighty : winner ? T.leadOrderWinner : weighty ? T.leadOrderWeighty : "";
+  return order ? `${count} ${order}` : count;
+}
+
+// A station's tags: the duel's winner (by the run's date when the line is an older run's) and «Evidencia nueva», only
+// when the line is this week's: an older run's evidence is not new this week (Review Focus 2).
+export function stationTags(item, { isThisWeek = false, dateLabel = "" } = {}) {
+  const tags = [];
+  if (item && item.winner) tags.push({ kind: "winner", text: isThisWeek || !dateLabel ? T.tagWinner : fill(T.tagWinnerDated, { date: dateLabel }) });
+  if (item && item.fresh && isThisWeek) tags.push({ kind: "fresh", text: T.tagFresh });
+  return tags;
+}
+
+// The line's title and its note, from latestTrace: this week's line; an older run's, by its own date, never as this
+// week's (Review Focus 2); or no line, saying why.
+export function lineHeading(latest, summary) {
+  const trace = latest && latest.trace;
+  if (trace && latest.isThisWeek) return { title: T.lineTitle, older: false, note: null };
+  if (trace) {
+    const date = formatDate(trace.date);
+    return { title: date ? fill(T.lineTitleOld, { date }) : T.lineTitleOldUndated, older: true, note: T.lineOlderNote };
+  }
+  const hasRun = Boolean(summary && typeof summary === "object");
+  return { title: T.lineTitle, older: false, note: hasRun ? T.lineNoTrace : T.lineNoRun };
+}
+
+const MINUTE_MS = 60 * 1000;
+const usd = (value) => {
+  const amount = formatUsd(value);
+  return amount === null ? null : fill(T.costUsd, { amount });
+};
+
+// How long a run took («duró 26 min»), only when both times exist and make sense; null otherwise.
+export function runDuration(trace) {
+  if (!trace || typeof trace !== "object") return null;
+  const start = Date.parse(trace.started_at);
+  const end = Date.parse(trace.finished_at);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+  const minutes = Math.round((end - start) / MINUTE_MS);
+  if (minutes < 1) return T.durationShort;
+  if (minutes < 60) return fill(T.durationMinutes, { minutes });
+  return fill(T.durationHours, { hours: Math.floor(minutes / 60), minutes: minutes % 60 });
+}
+
+const costOf = (trace) => (trace && trace.cost && typeof trace.cost === "object" ? trace.cost : {});
+
+// The line under the line's title: «4 de febrero», «duró 26 min», «1,50 USD». What the trace does not say is left out.
+export function runFacts(trace) {
+  if (!isTrace(trace)) return [];
+  return [formatDayMonth(trace.date), runDuration(trace), usd(costOf(trace).total_usd)].filter(Boolean);
+}
+
+// The cost by model, then the cards, as the line's foot.
+export function costRows(trace) {
+  if (!isTrace(trace)) return [];
+  const cost = costOf(trace);
+  const rows = (Array.isArray(cost.by_model) ? cost.by_model : [])
+    .filter((m) => m && typeof m === "object" && text(m.model) && usd(m.usd))
+    .map((m) => ({ label: text(m.model), value: usd(m.usd) }));
+  const cards = usd(cost.cards_usd);
+  return cards ? [...rows, { label: T.costCards, value: cards }] : rows;
+}
+
+// The week's data at the masthead's right: the week, the niche and the cost. The run's own niche and cost only come
+// from this week's trace; otherwise the niche is the summary's topic by its plain name, and there is no cost.
+export function weekMeta(summary, latest) {
+  if (!summary || typeof summary !== "object") return [];
+  const trace = latest && latest.isThisWeek ? latest.trace : null;
+  const niche = (trace && trace.niche && text(trace.niche.name))
+    ?? (typeof summary.territory === "string" && TOPICS.has(summary.territory) ? topicName(summary.territory) : null);
+  return [
+    { label: T.metaWeek, value: formatDayMonth(typeof summary.date === "string" ? summary.date.slice(0, 10) : null) },
+    { label: T.metaNiche, value: niche },
+    { label: T.metaCost, value: trace ? usd(costOf(trace).total_usd) : null },
+  ].filter((row) => row.value);
+}
+
+// The brand lamp's state in two or three words (brandLamp, told apart): complete, failed, old, none, or half done.
+export function brandLampShort(summary, today = new Date()) {
+  if (!summary || typeof summary !== "object") return T.brandShortNone;
+  const color = brandLamp(summary, today);
+  if (color === "green") return T.brandShortComplete;
+  if (color === "red") return T.brandShortFailed;
+  return summary.status === "complete" ? T.brandShortOld : T.brandShortPartial;
+}
+
+const BRAND_LAMP_TEXT = { green: "brandLampGreen", red: "brandLampRed" };
+// The brand lamp's state in words (brandLamp), for a screen reader and the pointer's tooltip.
+export const brandLampText = (lamp) => T[BRAND_LAMP_TEXT[lamp] ?? "brandLampAmber"];
+
+const STAGE_STATE = { green: "stageOk", amber: "stageCut", off: "stageNoData" };
+// A station of the line in words: its lamp's state, its cap, and the cuts that happened there (lineView).
+export function stageNotes(stage, cuts) {
+  const notes = [];
+  if (stage.cap !== null && stage.cap !== undefined) notes.push(fill(T.stageCap, { cap: formatNumber(stage.cap) }));
+  for (const cut of Array.isArray(cuts) ? cuts : []) if (cut && cut.stage === stage.key && cut.text) notes.push(cut.text);
+  return { state: T[STAGE_STATE[stage.lamp] ?? "stageNoData"], notes };
+}
+
+const SOURCE_STATE = { ok: "sourceOk", truncated: "sourceTruncated", empty: "sourceEmpty", failed: "sourceFailed", unknown: "sourceUnknown" };
+// A source's figures: «72 → 64» (gathered, then kept), «de 1830» when more were there, and its state in words.
+export function sourceFigures(source) {
+  const { collected, kept, available } = source;
+  const figure = collected === null ? null
+    : kept !== null && kept !== collected ? `${formatNumber(collected)} → ${formatNumber(kept)}` : formatNumber(collected);
+  const of = collected !== null && available !== null && available > collected ? fill(T.sourceOf, { available: formatNumber(available) }) : null;
+  return { figure, of, state: T[SOURCE_STATE[source.state] ?? "sourceUnknown"] };
+}

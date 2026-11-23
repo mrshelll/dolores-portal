@@ -2,7 +2,7 @@
 // sections it has, its quotes, the marks and comments as lines to show, what a failed write means, and the comment kept
 // across a lost session. Pure, so tests/unit/detail.test.mjs runs it in Node.
 
-import { T, fill, topicName, formatDate } from "./text.js";
+import { T, fill, topicName, formatDate, sourceName } from "./text.js";
 import { sectionOf, classifyError, nameMap, nameOf, effectiveMark } from "./model.js";
 
 const MARKS = new Set(["interested", "discarded"]);
@@ -74,6 +74,138 @@ export function safeUrl(value) {
   }
 }
 
+// ---- «Cómo llegamos a este dolor»: the quotes by source, the attacks and the duels -----------------------------------
+
+// Quotes shown per source before «Ver más».
+export const QUOTES_SHOWN = 3;
+const LANGUAGE = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i;
+const time = (value) => {
+  const ms = typeof value === "string" ? Date.parse(value) : NaN;
+  return Number.isNaN(ms) ? -Infinity : ms;
+};
+
+// The pain's evidence (pains.doc.evidence) grouped by source, each source by the run's name and kind (sourceName), its
+// quotes verbatim and in their language, newest first, with their day and a link only to a web address (safeUrl). The
+// sources go by their newest quote. `shown` quotes are shown and `more` wait for «Ver más». The same words from the same
+// address count once; nothing internal (tier, hash) is passed on.
+export function evidenceBySource(evidence, { limit = QUOTES_SHOWN } = {}) {
+  const cap = Number.isInteger(limit) && limit > 0 ? limit : QUOTES_SHOWN;
+  const groups = new Map();
+  (Array.isArray(evidence) ? evidence : []).forEach((item, order) => {
+    if (!object(item)) return;
+    const quote = text(item.quote);
+    if (!quote) return;
+    const { name, kind } = sourceName(item.source, item.country);
+    if (!groups.has(name)) groups.set(name, { source: name, kind, items: [], seen: new Set() });
+    const group = groups.get(name);
+    const url = safeUrl(item.url);
+    const key = `${url}\n${quote}`;
+    if (group.seen.has(key)) return;
+    group.seen.add(key);
+    const language = typeof item.language === "string" && LANGUAGE.test(item.language.trim()) ? item.language.trim() : null;
+    group.items.push({ at: time(item.date), order, quote: { quote, date: typeof item.date === "string" ? formatDate(item.date) : "", url, language } });
+  });
+  return [...groups.values()]
+    .map((group) => {
+      const items = group.items.sort((a, b) => b.at - a.at || a.order - b.order);
+      return { source: group.source, kind: group.kind, newest: items[0].at, quotes: items.map((i) => i.quote) };
+    })
+    .sort((a, b) => b.newest - a.newest || a.source.localeCompare(b.source, "es", { sensitivity: "base" }))
+    .map(({ source, kind, quotes }) => ({ source, kind, quotes, shown: Math.min(cap, quotes.length), more: Math.max(0, quotes.length - cap) }));
+}
+
+// The five attacks in the order the run makes them, each by its question in plain words. A lens the page does not know
+// asks «Otra pregunta», after the five.
+const LENSES = new Map([
+  ["existing-solution", "lensExistingSolution"],
+  ["evidence", "lensEvidence"],
+  ["buyer", "lensBuyer"],
+  ["root-cause", "lensRootCause"],
+  ["feasibility", "lensFeasibility"],
+]);
+const LENS_ORDER = [...LENSES.keys()];
+const lensRank = (lens) => (LENSES.has(lens) ? LENS_ORDER.indexOf(lens) : LENS_ORDER.length);
+const attackRow = (lens, held, plain) => ({
+  question: LENSES.has(lens) ? T[LENSES.get(lens)] : T.lensOther, held, result: held ? T.attackHeld : T.attackRefuted, plain,
+});
+
+// Run ids are a date and a counter: 2026-11-16-10 comes after 2026-11-16-9 (the run's own order, lib/cards.mjs).
+const RUN_ORDER = new Intl.Collator("en", { numeric: true });
+
+// The lens and its outcome from the verdicts of the pain's latest run (the greatest run_id; a verdict with no run
+// belongs to none). A lens repeated within the run keeps its last verdict. Only `lens` and `refuted` are read: the
+// verdict's argument is raw text and never reaches the page.
+function latestVerdicts(pain) {
+  const verdicts = (object(pain) && Array.isArray(pain.verdicts) ? pain.verdicts : [])
+    .filter((v) => object(v) && text(v.run_id) && text(v.lens));
+  const latest = verdicts.map((v) => v.run_id).sort(RUN_ORDER.compare).at(-1);
+  const byLens = new Map();
+  for (const v of verdicts) if (v.run_id === latest) byLens.set(v.lens, v.refuted !== true);
+  return byLens;
+}
+
+// The attacks of the pain's latest run: [{ question, held, result, plain }], in the run's order. A version 3 card says
+// them with a plain line each (card.attacks); an older card has none, so they come from the verdicts with `plain: null`
+// and the page shows only the question and «Resistió» / «Lo tumbó» (Review Focus 4). An entry that does not say
+// whether it held is left out: the page never guesses a result.
+export function attackRows(card, pain) {
+  const byLens = new Map();
+  if (object(card) && Array.isArray(card.attacks)) {
+    for (const a of card.attacks) {
+      if (object(a) && text(a.lens) && typeof a.held === "boolean") byLens.set(a.lens, { held: a.held, plain: text(a.plain) });
+    }
+  } else {
+    for (const [lens, held] of latestVerdicts(pain)) byLens.set(lens, { held, plain: null });
+  }
+  return [...byLens]
+    .sort(([a], [b]) => lensRank(a) - lensRank(b) || (a < b ? -1 : a > b ? 1 : 0))
+    .map(([lens, { held, plain }]) => attackRow(lens, held, plain));
+}
+
+// A pain's title by its id, from the cards the page has loaded (the home's or Catálogo's).
+export function titleMap(cards) {
+  const titles = new Map();
+  for (const row of Array.isArray(cards) ? cards : []) {
+    if (!object(row) || typeof row.pain_id !== "string") continue;
+    const title = cardTitle(row.card);
+    if (title) titles.set(row.pain_id, title);
+  }
+  return titles;
+}
+
+function titleOf(titles, id) {
+  if (typeof id !== "string") return null;
+  if (titles instanceof Map) return text(titles.get(id));
+  return object(titles) && Object.hasOwn(titles, id) ? text(titles[id]) : null;
+}
+
+// Every duel the pain played in its latest run (card.duels, version 3), in the run's order: [{ againstTitle, known, won,
+// result, plain }]. The rival goes by its title when the page has it (titles: a Map or an object by pain id), otherwise
+// as «otro dolor del catálogo»: never by its id. A duel that does not say who won is left out; the duel's reason is
+// raw text and is never read.
+export function duelRows(card, titles) {
+  const duels = object(card) && Array.isArray(card.duels) ? card.duels : [];
+  return duels
+    .filter((d) => object(d) && typeof d.won === "boolean")
+    .map((d) => {
+      const title = titleOf(titles, d.against);
+      return {
+        againstTitle: title ?? T.duelOtherPain, known: Boolean(title), won: d.won, result: d.won ? T.duelWon : T.duelLost, plain: text(d.plain),
+      };
+    });
+}
+
+// «Cómo llegamos a este dolor»: { sources, attacks, duels }, or null when there is nothing to tell (then the page leaves
+// the section out).
+export function howWeGot(card, pain, titles) {
+  const view = {
+    sources: evidenceBySource(object(pain) ? pain.evidence : null),
+    attacks: attackRows(card, pain),
+    duels: duelRows(card, titles),
+  };
+  return view.sources.length || view.attacks.length || view.duels.length ? view : null;
+}
+
 // A quote is shown in the card's language (its translation). The original goes under «Texto original» only when it
 // differs: a quote already in the card's language has the same text in both.
 export function quoteView(quote) {
@@ -123,7 +255,7 @@ export const isLineCard = (card) => !(object(card) && card.kind === "full" && ob
 
 const MARK_TEXT = { interested: "markInterested", discarded: "markDiscarded" };
 
-// One line per person, by name: «Jaime: Nos interesa · 10 nov 2026». Unknown marks are skipped.
+// One line per person, by name: «Beto: Nos interesa · 10 nov 2026». Unknown marks are skipped.
 export function markLines(marks, people) {
   const names = nameMap(people);
   return (Array.isArray(marks) ? marks : [])
@@ -172,6 +304,18 @@ export function markButtonLabels(mine) {
     discard: mine === "discarded" ? T.unmarkDiscardAction : T.markDiscardAction,
   };
 }
+
+// A station's buttons on the home: «Nos interesa» and «Descartar», or how to undo your own mark.
+export function stationButtonLabels(mine) {
+  return {
+    interested: mine === "interested" ? T.unmarkInterestedAction : T.stationInterested,
+    discard: mine === "discarded" ? T.unmarkDiscardAction : T.markDiscardAction,
+  };
+}
+
+// A station's state in words, beside its lamp. A pain that just left every section (its last «interested» mark removed
+// from a pain the run no longer keeps) still says where it stands, so no lamp goes without its state.
+export const stationStateText = (section) => statusLabel(section) ?? T.statusOut;
 
 // Your own mark in words, under the buttons: «Marcaste «Nos interesa» el 10 nov 2026.» or «Lo descartaste el …». null
 // when you have none. Your mark is the one whose author is your email, ignoring case.

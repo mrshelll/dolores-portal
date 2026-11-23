@@ -1,103 +1,112 @@
-/* dolores: the page's one stylesheet. A small set of tokens (neutral greys, one accent, light and dark through
-   prefers-color-scheme, a system font stack, spacing on an 8 px step) and the shared pieces every screen uses: the
-   frame and its header, text styles, buttons, fields, the section notice, tags and the list of pains. Mobile first,
-   one breakpoint at 672 px (the factory grid's first tier). Nothing below the tokens uses a loose colour, size or
-   radius (FUN-35). Every text colour reaches WCAG AA (4.5:1) on the page, sheet and tag backgrounds, in both modes. */
+/* tomoshi: the page's one stylesheet, in the world of the andon board (.impeccable/surfaces/index-html.md). One token
+   set, two themes chosen by prefers-color-scheme with no toggle: dark is the plant's graphite board, light is «el
+   tablero de día», cool steel, never cream. Flat lamps (amber, green, red, off), each with its state written beside
+   it; in light every lamp has a dark rim so it keeps 3:1 on the panels. Barlow Semi Condensed with tabular figures.
+   Mobile first; the run's line goes beside the stations from 1024 px. Every text colour reaches WCAG AA on the ground,
+   the side panel and the panels in both themes; text is never green or red on the dark ground. */
 
 :root {
   color-scheme: light dark;
 
-  /* Colour: greys, one accent («you can touch this»: links and the primary button), and the error colour. */
-  --bg: #F5F5F4;
-  --sheet: #FFFFFF;
-  --ink: #1C1C1E;
-  --muted: #5C5C62;
-  --line: #D9D9DC;
-  --tag: #E8E8EA;
-  --accent: #1D5BC4;
-  --on-accent: #FFFFFF;
-  --error: #B42318;
-  /* Hover and press on a button (COM-04): the accent a step darker; a secondary button takes the line grey. */
-  --accent-hover: color-mix(in srgb, var(--accent) 88%, black);
-  --secondary-hover: var(--line);
+  /* «El tablero de día» (light). */
+  --ground: #DCDEE0;      /* the page */
+  --side: #E6E8EA;        /* the line's panel */
+  --panel: #F2F3F4;       /* stations, board, notices, fields */
+  --ink: #1A1C1E;         /* 12.7:1 on the ground, 15.4:1 on a panel */
+  --muted: #4A4F55;       /* 6.1:1 on the ground, 7.4:1 on a panel */
+  --line: #C3C7CB;        /* dividers */
+  --edge: #6B7076;        /* control borders: 4.5:1 on a panel */
+  --on-ink: #F2F3F4;      /* text on an ink button */
+  --signal: #7A5000;      /* the current tab's bar and the caret: amber darkened to 5.7:1 */
+  --focus: #1A1C1E;
+  --hover: rgba(26, 28, 30, 0.07);
 
-  /* Type: the system's own fonts, three sizes (FUN-02). The title is 20 px on a phone, so a pain's title of up to two
-     lines still ends within 160 px at 320 × 640 (MAR-14); 24 px from 672 px. */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Lamps: the same hues in both themes. */
+  --lamp-amber: #F2A900;
+  --lamp-green: #2E9E4F;
+  --lamp-red: #D7261E;
+  --lamp-off: #B4B8BD;
+  --lamp-rim: rgba(26, 28, 30, 0.78); /* the dark rim of the day board */
+  --lamp-off-rim: rgba(26, 28, 30, 0.55);
+  --on-amber: #1A1C1E;    /* 8.5:1 */
+  --on-red: #FFFFFF;      /* 5.0:1 on #D7261E, 4.54:1 on the dark theme's #E0302A */
+
+  /* Type. */
+  --font: "Barlow Semi Condensed", "Roboto Condensed", "Arial Narrow", system-ui, sans-serif;
+  --text-xs: 13px;
   --text-small: 14px;
   --text-body: 16px;
-  --text-title: 20px;
-  --text-section: 18px; /* only the home's section titles; the home has no 14 px text, so it keeps three sizes */
+  --text-title-station: 21px;
+  --text-title: 28px;
+  --number-station: 36px;
 
-  /* Spacing on an 8 px step. */
+  /* Spacing, on a 4 px step. */
   --space-1: 8px;
   --space-2: 16px;
   --space-3: 24px;
   --space-4: 32px;
   --space-5: 48px;
-  --space-between-blocks: var(--space-4);
-
-  /* Frame. It reaches the widest review width (1440) with the page margin on each side and centres above it. */
-  --margin-page: 16px;
-  --frame-page: 1392px;
+  --pad: 16px;            /* the page's side margin */
+  --side-width: clamp(22rem, 30vw, 28rem);
+  --masthead: 56px;
   --measure-form: 440px;
   --measure-text: 40rem;
+  --measure-prose: 54ch;  /* about 66 letters a line in this condensed face: its «0» is wider than its average letter */
 
   --radius: 4px;
-  --radius-pill: 999px;
-  --target-min: 48px;
-  --target-link: 44px;
-  --pain-title-pad: 11px; /* (44 − 16 × 1.4) / 2, rounded up */
-  --mark: 4px; /* the stripe on a notice's start edge */
-
-  /* The frame contract the factory's screen checks read (MAR-08, MAR-09, MAR-11, FUN-05, FUN-37). They only point at
-     the tokens above, which stay the source of truth. */
-  --marco-pagina: calc(var(--frame-page) + 2 * var(--margin-page));
-  --marco-margen-sm: var(--space-2);
-  --marco-margen-pagina: var(--margin-page);
-  --medida-formulario: var(--measure-form);
-  --espacio-entre-bloques: var(--space-between-blocks);
-  --espacio-1: var(--space-1);
-  --espacio-2: var(--space-2);
-  --espacio-3: var(--space-3);
-  --espacio-4: var(--space-4);
-  --espacio-5: var(--space-5);
+  --radius-control: 3px;
+  --target: 44px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141416;
-    --sheet: #1E1E21;
-    --ink: #EDEDEF;
-    --muted: #A3A3AA;
-    --line: #34343A;
-    --tag: #2C2C31;
-    --accent: #8AB4F8;
-    --on-accent: #141416;
-    --error: #FF8A80;
+    --ground: #1A1C1E;
+    --side: #202225;
+    --panel: #2A2D31;
+    --ink: #F4F4F2;       /* 15.5:1 on the ground */
+    --muted: #A9ADB1;     /* 6.1:1 on a panel */
+    --line: #3A3E43;
+    --edge: #767B82;      /* 3.2:1 on a panel */
+    --on-ink: #1A1C1E;
+    --signal: #F2A900;
+    --focus: #F2A900;
+    --hover: rgba(244, 244, 242, 0.06);
+    --lamp-red: #E0302A;  /* #D7261E is 2.76:1 on the panel; this is 3.05:1 (3.51 on the side panel), white on it 4.54:1 */
+    --lamp-off: #4A4E53;
+    --lamp-rim: transparent;
+    --lamp-off-rim: #767B82;
   }
 }
 
-@media (min-width: 672px) {
-  :root { --margin-page: 24px; --text-title: 24px; }
+@media (min-width: 640px) {
+  :root { --pad: 24px; --text-title: 32px; --text-title-station: 22px; --number-station: 52px; }
+}
+@media (min-width: 1024px) {
+  :root { --pad: 28px; }
 }
 
-/* ---- base ------------------------------------------------------------------------------- */
+/* ---- base and the browser's own surfaces ------------------------------------------------- */
 
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scrollbar-color: var(--edge) transparent; }
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--ground);
   color: var(--ink);
-  font: 400 var(--text-body)/1.5 var(--font-sans);
+  font: 400 var(--text-body)/1.45 var(--font);
+  font-variant-numeric: tabular-nums;
   overflow-wrap: break-word;
+  caret-color: var(--signal);
 }
-p, h1, h2, h3, ol, ul { margin: 0; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-a { color: var(--accent); text-underline-offset: 3px; }
+::selection { background: var(--lamp-amber); color: var(--on-amber); }
+p, h1, h2, h3, ol, ul, dl, dd { margin: 0; }
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; } /* no word alone on a paragraph's last line */
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 2px; }
+a { color: inherit; text-decoration-color: var(--edge); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-color: currentColor; }
 
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
@@ -108,315 +117,750 @@ a { color: var(--accent); text-underline-offset: 3px; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
 
-/* ---- frame and header ------------------------------------------------------------------- */
+/* ---- lamps: flat discs, no bevel or glow; the state is always written beside them ---------- */
 
-.frame {
-  width: 100%;
-  max-width: var(--marco-pagina);
-  margin-inline: auto;
-  padding-inline: var(--margin-page);
+.lamp {
+  --lamp: var(--lamp-off);
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--lamp);
+  box-shadow: inset 0 0 0 1.5px var(--lamp-rim);
+  transition: background-color 320ms var(--ease-out), transform 320ms var(--ease-out);
 }
+.lamp[data-lamp="amber"] { --lamp: var(--lamp-amber); }
+.lamp[data-lamp="green"] { --lamp: var(--lamp-green); }
+.lamp[data-lamp="red"] { --lamp: var(--lamp-red); }
+.lamp[data-lamp="off"] { box-shadow: inset 0 0 0 1px var(--lamp-off-rim); }
+/* «tomoshi»: a lamp that waits for the move is drawn off, a step smaller, until it gets data-lit. */
+.lamp[data-wait]:not([data-lit]) {
+  --lamp: var(--lamp-off);
+  box-shadow: inset 0 0 0 1px var(--lamp-off-rim);
+  transform: scale(0.82);
+}
+.lamp--small { width: 10px; height: 10px; }
+.lamp--station { width: 22px; height: 22px; }
+@media (min-width: 640px) { .lamp--station { width: 30px; height: 30px; } }
 
-/* The header: the product name, and on the right what applies to the whole visit («Salir»). One row, so on a
-   320 × 640 phone the frame at rest ends well before 160 px (MAR-14). */
+/* ---- the frame and the masthead ---------------------------------------------------------- */
+
+.frame { display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; }
+
+/* On a phone: the brand and «Salir», then the tabs, then the week's data. */
 .masthead {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "brand actions" "tabs tabs" "meta meta";
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  min-height: calc(var(--target-min) + 2 * var(--space-1));
-  padding-block: var(--space-1);
+  column-gap: var(--space-2);
+  padding-inline: var(--pad);
   border-bottom: 1px solid var(--line);
 }
-.masthead-actions { display: flex; gap: var(--space-1); }
-
-/* «dolores», in a type style nothing else uses (NAV-08): the only 700 weight on the page, tracked tight. As a link
-   home it keeps the text colour and the tap target. */
-.brand {
+.brand { grid-area: brand; display: flex; align-items: center; gap: 10px; min-height: var(--target); }
+.brand-word {
   display: inline-flex;
   align-items: center;
-  min-height: var(--target-min);
+  min-height: var(--target);
   color: inherit;
-  font-size: var(--text-body);
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: 0.01em;
   text-decoration: none;
 }
-a.brand:hover { text-decoration: underline; }
+a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px; }
+/* The lamp's state in words beside the name, from 768 px; below it the lamp's accessible name carries it alone. */
+.brand-state { display: none; }
+@media (min-width: 768px) {
+  .brand-state {
+    display: inline;
+    margin-left: 2px;
+    padding-left: 12px;
+    border-left: 1px solid var(--line);
+    color: var(--muted);
+    font-size: var(--text-small);
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+}
+.masthead-actions { grid-area: actions; display: flex; gap: var(--space-1); }
 
-main { padding-block: var(--space-4) var(--space-5); }
+.tabs { grid-area: tabs; display: flex; margin-inline: -10px; }
+.tab {
+  display: flex;
+  align-items: center;
+  min-height: var(--target);
+  padding: 3px 10px 0;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  font-size: var(--text-body);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tab:hover { color: var(--ink); }
+.tab[aria-current="page"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--signal); }
 
-/* The title band: the h1, then its data lines. */
-.page-head h1 { font-size: var(--text-title); line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+.masthead-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px var(--space-2);
+  padding-block: 6px 10px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+.masthead-meta b { color: var(--ink); font-weight: 600; }
+/* On a phone the week's data leaves the masthead, so the first decision fits the first screen: the home's line strip
+   says it in its summary (.line-strip-week); the other screens do without it. */
+@media (max-width: 767.98px) { .masthead-meta { display: none !important; } }
+
+/* From 768 px the tabs join the brand's row and the week's data takes the row under it; from 1280 px, when the brand's
+   words, the tabs and the week's data fit side by side, it is one 56 px row. */
+@media (min-width: 768px) and (max-width: 1279.98px) {
+  .masthead {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand tabs actions" "meta meta meta";
+    column-gap: var(--space-4);
+  }
+  .tabs { align-self: stretch; margin-inline: 0; }
+}
+@media (min-width: 1280px) {
+  .masthead {
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "brand tabs meta actions";
+    column-gap: 36px;
+    height: var(--masthead);
+  }
+  .tabs { align-self: stretch; margin-inline: 0; gap: 4px; }
+  .tab { padding-inline: 14px; }
+  .masthead-meta {
+    justify-content: flex-end;
+    padding: 0;
+    border: 0;
+    gap: 0;
+    font-size: var(--text-small);
+  }
+  .meta-item + .meta-item { margin-left: 20px; padding-left: 20px; border-left: 1px solid var(--line); }
+}
+
+/* The shell: the screen's <main> and, on the home from 1024 px, the line's panel beside it. */
+.shell { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); }
+main { min-width: 0; padding: var(--space-3) var(--pad) var(--space-5); }
+.line-panel { display: none; }
+@media (min-width: 1024px) {
+  .shell--line { grid-template-columns: minmax(0, 1fr) var(--side-width); }
+  .shell--line .line-panel { display: block; background: var(--side); border-left: 1px solid var(--line); }
+  .line-panel-inner { padding: 22px 26px var(--space-4); }
+}
+
+/* The title band: the h1, then its lines. More space above a block than inside it. */
+.page-head h1 { font-size: var(--text-title); line-height: 1.05; font-weight: 700; letter-spacing: -0.005em; }
 .page-head h1:focus { outline: none; } /* it takes the focus on a new screen; it is not a control */
-.page-meta { max-width: var(--measure-text); margin-top: var(--space-1); color: var(--muted); overflow-wrap: anywhere; }
+.page-meta, .page-lead { max-width: var(--measure-text); margin-top: 6px; color: var(--muted); overflow-wrap: anywhere; }
 
-.notices { margin-top: var(--space-between-blocks); }
+.notices { margin-top: var(--space-2); }
 .notices:empty { display: none; }
-.body { margin-top: var(--space-between-blocks); }
+.body { margin-top: var(--space-3); }
 
-/* ---- text styles ------------------------------------------------------------------------ */
+/* ---- text styles ------------------------------------------------------------------------- */
 
-.section + .section { margin-top: var(--space-between-blocks); }
-.section h2 { font-size: var(--text-body); line-height: 1.4; font-weight: 600; margin-bottom: var(--space-1); }
-.section p, .prose { max-width: var(--measure-text); } /* about 80 characters a line (FUN-12) */
-.muted { color: var(--muted); }
-.loading { color: var(--muted); }
-
-/* Blocks of one group, one under the other, each at its own width. */
+.section + .section { margin-top: var(--space-4); }
+.section h2 { font-size: 18px; line-height: 1.3; font-weight: 600; margin-bottom: var(--space-1); }
+.section p, .prose { max-width: var(--measure-text); }
+.muted, .loading { color: var(--muted); }
 .stack { display: grid; justify-items: start; gap: var(--space-2); }
 
-/* Sections side by side share the width equally (MAR-12); below 672 px they stack. */
-.split { display: grid; gap: var(--space-between-blocks); }
+.split { display: grid; gap: var(--space-4); }
 .split > .section { margin: 0; }
-@media (min-width: 672px) {
-  .split { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
+@media (min-width: 672px) { .split { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 .steps { list-style: none; padding: 0; display: grid; gap: var(--space-1); }
-.step-number { font-weight: 600; font-variant-numeric: tabular-nums; }
+.step-number { font-weight: 600; }
 
-/* ---- section notice --------------------------------------------------------------------- */
+/* ---- notices: a panel with the lamp of its tone beside its words -------------------------- */
 
-/* A sheet with a stripe: grey for information, ink for a warning, the error colour for an error. Never the accent,
-   which means «you can touch this» (COM-15). */
 .notice {
-  --notice-accent: var(--muted);
   display: grid;
-  gap: var(--space-1);
-  padding: var(--space-2);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: var(--space-1) 12px;
+  padding: 14px var(--space-2);
   border: 1px solid var(--line);
-  border-inline-start: var(--mark) solid var(--notice-accent);
   border-radius: var(--radius);
-  background: var(--sheet);
+  background: var(--panel);
 }
-.notice--warning { --notice-accent: var(--ink); }
-.notice--error { --notice-accent: var(--error); }
-.notice p { max-width: var(--measure-text); }
-/* A notice in a stack (the «sin permiso» screen) takes the full width, like every notice in the notice zone. */
+.notice > .lamp { margin-top: 4px; }
+.notice > p { max-width: var(--measure-text); }
+.notice > :not(.lamp):first-child { grid-column: 1 / -1; } /* a notice without a lamp (sin permiso, a line card) */
+.notice--warning { border-color: var(--edge); }
+.notice-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-3); }
 .stack > .notice { justify-self: stretch; }
-.notice-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-3); }
 
-/* ---- fields ----------------------------------------------------------------------------- */
+/* ---- fields ------------------------------------------------------------------------------ */
 
 .form { display: grid; gap: var(--space-2); max-width: var(--measure-form); }
-.field { display: grid; gap: var(--space-1); }
+.field { display: grid; gap: 6px; }
 label { font-weight: 600; }
 .hint { color: var(--muted); font-size: var(--text-small); }
 input, textarea, select {
   width: 100%;
-  min-height: var(--target-min);
-  padding: var(--space-1) var(--space-2);
-  border: 1px solid var(--muted);
-  border-radius: var(--radius);
-  background: var(--sheet);
+  min-height: var(--target);
+  padding: var(--space-1) 12px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-control);
+  background: var(--panel);
   color: var(--ink);
   font: inherit;
   font-size: var(--text-body); /* 16 px or more keeps iOS from zooming in */
 }
+input::placeholder, textarea::placeholder { color: var(--muted); }
 input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="true"] {
-  border-color: var(--error);
-  box-shadow: inset 0 0 0 1px var(--error);
+  border-color: var(--lamp-red);
+  box-shadow: inset 0 0 0 1px var(--lamp-red);
 }
-.field-error { color: var(--error); font-size: var(--text-small); font-weight: 600; }
-/* The code is figures, in the fixed-width font, as wide as the 8 digits need (COM-02). */
+/* The error in words, in the text colour, after a red lamp: never red text on the dark ground. */
+.field-error { display: flex; align-items: baseline; gap: var(--space-1); font-size: var(--text-small); font-weight: 600; }
+.field-error::before, .station-note[data-tone="error"]::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--lamp-red);
+  box-shadow: inset 0 0 0 1.5px var(--lamp-rim);
+  transform: translateY(1px);
+}
 .code-input {
   max-width: calc(12ch + 2 * var(--space-2));
-  font-family: var(--font-mono);
-  font-size: var(--text-title);
+  font-size: 24px;
+  font-weight: 600;
   letter-spacing: 0.2em;
-  font-variant-numeric: tabular-nums;
 }
 
-/* ---- buttons and actions ---------------------------------------------------------------- */
+/* ---- buttons and actions ----------------------------------------------------------------- */
 
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--target-min);
-  padding: var(--space-1) var(--space-3);
+  min-height: var(--target);
+  padding: 6px var(--space-2); /* a label that wraps to two lines keeps air above and below */
   border: 1px solid transparent;
-  border-radius: var(--radius);
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--ink);
   font: inherit;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.15;
+  text-align: center;
   text-decoration: none;
   cursor: pointer;
+  transition: background-color 90ms ease-out, border-color 90ms ease-out, color 90ms ease-out;
 }
-.button--primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.button--secondary { background: transparent; border-color: var(--muted); color: var(--ink); }
-/* Feedback on hover and press, 90 ms (MOV-03); the reduced-motion rule above drops the transition. */
-.button { transition: background-color 90ms ease-out, border-color 90ms ease-out; }
-.button--primary:not([disabled]):is(:hover, :active) { background: var(--accent-hover); border-color: var(--accent-hover); }
-.button--secondary:not([disabled]):is(:hover, :active) { background: var(--secondary-hover); }
+.button--primary { background: var(--ink); border-color: var(--ink); color: var(--on-ink); }
+.button--primary:not([aria-disabled="true"]):is(:hover, :active) {
+  background: color-mix(in srgb, var(--ink) 84%, var(--ground));
+  border-color: color-mix(in srgb, var(--ink) 84%, var(--ground));
+}
+.button--secondary { border-color: var(--edge); }
+.button--secondary:not([aria-disabled="true"]):is(:hover, :active) { background: var(--hover); border-color: var(--ink); }
+.button--quiet { padding-inline: 10px; color: var(--muted); }
+.button--quiet:is(:hover, :active) { color: var(--ink); background: var(--hover); }
+.button[aria-disabled="true"] { cursor: progress; opacity: 0.72; }
 .form .button--primary { width: 100%; }
 
 /* A secondary action that reads as a link (COM-01). */
 .link-button {
   appearance: none;
-  min-height: var(--target-link);
+  min-height: var(--target);
+  min-width: var(--target);
   padding: 0;
   border: 0;
   background: none;
-  color: var(--accent);
+  color: var(--ink);
   font: inherit;
+  font-weight: 500;
   text-align: start;
   text-decoration: underline;
+  text-decoration-color: var(--edge);
   text-underline-offset: 3px;
   cursor: pointer;
 }
-/* What follows a form goes after it, so the form's primary action is its last control (MAR-06). */
+.link-button:hover { text-decoration-color: currentColor; }
 .secondary-actions { display: grid; justify-items: start; margin-top: var(--space-2); max-width: var(--measure-form); }
-.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); }
 
-/* ---- tags ------------------------------------------------------------------------------- */
+/* ---- the run's line (js/line.js) --------------------------------------------------------- */
 
-/* A short label (a topic, a mark): text on a grey pill, never colour alone (FUN-27). */
-.tag {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 var(--space-1);
-  border-radius: var(--radius-pill);
-  background: var(--tag);
-  color: var(--ink);
-  font-size: var(--text-small);
+.line-head h2 { font-size: 22px; font-weight: 700; line-height: 1.1; }
+.line-facts { margin-top: 4px; color: var(--muted); font-size: var(--text-small); }
+.line-note { margin-top: var(--space-1); font-size: var(--text-small); }
+
+/* One station per stage on a rail; the rail stops at each lamp (the lamp's ring is the panel's colour). */
+.line-stations { position: relative; margin-top: var(--space-2); padding: 0; list-style: none; }
+.line-stations::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 12px;
+  bottom: 14px;
+  width: 2px;
+  background: var(--line);
+}
+.line-station {
+  --ring: var(--side);
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  align-items: baseline;
+  column-gap: 0;
+  padding-block: 7px;
+}
+.line-station > .lamp {
+  position: relative;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  box-shadow: inset 0 0 0 1.5px var(--lamp-rim), 0 0 0 4px var(--ring);
+}
+.line-station > .lamp[data-lamp="off"], .line-station > .lamp[data-wait]:not([data-lit]) {
+  box-shadow: inset 0 0 0 1px var(--lamp-off-rim), 0 0 0 4px var(--ring);
+}
+.line-station-label { font-size: var(--text-body); font-weight: 600; line-height: 1.25; }
+.line-station-number { margin-right: 6px; color: var(--muted); font-size: var(--text-xs); font-weight: 500; }
+.line-station-count { padding-left: 12px; font-size: 22px; font-weight: 700; line-height: 1; text-align: right; }
+.line-station-count.is-empty { font-size: var(--text-small); font-weight: 500; color: var(--muted); }
+.line-station-notes { grid-column: 2 / 4; margin-top: 2px; color: var(--muted); font-size: var(--text-xs); line-height: 1.4; }
+.line-station-state { color: var(--muted); }
+.line-flag {
+  display: inline-block;
+  padding: 0 6px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.6;
   white-space: nowrap;
 }
+.line-flag--amber { background: var(--lamp-amber); color: var(--on-amber); box-shadow: inset 0 0 0 1px var(--lamp-rim); }
+.line-flag--red { background: var(--lamp-red); color: var(--on-red); }
 
-/* ---- the list of pains (home) ----------------------------------------------------------- */
+/* The sources under the first station. */
+.line-sources {
+  grid-column: 2 / 4;
+  display: grid;
+  gap: 6px;
+  margin: var(--space-1) 0 4px;
+  padding: 10px 12px;
+  list-style: none;
+  border-radius: var(--radius-control);
+  background: var(--panel);
+  font-size: var(--text-small);
+}
+.line-source { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-1); row-gap: 2px; }
+.line-source-figure { font-weight: 600; text-align: right; white-space: nowrap; }
+.line-source-of { color: var(--muted); font-weight: 400; }
+.line-source-state, .line-source > .line-flag { grid-column: 2 / -1; justify-self: start; }
+.line-source-state { color: var(--muted); font-size: var(--text-xs); }
+/* The state gets its own column only when the box itself is wide enough for a name beside the figures: it lays out by
+   its own width, not the viewport's, because the same box sits in the side panel (22-28rem) and in the full-width
+   strip. Narrower, the state goes under the name. */
+.line-sources { container: sources / inline-size; }
+@container sources (min-width: 25rem) {
+  .line-source { grid-template-columns: 10px minmax(7rem, 1fr) auto 6.5rem; }
+  .line-source-state, .line-source > .line-flag { grid-column: auto; justify-self: end; }
+}
 
-/* The week's sentence opens the body; the sections follow at the space between blocks. */
-.week-sentence { max-width: var(--measure-text); }
-.week-sentence + .section { margin-top: var(--space-between-blocks); }
-/* On the home every section starts a step further from what is above it, so its title reads as the head of a group. */
-.home-body > * + .section { margin-top: var(--space-5); }
-/* The home's section titles outrank its pain titles (16 px). Its meta lines go up to the body size, muted, so the home
-   still uses three sizes: 16, 18 and the title (FUN-02). Every other screen keeps 14 px for its small text. */
-.home-body > .section > h2, .home-body .section-summary h2 { font-size: var(--text-section); }
-.home-body .pain-meta { font-size: var(--text-body); }
+.line-other { margin-top: var(--space-2); font-size: var(--text-small); }
+.line-other h3 { font-size: var(--text-small); font-weight: 600; }
+.line-other ul { margin-top: 4px; padding-left: 1.1em; color: var(--muted); }
+.line-other-link { display: inline-flex; align-items: center; min-height: var(--target); color: var(--ink); }
 
-/* Rows split by lines, not boxes (FUN-04); the lines run the full width while each text keeps its reading measure. */
-.pain-list { list-style: none; padding: 0; border-top: 1px solid var(--line); }
-.pain-row { padding-block: var(--space-1) var(--space-2); border-bottom: 1px solid var(--line); }
-.pain-title { font-size: var(--text-body); line-height: 1.4; font-weight: 600; }
-/* The title is the row's link. Its padding makes a tap target of 44 px on one line (22.4 + 2 × 11, FUN-18) and puts the
-   same space between the title and the «who» line in every row, also when the title takes two lines. */
-.pain-title a { display: inline-block; padding-block: var(--pain-title-pad); }
-.pain-who, .pain-meta { max-width: var(--measure-text); }
-.pain-meta { margin-top: var(--space-1); color: var(--muted); font-size: var(--text-small); }
-.pain-list + .link-button { margin-top: var(--space-1); }
+.line-costs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px var(--space-2);
+  margin-top: var(--space-2);
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+.line-costs div { display: flex; gap: 6px; }
+.line-costs dd { color: var(--ink); font-weight: 600; }
 
-/* «Descartados», folded: the summary reads like a section title and is a full tap target. */
-.section-summary {
-  min-height: var(--target-min);
-  padding-block: var(--space-1);
-  font-weight: 600;
-  line-height: 2;
+/* On a phone and a tablet, the line is a folded strip under the title; from 1024 px it is the side panel instead. */
+.line-strip { margin-top: var(--space-2); border-radius: var(--radius); background: var(--panel); }
+.line-strip .line-station { --ring: var(--panel); }
+.line-strip .line-sources { background: var(--ground); }
+.line-strip-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  min-height: 52px;
+  padding: 10px 44px 10px var(--space-2);
+  position: relative;
+  list-style: none;
   cursor: pointer;
 }
-/* Its h2 stays on the marker's line. */
-.section-summary h2 { display: inline; margin: 0; }
-details[open] > .section-summary { margin-bottom: var(--space-1); }
+.line-strip-summary::-webkit-details-marker { display: none; }
+/* The chevron, drawn: a square's two borders, turned. */
+.line-strip-summary::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.line-strip[open] > .line-strip-summary::after { transform: translateY(-20%) rotate(225deg); }
+.line-strip-title { font-weight: 600; }
+.line-strip-lamps { display: inline-flex; gap: 4px; }
+.line-strip-state { color: var(--muted); font-size: var(--text-xs); }
+.line-strip-week { display: none; flex-basis: 100%; color: var(--muted); font-size: var(--text-xs); }
+.line-strip-week b { color: var(--ink); font-weight: 600; }
+.line-strip--empty .line-strip-week { margin-top: 6px; }
+@media (max-width: 767.98px) { .line-strip-week { display: block; } }
+.line-strip-body { padding: 0 var(--space-2) var(--space-2); border-top: 1px solid var(--line); }
+.line-strip-body .line-head { padding-top: 12px; }
+.line-strip--empty { padding: 12px var(--space-2); }
+.line-strip--empty h2 { font-size: var(--text-body); }
+@media (min-width: 1024px) {
+  .line-strip:not(.line-strip--empty) { display: none; }
+  .line-strip--empty { max-width: var(--measure-text); }
+}
 
-/* ---- a pain's detail (the «detalle» pattern) ---------------------------------------------- */
+/* ---- «Esta semana»: the board and the stations ------------------------------------------- */
 
-/* The context: «← Volver» on one line, a 44 px target (FUN-18). */
-.back-link { display: inline-flex; align-items: center; min-height: var(--target-link); white-space: nowrap; }
+.decide-empty { margin-bottom: var(--space-3); }
+/* Below 640 px the stations come first and the board's counters after them, so the first decision is on the first
+   screen; the counters are a way into Catálogo, not the decision. */
+@media (max-width: 639.98px) {
+  .home-body { display: flex; flex-direction: column; }
+  .home-body > .board { order: 1; margin-top: var(--space-3); }
+  .home-body > .stations { margin-top: 0; }
+}
+
+/* The catalog by state, as the board's counters; each opens the catalog. */
+.board ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--panel);
+  overflow: hidden;
+}
+.board li + li { border-left: 1px solid var(--line); }
+.board li:nth-child(3) { border-left: 0; }
+.board li:nth-child(n + 3) { border-top: 1px solid var(--line); }
+.board-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 10px var(--space-2);
+  color: inherit;
+  text-decoration: none;
+}
+.board-cell:hover { background: var(--hover); }
+.board-count { font-size: 26px; font-weight: 700; line-height: 1; }
+.board-label { color: var(--muted); font-size: var(--text-small); line-height: 1.2; }
+@media (min-width: 720px) {
+  .board ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .board li:nth-child(3) { border-left: 1px solid var(--line); }
+  .board li:nth-child(n + 3) { border-top: 0; }
+  .board-cell { padding-inline: 18px; }
+  .board-count { font-size: 28px; }
+}
+
+.stations {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 24rem), 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+/* A station: its plate (number, lamp and its state written beside the lamp), then its body. On a phone the plate is a
+   row on top; from 640 px a column at the left, the state under its lamp. */
+.station {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-self: start;
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.station-plate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px var(--space-2) 0;
+}
+.station-number { font-size: var(--number-station); font-weight: 700; line-height: 0.9; letter-spacing: -0.01em; }
+.station-state { display: flex; align-items: center; gap: 8px; font-size: var(--text-small); font-weight: 600; line-height: 1.2; }
+.station-body { display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 10px var(--space-2) var(--space-2); }
+@media (min-width: 640px) {
+  .station { grid-template-columns: 96px minmax(0, 1fr); }
+  .station-plate { flex-direction: column; gap: 14px; padding: 18px 8px; border-right: 1px solid var(--line); }
+  .station-state { flex-direction: column; gap: 8px; text-align: center; font-size: var(--text-xs); }
+  .station-body { gap: 12px; padding: 18px 22px 18px 20px; }
+}
+/* The full stations of a row end at the same height (their actions at the foot); a compact one starts its own row, so
+   it never sits beside a full one, and an odd last full station spans the row (station--span, from the station list). */
+.station:not(.station--compact) { align-self: stretch; }
+.station:not(.station--compact) + .station--compact { grid-column-start: 1; }
+.station--span { grid-column: 1 / -1; }
+/* The compact station (the ones without weight that did not win the duel): a smaller number, the plate always a row
+   on top, no «Quién lo sufre» and no trend line. */
+.station--compact { --number-station: 28px; }
+.station--compact .lamp--station { width: 22px; height: 22px; }
+@media (min-width: 640px) {
+  .station--compact { grid-template-columns: minmax(0, 1fr); }
+  .station--compact .station-plate { flex-direction: row; gap: 12px; padding: 14px 22px 0 20px; border-right: 0; }
+  .station--compact .station-state { flex-direction: row; text-align: start; font-size: var(--text-small); }
+  .station--compact .station-body { padding-top: 10px; }
+}
+
+.station-tags { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.station-tag {
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.station-tag--winner { background: var(--ink); color: var(--on-ink); }
+.station-tag--fresh { background: var(--lamp-amber); color: var(--on-amber); box-shadow: inset 0 0 0 1px var(--lamp-rim); }
+
+/* Titles wrap, never cut (Review Focus 5). */
+.station-title { font-size: var(--text-title-station); font-weight: 600; line-height: 1.15; }
+/* A one-line title is shorter than a target: the link's box grows to 44 px a line and gives the room back with a
+   negative margin, so the station's rhythm does not change. */
+.station-title a {
+  --grow: max(0px, calc((var(--target) - 1lh) / 2));
+  display: inline-block;
+  padding-block: var(--grow);
+  margin-block: calc(-1 * var(--grow));
+  text-decoration: none;
+}
+.station-title a:hover { text-decoration: underline; text-decoration-color: var(--edge); }
+.station--compact .station-title { font-size: 19px; }
+/* Why it is there: the duel's line under its tag, then the station's figures in its ink. */
+.station-facts { font-size: var(--text-small); font-weight: 600; font-variant-numeric: tabular-nums; }
+.station-duel { font-size: var(--text-small); }
+.station-duel-label { font-weight: 600; }
+.station-who { font-size: 15px; }
+.station-label { color: var(--muted); font-weight: 600; }
+.station-meta { color: var(--muted); font-size: var(--text-small); }
+
+.station-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+}
+.station-marks { flex-basis: 100%; color: var(--muted); font-size: var(--text-small); }
+/* «Comentar» at the start, the two marks together at the end (.station-pair). A label never breaks inside its
+   guillemets («Quitar «Nos interesa»» stays on one line): when the row is too narrow, the pair moves to its own row,
+   and below 400 px each mark takes a row of its own if they do not fit side by side. */
+.station-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1); width: 100%; }
+.station-actions > .button--quiet { justify-content: flex-start; margin-left: -10px; margin-right: auto; }
+.station-pair { display: flex; flex-wrap: wrap; gap: var(--space-1); margin-left: auto; }
+.station-pair > .button { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
+@media (max-width: 399.98px) {
+  .station-actions > .button--quiet { flex-basis: 100%; }
+  .station-pair { flex-basis: 100%; }
+  .station-pair > .button { padding-inline: 10px; }
+}
+.station { position: relative; }
+.station-note { flex-basis: 100%; font-size: var(--text-small); }
+/* The live region stays in the accessibility tree while empty (display: none would drop it and lose the first
+   announcement); it is only hidden from the eye. */
+.station-note:empty {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.station-note[data-tone="error"] { display: flex; align-items: baseline; gap: var(--space-1); font-weight: 600; }
+
+/* ---- Catálogo: every pain by state, one dense row per pain ------------------------------- */
+
+.week-sentence { max-width: var(--measure-text); }
+.catalog-body { display: grid; gap: var(--space-4); }
+.catalog-heading { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; line-height: 1.2; }
+.catalog-section > .catalog-heading { margin-bottom: 10px; }
+.catalog-empty { padding: 14px var(--space-2); border-radius: var(--radius); background: var(--panel); color: var(--muted); }
+
+/* The discarded ones' fold: its summary is the heading, with a drawn chevron after it. */
+.catalog-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--target);
+  list-style: none;
+  cursor: pointer;
+}
+.catalog-summary::-webkit-details-marker { display: none; }
+.catalog-summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  margin-left: 4px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.catalog-fold[open] > .catalog-summary { margin-bottom: 10px; }
+.catalog-fold[open] > .catalog-summary::after { transform: translateY(25%) rotate(225deg); }
+.catalog-summary:hover .catalog-heading { text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
+
+/* The rows sit on one panel, divided by rules. The title's link covers its whole row, so the row is the target. */
+.pain-list { padding: 0; list-style: none; border-radius: var(--radius); background: var(--panel); }
+.pain-row { position: relative; display: grid; gap: 4px; padding: 10px var(--space-2) 12px; }
+.pain-row + .pain-row { border-top: 1px solid var(--line); }
+.pain-row:hover { background: var(--hover); }
+.pain-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pain-title { font-size: 17px; font-weight: 600; line-height: 1.25; }
+.pain-title a { text-decoration: none; }
+.pain-title a::after { content: ""; position: absolute; inset: 0; }
+.pain-title a:focus-visible { outline: none; }
+.pain-title a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius); }
+.pain-row:hover .pain-title a { text-decoration: underline; text-decoration-color: var(--edge); }
+.pain-who { margin-top: 2px; color: var(--muted); font-size: 15px; line-height: 1.35; }
+.pain-meta, .pain-marks { font-size: var(--text-small); line-height: 1.35; }
+.pain-meta, .pain-marks.is-empty { color: var(--muted); }
+.more-button { margin-top: var(--space-1); }
+
+/* From 720 px the state is a column at the left; from 1200 px the title, who suffers it and the marks are columns too,
+   so most rows take two lines. */
+@media (min-width: 720px) {
+  .pain-row { grid-template-columns: 12.5rem minmax(0, 1fr); column-gap: var(--space-3); row-gap: 4px; }
+  .pain-state { grid-row: 1 / span 2; align-self: start; min-height: 21px; }
+  .pain-main, .pain-side { grid-column: 2; }
+}
+@media (min-width: 1200px) {
+  .pain-row { grid-template-columns: 12.5rem minmax(0, 1fr) minmax(13rem, 18rem); padding-block: 9px 10px; }
+  .pain-meta, .pain-marks { line-height: 1.3; }
+  .pain-state { grid-row: auto; }
+  .pain-main { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); column-gap: var(--space-3); align-items: baseline; }
+  .pain-who { margin-top: 0; }
+  .pain-side { grid-column: 3; }
+}
+
+/* ---- a pain's detail: its state by its lamp, the card, «Cómo llegamos», marks and comments -- */
+
+.back-link { display: inline-flex; align-items: center; min-height: var(--target); white-space: nowrap; }
 .has-context .page-head { margin-top: var(--space-1); }
-
-/* MAR-14 on a phone: masthead, «← Volver» and a two-line title end within 160 px of a 640 px screen. The back link keeps
-   its 44 px target, but its negative margins leave the line it sits on (24 px, the text's own line height) as its only
-   height in the flow: the target reaches into the space around it. The page starts closer to the masthead.
-   65 (masthead) + 8 + 24 (back) + 8 + 2 × 25 (title) = 155. */
 @media (max-width: 671.98px) {
   main.has-context { padding-top: var(--space-1); }
   .has-context .back-link { margin-block: calc(-1 * var(--space-2)); }
 }
 
-/* The header: the title, the status as a tag under it, the key data, then the marks as its actions, last (MAR-06). */
-.detail-status { margin-top: var(--space-1); }
+.detail-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: var(--space-1);
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.3;
+}
 .key-data { margin-top: var(--space-1); padding: 0; list-style: none; max-width: var(--measure-text); }
 .key-label { color: var(--muted); font-size: var(--text-small); }
 .key-value { color: var(--ink); }
 .detail-actions { margin-top: var(--space-2); }
 .own-mark { margin-top: var(--space-1); color: var(--muted); font-size: var(--text-small); }
-
-/* On a phone the key data share one line, «·» between them, the value at the label's size; a value that reads alone
-   keeps its label only for screen readers (DET-12). */
 @media (max-width: 671.98px) {
   .key-data { font-size: var(--text-small); }
   .key { display: inline; }
-  /* The plain declaration first: Safari before 17.4 drops the one with alt text and keeps it. */
   .key + .key::before { content: "·"; content: "·" / ""; margin-inline: var(--space-1); color: var(--muted); }
   .key--alone .key-label {
     position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
     clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
 }
-/* From 672 px each datum carries its label, small and muted, over its value (DET-02). */
 @media (min-width: 672px) {
   .key-data { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-4); }
   .key { display: grid; }
 }
 
-.button[aria-disabled="true"] { cursor: progress; }
-
-/* A fold's summary is a 44 px target: its line plus the padding (FUN-18). Its marker goes after the words, so the
-   words start on the body's line (MAR-10). */
 .fold > summary {
   padding-block: var(--space-1);
-  line-height: calc(var(--target-link) - 2 * var(--space-1));
-  color: var(--accent);
+  line-height: calc(var(--target) - 2 * var(--space-1));
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--edge);
+  text-underline-offset: 3px;
   list-style: none;
   cursor: pointer;
 }
 .fold > summary::-webkit-details-marker { display: none; }
-/* The plain declaration first: Safari before 17.4 drops the one with alt text and keeps it. */
-.fold > summary::after { content: "▾"; content: "▾" / ""; margin-inline-start: var(--space-1); }
-.fold[open] > summary::after { content: "▴"; content: "▴" / ""; }
+/* The chevron, drawn like every other fold's: a square's two borders, turned. */
+.fold > summary::after {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-inline-start: var(--space-1);
+  vertical-align: middle;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.fold[open] > summary::after { transform: translateY(25%) rotate(225deg); }
 
-/* The body: the index, then the sections. On a phone the index is folded at the top, in the flow, so the first
-   section still shows on the first screen (FUN-42) and nothing sticks (MAR-14, point 5). From 672 px it is sticky,
-   beside the sections on the right, so the sections and the comment form start at the body's edge (DET-04, MAR-09). */
-.detail-layout { display: grid; gap: var(--space-between-blocks); }
+.detail-layout { display: grid; gap: var(--space-4); }
 .detail-index ul { list-style: none; padding: 0; display: grid; }
-.detail-index a { display: inline-flex; align-items: center; min-height: var(--target-link); }
+.detail-index a { display: inline-flex; align-items: center; min-height: var(--target); }
 .detail-index--wide { display: none; }
 @media (min-width: 672px) {
-  .detail-layout { grid-template-columns: minmax(0, 1fr) 14rem; align-items: start; }
+  .detail-layout { grid-template-columns: minmax(0, var(--measure-prose)) 14rem; justify-content: start; align-items: start; }
   .detail-sections { grid-column: 1; grid-row: 1; }
   .detail-index--wide { display: block; grid-column: 2; grid-row: 1; position: sticky; top: var(--space-2); }
-  .detail-index--wide ul { gap: var(--space-1); }
-  .detail-index--wide a { min-height: 0; }
   .detail-index--fold { display: none; }
 }
-.detail-section h2:focus { outline: none; } /* the index moves the focus here; it is not a control */
+.detail-section { max-width: var(--measure-prose); }
+.detail-section h2 { font-size: 26px; line-height: 1.15; font-weight: 700; margin-bottom: 10px; }
+.detail-section + .detail-section { margin-top: var(--space-5); }
+.detail-section h2:focus { outline: none; }
 .detail-section > p + p { margin-top: var(--space-1); }
-.detail-notice + .section { margin-top: var(--space-between-blocks); }
+.detail-notice + .section { margin-top: var(--space-4); }
 
-/* Quotes: the translation as a quote, its source and, folded, the original (one level, DET-07). */
 .quotes { list-style: none; padding: 0; display: grid; gap: var(--space-2); margin-top: var(--space-2); max-width: var(--measure-text); }
-.quote blockquote { margin: 0; padding-inline-start: var(--space-2); border-inline-start: var(--mark) solid var(--line); }
-.quote-source { display: inline-flex; align-items: center; min-height: var(--target-link); }
+.quote blockquote { margin: 0; padding-inline-start: var(--space-2); border-inline-start: 3px solid var(--line); }
+.quote-source { display: inline-flex; align-items: center; min-height: var(--target); }
 .original > p { color: var(--muted); }
 
-/* The glossary: term and meaning, rows split by a line (DET-08). */
 .glossary { margin: 0; max-width: var(--measure-text); border-top: 1px solid var(--line); }
 .glossary-row { padding-block: var(--space-1); border-bottom: 1px solid var(--line); }
 .glossary dt { font-weight: 600; }
 .glossary dd { margin: 0; }
 
-/* Marks and comments. */
-.detail-section h3 {
-  margin-top: var(--space-3);
-  margin-bottom: var(--space-1);
-  color: var(--muted);
-  font-size: var(--text-small);
-  font-weight: 600;
-}
+.detail-section h3 { margin-top: var(--space-3); margin-bottom: var(--space-1); font-size: 20px; line-height: 1.2; font-weight: 600; }
 .detail-section h3:focus { outline: none; }
 .mark-list, .comment-list { list-style: none; padding: 0; max-width: var(--measure-text); }
 .comment-list { border-top: 1px solid var(--line); }
@@ -428,6 +872,186 @@ details[open] > .section-summary { margin-bottom: var(--space-1); }
 .comment-form textarea { resize: vertical; }
 .form-notices:empty { display: none; }
 
-/* ---- index.html's fallback when the page could not load --------------------------------- */
+/* «Cómo llegamos a este dolor»: the quotes by source, then the attacks and the duels as rows on one panel, each with its
+   lamp and its result in words (the catalog's rows, in the detail's column). */
+.how-part { margin-top: var(--space-2); }
+.how-part + .how-part { margin-top: var(--space-4); }
+.detail-section .how-heading { margin: 0 0 6px; color: var(--ink); font-size: 20px; font-weight: 600; line-height: 1.2; }
+.how-lead { color: var(--muted); font-size: var(--text-small); }
 
-.fallback { display: grid; justify-items: start; gap: var(--space-2); }
+.how-sources { display: grid; gap: var(--space-3); margin-top: var(--space-2); max-width: var(--measure-text); }
+.how-source-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+.how-source-head h4 { margin: 0; font-size: var(--text-body); font-weight: 600; line-height: 1.3; }
+.how-source-kind { color: var(--muted); font-size: var(--text-small); }
+.how-quotes { display: grid; padding: 0; list-style: none; }
+.how-quote { padding-block: 12px 2px; }
+.how-quote + .how-quote { border-top: 1px solid var(--line); }
+.how-quote:focus { outline: none; }
+.how-quote blockquote { margin: 0; font-size: 17px; line-height: 1.45; }
+.how-quote blockquote p::before { content: "«"; }
+.how-quote blockquote p::after { content: "»"; }
+.how-quote-meta { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-2); color: var(--muted); font-size: var(--text-small); }
+.how-quote-meta > span { padding-block: 6px; }
+.how-quote-link { display: inline-flex; align-items: center; min-height: var(--target); color: var(--ink); }
+
+.how-rows {
+  max-width: var(--measure-text);
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--panel);
+  container: how / inline-size;
+}
+.how-row { display: grid; align-items: start; gap: 4px; padding: 12px var(--space-2) 14px; }
+.how-row + .how-row { border-top: 1px solid var(--line); }
+.how-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.how-question { font-size: 17px; font-weight: 600; line-height: 1.3; }
+.how-plain { margin-top: 2px; color: var(--muted); line-height: 1.4; }
+/* With room, the result is a column at the left, as in the catalog. */
+@container how (min-width: 30rem) {
+  .how-row { grid-template-columns: 7.5rem minmax(0, 1fr); column-gap: var(--space-2); }
+  .how-result { min-height: 22px; }
+}
+
+/* ---- Corridas: every run week by week, and one run opened --------------------------------- */
+
+/* The list: one dense row per run on one panel, as in Catálogo. The date's link covers its whole row. */
+.run-list { padding: 0; list-style: none; border-radius: var(--radius); background: var(--panel); }
+.run-row { position: relative; display: grid; gap: 6px; padding: 12px var(--space-2) 14px; }
+.run-row + .run-row { border-top: 1px solid var(--line); }
+.run-row:hover { background: var(--hover); }
+.run-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.run-title { font-size: 19px; font-weight: 600; line-height: 1.2; }
+.run-title a { text-decoration: none; }
+.run-title a::after { content: ""; position: absolute; inset: 0; }
+.run-title a:focus-visible { outline: none; }
+.run-title a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius); }
+.run-row:hover .run-title a { text-decoration: underline; text-decoration-color: var(--edge); }
+.run-facts { margin-top: 2px; color: var(--muted); font-size: 15px; line-height: 1.35; }
+
+/* The mini line: one small lamp per stage on a rail, its count under it, and in words how many stages had a cut. Ten
+   to a row when the row has room for them; five to a row on a narrow phone. */
+.run-mini { container: mini / inline-size; margin-top: 4px; }
+.run-mini--none { color: var(--muted); font-size: var(--text-small); }
+.run-mini-stages {
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  row-gap: 10px;
+  max-width: 32rem;
+  padding: 0;
+  list-style: none;
+}
+.run-mini-stages li { position: relative; display: grid; justify-items: center; gap: 4px; }
+.run-mini-stages li::before {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: calc(50% + 8px);
+  width: calc(100% - 16px);
+  height: 2px;
+  background: var(--line);
+}
+.run-mini-stages li:last-child::before { display: none; }
+.run-mini-count { font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
+.run-mini-count.is-empty { color: var(--muted); font-weight: 400; }
+.run-mini-state { margin-top: 6px; color: var(--muted); font-size: var(--text-xs); }
+@container mini (max-width: 19rem) {
+  .run-mini-stages { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .run-mini-stages li:nth-child(5n)::before { display: none; }
+}
+
+/* From 720 px the state is a column at the left; from 1200 px the mini line is a column at the right. */
+@media (min-width: 720px) {
+  .run-row { grid-template-columns: 11rem minmax(0, 1fr); column-gap: var(--space-3); }
+  .run-state { grid-row: 1 / span 2; align-self: start; min-height: 24px; }
+  .run-main, .run-mini { grid-column: 2; }
+}
+@media (min-width: 1200px) {
+  .run-row { grid-template-columns: 11rem minmax(0, 1fr) minmax(24rem, 32rem); align-items: start; padding-block: 14px; }
+  .run-state { grid-row: auto; }
+  .run-main { grid-column: 2; }
+  .run-mini { grid-column: 3; margin-top: 2px; }
+}
+
+/* One run opened: its line on the board's side panel colour, then the cost, the cuts, the duels and the technical
+   detail. From 1024 px the line is a column at the left and the rest reads beside it. */
+.run-head .key-data { margin-top: var(--space-1); }
+.run-detail { display: grid; gap: var(--space-4); }
+.run-line { padding: 18px var(--space-2) 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--side); }
+@media (min-width: 640px) { .run-line { padding-inline: 22px; } }
+@media (min-width: 1024px) {
+  .run-detail { grid-template-columns: minmax(24rem, 30rem) minmax(0, var(--measure-text)); align-items: start; gap: var(--space-5); }
+}
+.run-section + .run-section, .run-tech { margin-top: var(--space-4); }
+.run-section h2 { margin-bottom: var(--space-1); font-size: 18px; font-weight: 600; line-height: 1.3; }
+.run-empty { max-width: var(--measure-text); color: var(--muted); }
+
+.run-costo-list { max-width: 24rem; border-top: 1px solid var(--line); }
+.run-cost { display: flex; justify-content: space-between; gap: var(--space-2); padding-block: 8px; border-bottom: 1px solid var(--line); }
+.run-cost dt { color: var(--muted); }
+.run-cost dd { font-weight: 600; }
+.run-cost--total { border-bottom: 0; }
+.run-cost--total dt { color: var(--ink); font-weight: 700; }
+.run-cost--total dd { font-weight: 700; }
+
+.run-recortes-list, .run-duelos-list {
+  max-width: var(--measure-text);
+  padding: 0;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+.run-recortes-list li, .run-duelos-list li { padding: 12px var(--space-2); line-height: 1.4; }
+.run-recortes-list li + li, .run-duelos-list li + li { border-top: 1px solid var(--line); }
+
+/* «Detalle técnico»: closed, its summary says it is technical; inside, the raw texts on panels, as the run wrote them. */
+.run-tech { max-width: var(--measure-text); border-top: 1px solid var(--line); }
+.run-tech > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: var(--target);
+  padding-top: 4px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+.run-tech > summary::-webkit-details-marker { display: none; }
+.run-tech > summary::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.run-tech[open] > summary::after { transform: translateY(25%) rotate(225deg); }
+.run-tech > summary:hover { text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
+.run-tech-body { padding-bottom: var(--space-2); }
+.run-tech-lead { color: var(--muted); font-size: var(--text-small); }
+.run-tech-body > .run-empty { margin-top: var(--space-1); }
+.tech-part { margin-top: var(--space-2); }
+.tech-part h3 { margin-bottom: 6px; font-size: var(--text-small); font-weight: 600; }
+.tech-part ul { display: grid; gap: 6px; padding: 0; list-style: none; }
+.tech-part li { padding: 10px 12px; border-radius: var(--radius-control); background: var(--panel); }
+.raw { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+.raw-label { margin-bottom: 2px; color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
+
+/* ---- index.html's fallback when the page could not load ---------------------------------- */
+
+.fallback { display: grid; justify-items: start; gap: var(--space-2); padding: var(--space-3) var(--pad); }
