@@ -1,6 +1,6 @@
 // The page's reads and writes on Supabase. The client comes in as a parameter, so tests pass a fake one and never load
-// the CDN. RLS lets only people on the list read these tables; week_summary(), run_traces(), set_mark(), add_comment()
-// and delete_comment() refuse anyone else with 42501. The writes go only through those three functions.
+// the CDN. RLS lets only people on the list read these tables; week_summary(), run_traces(), set_mark(), add_comment(),
+// delete_comment() and set_niche_veto() refuse anyone else with 42501. The writes go only through the last four.
 
 import { cardTitle } from "./detail.js";
 

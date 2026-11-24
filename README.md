@@ -24,8 +24,9 @@ signing in), and the code email follows `patrones/correo-aviso.md`, COR-10 to CO
 | `js/app.js` | Session, hash router (`#/` home, `#/dolor/<id>` a pain) and the screens: sign-in (email, then code), «sin permiso», the home with the week's pains, and a pain's card with the team's marks and comments |
 | `js/text.js` | Every visible string (`T`), the plain names of the territories (`TOPICS`, `topicName`) and `formatDate` |
 | `js/model.js` | The home's logic, without DOM or network: the section of each pain (`buildSections`, with the run's `effectiveMark`), the week's sentence, the notice about the run, what a failed read means (`classifyError`) and loading by parts |
+| `js/niches.js` | Nichos' logic, without DOM or network: the board (`nicheBoard`: the week's niche and how its run went, every candidate with its state, figures and pains), the veto mirrored once the base took it (`withVeto`), and the tab's counts in words |
 | `js/analysis.js` | The lab report's analysis table: a pain's judged counts (`analysisRows`, model.js) as a `<table>` captioned «Análisis», each count with its value, its reference range and bar, and its flag in words |
-| `js/api.js` | `loadHome(client)` and `loadPain(client, id)`: what the home and a pain read; `setMark`, `addComment` and `deleteComment`: the three writes, through the base's functions. The client is passed in |
+| `js/api.js` | `loadHome(client)`, `loadPain(client, id)` and `loadNiches(client)`: what the home, a pain and Nichos read; `setMark`, `addComment`, `deleteComment` and `setNicheVeto`: the four writes, through the base's functions. The client is passed in |
 | `js/detail.js` | A pain's logic, without DOM or network: its title, status tag and key data, its card sections and quotes, the marks and comments to show, what a failed write means, and the comment kept across a lost session |
 | `js/auth-errors.js` | Turns a Supabase Auth error into what the screen says: rate limit, the hourly email cap, wrong or expired code, no connection, other |
 | `js/access.js` | `accessState(peopleRows, email)`: «member» or «no-access» |
