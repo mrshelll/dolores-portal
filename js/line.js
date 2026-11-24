@@ -15,8 +15,8 @@ import { lineView, stageNotes, sourceFigures, runFacts, costRows } from "./model
 
 // A flat dot. Its state is always written beside it, so the dot itself is hidden from screen readers. `data-lamp`
 // keeps the internal names (green, amber, red, off); amber renders as the attention blue (css/base.css).
-export function lamp(color, { size = null } = {}) {
-  return h("span", { class: size ? `lamp lamp--${size}` : "lamp", "data-lamp": color || "off", "aria-hidden": "true" });
+export function lamp(color) {
+  return h("span", { class: "lamp", "data-lamp": color || "off", "aria-hidden": "true" });
 }
 
 // The week's data on one line («Semana del 23 de noviembre · Cuotas y cobros de clubes · 3,66 USD»), each value after

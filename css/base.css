@@ -40,31 +40,11 @@
   --side-width: calc(21.5rem + var(--pad)); /* the home's line panel: 344 px and the page's margin at its right */
   --measure-form: 440px;
   --measure-text: 38rem;
-  --measure-prose: 64ch;
 
   --radius-control: 6px;
   --radius-panel: 8px;
   --target: 44px;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* The lab report's names, kept as aliases while its screens wait for their own task (Tasks 3-6); Task 6 removes them
-     with the rules that read them. */
-  --section: var(--panel);
-  --line: var(--hairline);
-  --brand: var(--ink);
-  --focus: var(--accent);
-  --state-attention: var(--accent);
-  --state-ok: var(--pass);
-  --state-fail: var(--fail);
-  --state-off: var(--edge);
-  --state-attention-text: var(--accent);
-  --state-ok-text: var(--pass-text);
-  --state-fail-text: var(--fail-text);
-  --radius: var(--radius-panel);
-  --radius-chip: var(--radius-control);
-  --text-xs: 13px;
-  --text-small: 14px;
-  --text-body: 16px;
 }
 
 /* Dark: the same roles. The filled accent stays #2563EB: white on the palette's dark accent #3B82F6 would be 3.68:1. */
@@ -139,7 +119,6 @@ a:hover { text-decoration-color: currentColor; }
 .lamp[data-lamp="amber"] { --lamp: var(--accent); }
 .lamp[data-lamp="green"] { --lamp: var(--pass); }
 .lamp[data-lamp="red"] { --lamp: var(--fail); }
-.lamp--small { width: 6px; height: 6px; }
 
 /* ---- the frame and the masthead ---------------------------------------------------------- */
 
@@ -156,9 +135,6 @@ a:hover { text-decoration-color: currentColor; }
   padding-inline: var(--pad);
   background: var(--ground);
 }
-/* Without tabs (signing in, «sin permiso») the brand row ends on its own hairline. */
-.masthead:not(:has(> .tabs)) { border-bottom: 1px solid var(--hairline); }
-
 .brand-word {
   order: 1;
   display: inline-flex;
@@ -272,18 +248,21 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
 @media (max-width: 767.98px) {
   .masthead-week, .masthead-meta { display: none; }
 }
-/* At 320 px the name, the longest pill and «Salir» share the brand row only a step smaller and closer. */
+/* At 320 px the name, the longest pill and «Salir» share the brand row only a step smaller and closer, and the four tabs
+   fit their row a step smaller and closer too, so «Corridas» is not cut against the edge. */
 @media (max-width: 379.98px) {
   .masthead { column-gap: var(--space-2); }
   .brand-word { font-size: 20px; }
   .run-pill { padding-inline: var(--space-2); }
+  .tabs { padding-inline: calc(var(--pad) - 6px); }
+  .tab { gap: 6px; padding-inline: 6px; font-size: 13px; }
+  .tab[aria-current="page"]::after { left: 6px; right: 6px; }
 }
 
 /* From 768 px the sketch's two rows: the brand row 60 px, everything but the tabs on it, the niche and the cost at the
    right divided by a rule, «Salir» last; then the tabs, 46 px. */
 @media (min-width: 768px) {
   .masthead { padding-top: var(--space-2); }
-  .masthead:not(:has(> .tabs)) { padding-bottom: var(--space-2); }
   /* The slash between the name and the week: a 1 px rule, leaning. */
   .masthead-week::before {
     content: "";
@@ -350,11 +329,10 @@ main { min-width: 0; padding: var(--space-4) var(--pad) 48px; }
 }
 .notice > .lamp { margin-top: 6px; }
 .notice > p { max-width: var(--measure-text); }
-.notice > :not(.lamp):first-child { grid-column: 1 / -1; } /* a notice without a dot (sin permiso, a line card) */
+.notice > :not(.lamp):first-child { grid-column: 1 / -1; } /* a notice without a dot (a line card's) */
 .notice--warning { border-color: color-mix(in srgb, var(--accent) 45%, var(--ground)); }
 .notice--error { border-color: var(--fail); }
 .notice-actions { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-5); }
-.stack > .notice { justify-self: stretch; }
 
 /* ---- fields ------------------------------------------------------------------------------ */
 
@@ -393,12 +371,43 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
   border-radius: 50%;
   background: var(--fail);
 }
+/* The sign-in's code: one field over its boxes (js/app.js, showCodeStep). The field spans the boxes, its own text and
+   caret unseen (still 16 px); the boxes show its digits, four and four a step apart. While the field has the focus, the
+   next box to fill carries the focus ring; an invalid code draws every box's edge red, 2 px as a field's. */
+.code-field { position: relative; max-width: 25rem; }
 .code-input {
-  max-width: calc(12ch + 2 * var(--space-4));
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  height: 100%;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
 }
+.code-input:focus-visible, .code-input[aria-invalid="true"], .code-input[aria-invalid="true"]:focus-visible { outline: none; }
+.code-input::selection { background: transparent; }
+.code-boxes { display: flex; gap: 6px; }
+.code-box {
+  display: grid;
+  place-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: var(--target);
+  height: 48px;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-control);
+  background: var(--ground);
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+.code-box:nth-child(5) { margin-left: 6px; }
+.code-field:has(> .code-input[aria-invalid="true"]) .code-box { border-color: var(--fail); outline: 1px solid var(--fail); outline-offset: -2px; }
+.code-field:has(> .code-input:focus) .code-box[data-next] { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* ---- buttons and actions ----------------------------------------------------------------- */
 
@@ -441,6 +450,11 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 .button--secondary::before { border-color: var(--edge); background: var(--ground); }
 .button--secondary:not([aria-disabled="true"]):is(:hover, :active)::before { background: var(--panel); }
 .button--quiet:is(:hover, :active)::before { background: var(--hover); }
+/* «Comentar», a quiet button after another: 20 px from that button's edge beside it, and on a line of its own its icon at
+   the row's start. The button before it carries 12 px of that space as a trailing margin, which does nothing at a
+   line's end; the quiet one gives its own 12 px padding back with a negative margin. */
+.button:has(+ .button--quiet) { margin-inline-end: var(--space-3); }
+.button + .button--quiet { margin-inline-start: calc(-1 * var(--space-3)); }
 .button[aria-disabled="true"] { cursor: progress; opacity: 0.72; }
 .form .button--primary { width: 100%; }
 
@@ -483,66 +497,28 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 }
 .station-tag--fresh { border-color: color-mix(in srgb, var(--accent) 35%, var(--ground)); background: var(--accent-tint); color: var(--accent); }
 
-/* ==== The lab report's screens, until their own task restyles them (Tasks 3-6). Their spacing is the old one on the
-   new 4 px scale; the colours come through the aliases above. ============================================== */
+/* ---- the panel: signing in, «sin permiso» and index.html's fallback -------------------------- */
+
+/* No masthead: one 400 px panel centred on the ground at a steady height (a notice or the next step never moves what is
+   above it): «tomoshi» as plain text, the title band, the notices and the body, its primary action across it, then how
+   signing in works under a hairline. On a phone the panel is the page, with no edge, at the page's margin. */
+.auth { min-height: 100vh; min-height: 100dvh; padding: var(--space-6) var(--pad) 48px; background: var(--ground); }
+.auth-panel { width: 100%; max-width: 400px; margin-inline: auto; }
+.auth-brand { display: flex; min-height: 0; margin-bottom: var(--space-5); }
+.auth-panel .button--primary { width: 100%; }
+.auth-text + .button { margin-top: var(--space-4); }
+.auth-steps { margin-top: var(--space-5); padding-top: var(--space-5); border-top: 1px solid var(--hairline); font-size: 13px; line-height: 20px; }
+.auth-steps h2 { font-size: 13px; font-weight: 600; line-height: 20px; }
+.auth-steps ol { display: grid; gap: var(--space-1); margin-top: var(--space-2); padding-left: 1.25rem; color: var(--muted); }
+@media (min-width: 480px) {
+  .auth { padding-top: clamp(var(--space-6), 12vh, 112px); }
+  .auth-panel { padding: var(--space-6); border: 1px solid var(--hairline); border-radius: var(--radius-panel); background: var(--panel); }
+}
 
 /* ---- text styles ------------------------------------------------------------------------- */
 
-.section + .section { margin-top: var(--space-6); }
-.section h2 { font-size: 18px; line-height: 1.3; font-weight: 600; margin-bottom: var(--space-2); }
-.section p, .prose { max-width: var(--measure-text); }
 .muted, .loading { color: var(--muted); }
 .stack { display: grid; justify-items: start; gap: var(--space-4); }
-
-.split { display: grid; gap: var(--space-6); }
-.split > .section { margin: 0; }
-@media (min-width: 672px) { .split { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-
-.steps { list-style: none; padding: 0; display: grid; }
-.steps li { padding: 10px var(--space-4); }
-.steps li + li { border-top: 1px solid var(--line); }
-.step-number { color: var(--brand); font-weight: 700; }
-.split > .steps-sheet { align-self: start; max-width: var(--measure-text); }
-
-/* ---- the sheet: one of the report's sections, everywhere but «Esta semana»'s results ------------ */
-
-/* A hairline-bordered panel, its head band on the pale section tint (an h2 in the brand's blue, a small tracked label,
-   or a fold's summary), then its rows divided by hairlines. Nothing inside a sheet is boxed again. On the band a dot
-   keeps a ring of the panel, so a green one reads against the tint (3.43:1 on its ring; 2.94:1 on the tint alone). */
-.sheet { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
-.sheet-head {
-  display: flex;
-  align-items: center;
-  gap: 4px 10px;
-  min-height: var(--target);
-  margin: 0;
-  padding: 8px var(--space-4);
-  border-bottom: 1px solid var(--line);
-  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
-  background: var(--section);
-}
-.sheet-head:last-child, details.sheet:not([open]) > .sheet-head { border-bottom: 0; border-radius: calc(var(--radius) - 1px); }
-.sheet-head h2, .section .sheet-head h2 { margin: 0; color: var(--brand); font-size: 17px; font-weight: 600; line-height: 1.3; }
-.sheet-head .lamp { box-sizing: content-box; border: 2px solid var(--panel); }
-.sheet-body { padding: 12px var(--space-4) var(--space-4); }
-/* A fold whose summary is the band: the chevron after its words, drawn like every other fold's. */
-summary.sheet-head { list-style: none; cursor: pointer; }
-summary.sheet-head::-webkit-details-marker { display: none; }
-summary.sheet-head::after {
-  content: "";
-  flex: none;
-  width: 8px;
-  height: 8px;
-  margin-left: 4px;
-  border-right: 2px solid var(--muted);
-  border-bottom: 2px solid var(--muted);
-  transform: translateY(-25%) rotate(45deg);
-  transition: transform 200ms var(--ease-out);
-}
-details[open] > summary.sheet-head::after { transform: translateY(25%) rotate(225deg); }
-summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(--section)); }
-/* «Ver 20 más» at a sheet's foot, under a hairline. */
-.sheet > .more-button { display: flex; align-items: center; width: 100%; margin: 0; padding-inline: var(--space-4); border-top: 1px solid var(--line); }
 
 /* ---- icons: drawn strokes, hidden from a screen reader (the words beside them carry them) ---- */
 
@@ -797,7 +773,7 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 @container station (max-width: 33.99rem) {
   .station-open { padding-inline: var(--space-4); } /* the whole row's width: the cells and the three actions fit a phone */
   .station-open > .station-foot { order: 1; }
-  .station-open > :is(.check-cells, .analysis-none) { order: 2; }
+  .station-open > :is(.check-cells, .checks-none) { order: 2; }
   .station-evidence { margin-left: 0; }
 }
 @container station (min-width: 34rem) and (max-width: 45.99rem) {
@@ -835,7 +811,7 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 /* A sentence that stands for an empty screen (the home, Catálogo, Corridas, Nichos). */
 .week-sentence { max-width: var(--measure-text); }
 /* No gate on the pain: one line in words where the box cells would be (an open row, a pain's page). */
-.analysis-none { color: var(--muted); font-size: 14px; line-height: 20px; }
+.checks-none { color: var(--muted); font-size: 14px; line-height: 20px; }
 
 /* One bordered list per state on the ground, in the board's order: its head row on the panel grey (the state's dot,
    its name, and how many in muted figures), then its rows divided by hairlines and «Ver 20 más» at its foot. A
@@ -1033,7 +1009,7 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 @container open (max-width: 33.99rem) {
   .detail-open > .detail-foot { order: 1; }
   .detail-open > .detail-marks { order: 2; }
-  .detail-open > :is(.check-cells, .analysis-none) { order: 3; }
+  .detail-open > :is(.check-cells, .checks-none) { order: 3; }
   .detail-foot > .own-mark { order: 1; } /* your own mark right under the buttons, the way to the evidence after it */
   .detail-foot > .detail-evidence { order: 2; margin-left: 0; }
 }
@@ -1402,9 +1378,6 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   .niche-table .niche-cell-action:empty { display: none; }
 }
 
-/* ---- index.html's fallback when the page could not load ---------------------------------- */
-
-.fallback { display: grid; justify-items: start; gap: var(--space-4); padding: var(--space-5) var(--pad); }
 /* ---- a pain's checks (js/checks.js) ------------------------------------------------------ */
 /* The stack: one line per check, a filled circle (in range 3.30:1, out 4.83:1 on the ground; the mark inside in the
    ground's colour) and the words: ink when it passes, the fail text when it fails, muted when it has no result. The

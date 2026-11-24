@@ -117,7 +117,7 @@ export async function loadNiches(client) {
 }
 
 // A pain's detail also brings its quotes and the attacks' verdicts, for «Cómo llegamos a este dolor», and its gate, for
-// the analysis table (model.js, analysisRows).
+// its checks (model.js, checkRows; js/checks.js).
 const PAIN_COLUMNS = "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts,gate:doc->gate";
 
 // The pain ids a card's duels name (dolores/scripts/lib/cards.mjs, PAIN_ID), each once, never the pain's own.

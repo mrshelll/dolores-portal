@@ -20,12 +20,12 @@ signing in), and the code email follows `patrones/correo-aviso.md`, COR-10 to CO
 | `index.html` | The page shell, and a «could not load» notice if the app has not started after 10 seconds |
 | `.nojekyll` | Empty: GitHub Pages serves the files as they are, without running Jekyll |
 | `config.js` | Public Supabase configuration: the URL, the publishable key and the code length (8) |
-| `css/base.css` | Tokens (greys, one accent, light and dark, system fonts, an 8 px spacing step) and the shared styles: frame and header, text, buttons, fields, the section notice, tags |
+| `css/base.css` | The page's one stylesheet, in the category standard: tokens (white ground, grey panels and hairlines, one blue accent, green in range and red out of range, light and dark by the system's setting, Geist with tabular figures, a 4 px spacing step) and every screen's styles: the masthead and its tabs, the rows, a pain's checks, the run's line, the sign-in's panel, buttons, fields and notices |
 | `js/app.js` | Session, hash router (`#/` home, `#/dolor/<id>` a pain) and the screens: sign-in (email, then code), «sin permiso», the home with the week's pains, and a pain's card with the team's marks and comments |
 | `js/text.js` | Every visible string (`T`), the plain names of the territories (`TOPICS`, `topicName`) and `formatDate` |
 | `js/model.js` | The home's logic, without DOM or network: the section of each pain (`buildSections`, with the run's `effectiveMark`), the week's sentence, the notice about the run, what a failed read means (`classifyError`) and loading by parts |
 | `js/niches.js` | Nichos' logic, without DOM or network: the board (`nicheBoard`: the week's niche and how its run went, every candidate with its state, figures and pains), the veto mirrored once the base took it (`withVeto`), and the tab's counts in words |
-| `js/analysis.js` | The lab report's analysis table: a pain's judged counts (`analysisRows`, model.js) as a `<table>` captioned «Análisis», each count with its value, its reference range and bar, and its flag in words |
+| `js/checks.js` | A pain's checks (`checkRows`, model.js: its judged counts against the run's own thresholds) drawn twice: a closed row's stack of ✓/✗ lines with their words (`checkStack`), and an open row's or a pain's page's box cells, each with its value, its boxes filled to an ink rule at the threshold, its verdict in words and its minimum (`checkCells`) |
 | `js/api.js` | `loadHome(client)`, `loadPain(client, id)` and `loadNiches(client)`: what the home, a pain and Nichos read; `setMark`, `addComment`, `deleteComment` and `setNicheVeto`: the four writes, through the base's functions. The client is passed in |
 | `js/detail.js` | A pain's logic, without DOM or network: its title, status tag and key data, its card sections and quotes, the marks and comments to show, what a failed write means, and the comment kept across a lost session |
 | `js/auth-errors.js` | Turns a Supabase Auth error into what the screen says: rate limit, the hourly email cap, wrong or expired code, no connection, other |
@@ -150,7 +150,13 @@ What runs:
   state's pill and the key data, its line across the page's width, then plain sections and «Detalle técnico» folded;
   Nichos' week niche is an open row with why it was chosen, its three figures in cells (the place against the others
   drawn and hidden from a screen reader, «Con señal» in words) and «Vetar este nicho», under plain headings, and a
-  competing niche's dot is grey. Each behaviour also fails on a request the fake does not know.
+  competing niche's dot is grey. Signing in (both steps), «sin permiso» and the page that could not load (its module
+  refused, the page's clock run 10 seconds at once) share one 400 px panel centred on the ground, «tomoshi» at its top
+  as plain text and no masthead; on a 390 px phone the panel is the page, with no edge; the code is one field over
+  eight boxes hidden from a screen reader, which show what is typed and ring the next one. At 320 px the four tabs fit
+  their row. «Comentar» on a line of its own (at 390 px, beside «Quitar «Nos interesa»») starts at the row's start, on
+  the home and on a pain's page, and beside «Descartar» keeps 20 px. Each behaviour also fails on a request the fake
+  does not know.
 
 Exceptions, each printed at the end of every run (no check is removed):
 

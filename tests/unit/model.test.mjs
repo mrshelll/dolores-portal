@@ -1108,7 +1108,7 @@ test("stationFactLines: «N testimonios» and «Resistió X de N ataques», in w
   assert.deepEqual(stationFactLines(null), []);
 });
 
-test("decideList gives each station its facts and says which ones are full stations", () => {
+test("decideList gives each station its facts, the duel's winner first", () => {
   const latest = trace("2030-02-04-1", "2030-02-04", {
     duels: [{ a: "dol-9211", b: "dol-9212", winner: "dol-9212", reason: "raw" }], ranking: ["dol-9212", "dol-9211"], duel_kind: "survivors",
   });
@@ -1121,7 +1121,8 @@ test("decideList gives each station its facts and says which ones are full stati
   const winnerCard = lineCard("dol-9212");
   Object.assign(winnerCard.card, { version: 3, attacks: [{ lens: "evidence", held: true }], duels: [{ against: "dol-9211", won: true, plain: "Más clubes lo pagan." }] });
   const items = decideList({ pains, cards: [lineCard("dol-9211"), winnerCard, lineCard("dol-9213")], marks: [], people: CREW, traces: [latest, ...RUNS.slice(1)] });
-  assert.deepEqual(items.map((i) => [i.id, i.full]), [["dol-9212", true], ["dol-9213", true], ["dol-9211", false]]);
+  assert.deepEqual(items.map((i) => i.id), ["dol-9212", "dol-9213", "dol-9211"]);
+  assert.ok(items.every((i) => !("full" in i)));
   assert.deepEqual(items[0].facts, { testimonies: 6, attacks: { held: 1, total: 1 }, duelReason: "Más clubes lo pagan." });
   assert.deepEqual(items[2].facts, { testimonies: 3, attacks: null, duelReason: null });
 });

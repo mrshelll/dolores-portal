@@ -419,8 +419,6 @@ export function decideList({ pains = [], cards = [], marks = [], people = [], tr
     const won = pain.id === winner;
     items.push({
       ...item, section, lamp: painLamp(section), fresh: hasNewEvidence(pain, latest), winner: won,
-      // The ranked board: the duel's winner and the pains with weight are full stations, the rest compact.
-      full: won || section === "weighty",
       // The winner's facts also say why it won the duel.
       facts: stationFacts(pain, cardOf.get(pain.id), { winner: won }),
     });

@@ -14,23 +14,27 @@
 </head>
 <body>
 <div id="app">
-  <noscript><main class="frame"><p>Esta página necesita JavaScript.</p></main></noscript>
+  <noscript><main class="auth"><div class="auth-panel"><p class="brand-word auth-brand">tomoshi</p><p class="auth-text">Esta página necesita JavaScript.</p></div></main></noscript>
 </div>
 <script>
-  // If the app could not load (offline, CDN down), say so instead of leaving a blank page. This text cannot live in
-  // js/text.js: it shows exactly when no module loaded.
+  // If the app could not load (offline, CDN down), say so instead of leaving a blank page, in the sign-in's panel. This
+  // text cannot live in js/text.js: it shows exactly when no module loaded.
   setTimeout(function () {
     if (document.documentElement.dataset.ready === "true") return;
-    var main = document.createElement("main");
-    main.className = "frame fallback";
-    var p = document.createElement("p");
-    p.textContent = "No pudimos cargar la página. Revisa tu conexión y vuelve a intentarlo.";
-    var b = document.createElement("button");
+    var make = function (tag, className, text) {
+      var el = document.createElement(tag);
+      el.className = className;
+      el.textContent = text;
+      return el;
+    };
+    var b = make("button", "button button--primary", "Volver a cargar");
     b.type = "button";
-    b.className = "button button--primary";
-    b.textContent = "Volver a cargar";
     b.onclick = function () { location.reload(); };
-    main.append(p, b);
+    var panel = make("div", "auth-panel", "");
+    panel.append(make("p", "brand-word auth-brand", "tomoshi"),
+      make("p", "auth-text", "No pudimos cargar la página. Revisa tu conexión y vuelve a intentarlo."), b);
+    var main = make("main", "auth", "");
+    main.append(panel);
     document.getElementById("app").replaceChildren(main);
   }, 10000);
 </script>

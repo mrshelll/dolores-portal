@@ -403,7 +403,7 @@ async function behaviours(browser, base) {
         open: Boolean(region && region.checkVisibility()),
         stack: shown(".check-stack"), actions: shown(".station-actions"), facts: shown(".station-facts"),
         openFacts: region ? region.querySelectorAll(".station-facts").length : null,
-        none: Boolean(region && region.querySelector(".analysis-none") && region.querySelector(".analysis-none").checkVisibility()),
+        none: Boolean(region && region.querySelector(".checks-none") && region.querySelector(".checks-none").checkVisibility()),
         dot: (() => { const d = li.querySelector(".station-state .lamp"); return d ? getComputedStyle(d).backgroundColor : null; })(),
       };
     }));
@@ -1004,6 +1004,154 @@ async function behaviours(browser, base) {
         && seen.competing === GREY && seen.current === GREEN && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
+  }
+
+  // Signing in, «sin permiso» and the page that could not load share one panel: no masthead, a 400 px panel centred on
+  // the ground (the panel grey, a 1 px hairline, 8 px corners) with «tomoshi» at its top as plain text, then the title,
+  // its line and the body in that order. On a phone the panel is the page: no edge. The code is one field over eight
+  // boxes the eye reads, hidden from a screen reader; what is typed shows in the boxes, and the next box to fill carries
+  // the focus ring.
+  const PANEL_GREY = "rgb(250, 250, 250)";
+  const GROUND = "rgb(255, 255, 255)";
+  const readPanel = (page) => page.evaluate(() => {
+    const panel = document.querySelector(".auth-panel");
+    if (!panel || !panel.checkVisibility()) return null;
+    const r = panel.getBoundingClientRect();
+    const style = getComputedStyle(panel);
+    const brand = panel.querySelector(".brand-word");
+    const topOf = (el) => (el && el.checkVisibility() ? Math.round(el.getBoundingClientRect().top) : null);
+    return {
+      width: Math.round(r.width), left: Math.round(r.left), right: Math.round(window.innerWidth - r.right),
+      border: style.borderTopWidth, radius: style.borderTopLeftRadius, background: style.backgroundColor,
+      ground: getComputedStyle(panel.parentElement).backgroundColor,
+      brand: brand ? brand.textContent : null, brandIsLink: Boolean(brand && brand.closest("a")),
+      masthead: Boolean(document.querySelector(".masthead")), sheets: document.querySelectorAll(".sheet, .split").length,
+      order: [brand, panel.querySelector("h1"), panel.querySelector(".page-meta"), panel.querySelector("input"), panel.querySelector("[data-rol=accion-principal]")].map(topOf),
+    };
+  });
+  const ascending = (list) => list.every((top, i) => top !== null && (i === 0 || top > list[i - 1]));
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("sign-in-email"), wide);
+    const seen = await readPanel(page);
+    check("sign-in: one 400 px panel centred on the ground, «tomoshi» at its top as plain text, no masthead",
+      seen && seen.width === 400 && Math.abs(seen.left - seen.right) <= 1 && seen.border === "1px" && seen.radius === "8px"
+        && seen.background === PANEL_GREY && seen.ground === GROUND && seen.brand === T.brand && !seen.brandIsLink
+        && !seen.masthead && seen.sheets === 0 && ascending(seen.order) && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+  {
+    const phone = { width: 390, height: 844, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("sign-in-email"), phone);
+    const seen = await readPanel(page);
+    check("sign-in on a phone: the panel is the page, with no edge, at the page's margin",
+      seen && seen.border === "0px" && seen.left === 16 && seen.right === 16 && !seen.masthead && ascending(seen.order) && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("sign-in-code"), wide);
+    await page.type("#code", "1234");
+    const seen = await page.evaluate(() => {
+      const field = document.querySelector("#code");
+      const boxes = [...document.querySelectorAll(".code-box")];
+      const row = boxes[0] && boxes[0].parentElement;
+      const fr = field.getBoundingClientRect();
+      const rr = row ? row.getBoundingClientRect() : null;
+      return {
+        inputs: document.querySelectorAll("form input").length,
+        boxes: boxes.map((b) => b.textContent),
+        hidden: row ? row.getAttribute("aria-hidden") : null,
+        covers: Boolean(rr) && Math.abs(fr.left - rr.left) <= 1 && Math.abs(fr.right - rr.right) <= 1 && fr.height >= 44,
+        focused: document.activeElement === field,
+        ring: boxes.map((b) => getComputedStyle(b).outlineStyle),
+      };
+    });
+    const ring = ["none", "none", "none", "none", "solid", "none", "none", "none"];
+    check("sign-in's code: one field over eight boxes hidden from a screen reader; the digits show in them and the next box has the ring",
+      seen.inputs === 1 && seen.boxes.join("|") === "1|2|3|4||||" && seen.hidden === "true" && seen.covers && seen.focused
+        && seen.ring.join() === ring.join() && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("no-access"), wide);
+    const seen = await readPanel(page);
+    const words = await page.evaluate(() => document.querySelector(".auth-panel")?.innerText ?? "");
+    check("«sin permiso»: the same panel, with who came in, what to do and «Salir»",
+      seen && seen.width === 400 && Math.abs(seen.left - seen.right) <= 1 && seen.brand === T.brand && !seen.brandIsLink && !seen.masthead
+        && words.includes(T.noAccess) && words.includes(fill(T.signedInAs, { email: ME })) && words.includes(T.signOut) && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+  // index.html's fallback: the app never loads (its module is refused), and after 10 seconds the page says so in the
+  // same panel, with the way to reload. The page's clock runs the 10 seconds at once.
+  {
+    const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, colorScheme: "light", locale: "es-ES" });
+    await context.route(CDN, serveCdn);
+    await context.route(/\/js\/app\.js$/, (r) => r.abort());
+    const page = await context.newPage();
+    await page.clock.install();
+    await page.goto(base);
+    await page.clock.fastForward(10000);
+    const shown = await page.waitForSelector(".auth-panel", { timeout: 5000 }).then(() => true, () => false);
+    const seen = shown ? await readPanel(page) : null;
+    const words = shown ? await page.evaluate(() => document.querySelector(".auth-panel").innerText) : "";
+    const button = shown ? await page.evaluate(() => document.querySelector(".auth-panel button")?.className ?? null) : null;
+    check("the page that could not load: the same panel, «tomoshi», what happened and «Volver a cargar»",
+      seen && seen.width === 400 && Math.abs(seen.left - seen.right) <= 1 && seen.border === "1px" && seen.brand === T.brand
+        && words.includes("No pudimos cargar la página") && words.includes("Volver a cargar") && /\bbutton--primary\b/.test(button),
+      `shown: ${shown}; ${JSON.stringify(seen)}; button ${button}`);
+    await context.close();
+  }
+
+  // At 320 px the four tabs fit their row: «Corridas» is not cut against the edge.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), PHONE);
+    const seen = await page.evaluate(() => {
+      const tabs = document.querySelector("nav.tabs");
+      const last = [...tabs.querySelectorAll(".tab")].pop();
+      return { scroll: tabs.scrollWidth, client: tabs.clientWidth, lastRight: Math.round(last.getBoundingClientRect().right) };
+    });
+    check("at 320 px the four tabs fit their row", seen.scroll <= seen.client && seen.lastRight <= PHONE.width && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // «Comentar» is a quiet button: no box until the pointer is over it. On its own line (at 390 px, when the primary reads
+  // «Quitar «Nos interesa»») its icon starts at the row's start, under the primary's edge; beside «Descartar» it keeps
+  // its 20 px from that button's edge. On the home's rows and on a pain's page.
+  {
+    const comment = (page, rowSel) => page.evaluate((sel) => {
+      const row = [...document.querySelectorAll(sel)].find((el) => el.checkVisibility());
+      if (!row) return null;
+      const [primary, discard, quiet] = [...row.children];
+      const r = (el) => el.getBoundingClientRect();
+      return {
+        wrapped: Math.round(r(quiet).top) > Math.round(r(primary).top) && Math.round(r(quiet).top) > Math.round(r(discard).top),
+        iconLeft: Math.round(r(quiet.querySelector("svg")).left), rowLeft: Math.round(r(row).left), primaryLeft: Math.round(r(primary).left),
+        fromDiscard: Math.round(r(quiet.querySelector("svg")).left - r(discard).right),
+      };
+    }, rowSel);
+    const seen = [];
+    for (const [name, width, rowSel, open] of [
+      ["detail-v2", 390, ".detail-actions", null],
+      ["home", 390, '.station:has(a[href="#/dolor/dol-0027"]) .station-actions', '.station:has(a[href="#/dolor/dol-0027"]) .station-toggle'],
+      ["detail-v2", 1440, ".detail-actions", null],
+    ]) {
+      const { context, page, log, problems } = await openScreen(browser, base, scenario(name), { width, height: 900, scheme: "light" });
+      if (open) await page.click(open).catch(() => {});
+      seen.push({ name, width, ...(await comment(page, rowSel)), clean: clean(log, problems), why: why(log, problems) });
+      await context.close();
+    }
+    const [pain390, home390, pain1440] = seen;
+    check("«Comentar» on its own line starts at the row's start; beside «Descartar» it keeps 20 px",
+      [pain390, home390].every((s) => s.wrapped && s.iconLeft === s.rowLeft && s.iconLeft === s.primaryLeft && s.clean)
+        && !pain1440.wrapped && pain1440.fromDiscard === 20 && pain1440.clean,
+      JSON.stringify(seen));
   }
 
   // A pain's page belongs to no tab: none is the current one.

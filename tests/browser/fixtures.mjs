@@ -485,7 +485,7 @@ export function scenarios() {
   return [
     { name: "sign-in-email", hash: "", signedIn: false, data: empty(), ready: "#email", expectedTitle: T.signInTitle },
     { name: "sign-in-code", hash: "", signedIn: false, pendingSignIn: ME, data: empty(), ready: "#code", expectedTitle: T.codeTitle },
-    { name: "no-access", hash: "#/", data: { ...homeData(), people: [] }, ready: "[data-rol=cuerpo] .stack > .notice", expectedTitle: T.noAccessTitle },
+    { name: "no-access", hash: "#/", data: { ...homeData(), people: [] }, ready: ".auth-panel [data-rol=cuerpo] [role=status]", expectedTitle: T.noAccessTitle },
     // This week's run left its trace: the line is «Línea de la corrida», each stage drawn in its final state; its one
     // unmapped cut is counted.
     // The pain with weight reads in range, the winner out of range on its types of source (counted within one country),
@@ -524,7 +524,7 @@ export function scenarios() {
     // A full card whose pain was stored before the gate existed: no box cells, one line in words where they would be.
     { name: "detail-no-gate", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
       data: detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title,
-      mustRead: [T.statusWeighty, T.analysisNone], mustNotRead: ANALYSIS, mustShow: [".analysis-none"] },
+      mustRead: [T.statusWeighty, T.analysisNone], mustNotRead: ANALYSIS, mustShow: [".checks-none"] },
     { name: "detail-long-title", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
       data: detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card: FULL_CARD_LONG_TITLE }), ready: ".detail-actions", expectedTitle: LONGEST_TITLE },
     { name: "detail-line", mar14: PAIN_MAR14, hash: "#/dolor/dol-0002",

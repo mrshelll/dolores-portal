@@ -78,13 +78,10 @@ const TABS = [
 // right the week's niche and cost and «Salir». Under it the tabs, the current one underlined, «Esta semana» carrying how
 // many pains wait for your own mark. Below 768 px the brand row keeps the name, the pill and «Salir», and the week and
 // its data leave the masthead, so the heading stays in the first screen: the home's line strip says them (css/base.css).
-// The name links home on every screen with a session (NAV-09); on the
-// sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being typed.
+// The name links home (NAV-09); the screens without a session or without access have no masthead (panelLayout).
 // The pill, the week and the count stay hidden until a load says what they are.
-function masthead({ brandLink, actions, tab }) {
-  const word = brandLink
-    ? h("a", { class: "brand-word", href: "#/", "aria-label": T.brandHome, "aria-current": atHome() ? "page" : null }, T.brand)
-    : h("span", { class: "brand-word" }, T.brand);
+function masthead({ actions, tab }) {
+  const word = h("a", { class: "brand-word", href: "#/", "aria-label": T.brandHome, "aria-current": atHome() ? "page" : null }, T.brand);
   const pillShort = h("span", { class: "run-pill-short", "aria-hidden": "true" });
   const pillLong = h("span", { class: "visually-hidden" });
   const pill = h("p", { class: "run-pill", "data-lamp": "off", hidden: true },
@@ -96,12 +93,12 @@ function masthead({ brandLink, actions, tab }) {
   refreshMasthead();
   return h("header", { class: "masthead" },
     word,
-    brandLink ? week : null,
+    week,
     pill,
-    brandLink ? meta : null,
+    meta,
     actions.length ? h("div", { class: "masthead-actions" }, actions) : null,
-    brandLink ? h("nav", { class: "tabs", "aria-label": T.tabsLabel }, TABS.map(([key, href, label]) =>
-      h("a", { class: "tab", href, "aria-current": key === tab ? "page" : null }, T[label], key === "week" ? [" ", count] : null))) : null);
+    h("nav", { class: "tabs", "aria-label": T.tabsLabel }, TABS.map(([key, href, label]) =>
+      h("a", { class: "tab", href, "aria-current": key === tab ? "page" : null }, T[label], key === "week" ? [" ", count] : null))));
 }
 
 // The pill, the week's data and «Esta semana»'s count from the session's week (state.week) and the last «Para decidir»
@@ -157,25 +154,48 @@ function countOwnMark(painId, next) {
 const signOutButton = () => h("button", { type: "button", class: "button button--secondary", onclick: () => leaveThen(signOut) },
   T.signOut);
 
-// One frame for every screen (marco.md): the masthead, then the shell: inside <main> the context («← Volver»,
-// optional), the title band, the notice zone and the body; beside it, from 1024 px, the side panel the home fills with
-// the run's line (hidden on every other screen).
-function frameLayout({ title, meta = [], brandLink = true, actions = [], context = null, tab = null, pageTitle = null }) {
-  runCleanup(); // a new screen drops the last one's timers and its leave guard
+// A screen's title band (its h1 and the lines under it), its notice zone and its body, with the roles marco.md gives
+// them.
+function screenParts(title, meta) {
   const heading = h("h1", { tabindex: "-1" }, title);
-  const head = h("div", { class: "page-head", "data-rol": "cabecera" },
+  return {
     heading,
-    meta.filter(Boolean).map((line) => h("p", { class: "page-meta" }, line)));
-  const notices = h("div", { class: "notices", "data-rol": "avisos" });
-  const body = h("div", { class: "body", "data-rol": "cuerpo" });
+    head: h("div", { class: "page-head", "data-rol": "cabecera" },
+      heading,
+      meta.filter(Boolean).map((line) => h("p", { class: "page-meta" }, line))),
+    notices: h("div", { class: "notices", "data-rol": "avisos" }),
+    body: h("div", { class: "body", "data-rol": "cuerpo" }),
+  };
+}
+
+// One frame for every screen with a session (marco.md): the masthead, then the shell: inside <main> the context
+// («← Volver», optional), the title band, the notice zone and the body; beside it, from 1024 px, the side panel the
+// home fills with the run's line (hidden on every other screen).
+function frameLayout({ title, meta = [], actions = [], context = null, tab = null, pageTitle = null }) {
+  runCleanup(); // a new screen drops the last one's timers and its leave guard
+  const { heading, head, notices, body } = screenParts(title, meta);
   const side = h("aside", { class: "line-panel", "aria-label": T.lineLabel, hidden: true });
   const shell = h("div", { class: "shell" },
     h("main", { id: "main", class: context ? "has-context" : null },
       h("div", { "data-rol": "marco" }, context, head, notices, body)),
     side);
-  replaceChildren(root, h("div", { class: "frame" }, masthead({ brandLink, actions, tab }), shell));
+  replaceChildren(root, h("div", { class: "frame" }, masthead({ actions, tab }), shell));
   setTitle(pageTitle || title);
   return { heading, head, notices, body, side, shell };
+}
+
+// The screens without a session or without access (signing in, «sin permiso»): no masthead, one 400 px panel centred
+// on the ground. «tomoshi» at its top is plain text (NAV-09): there is no home to go to yet, and tapping it would only
+// wipe the code being typed. Then the title band, the notice zone and the body, with a frame's roles. index.html's
+// fallback draws the same panel.
+function panelLayout({ title, meta = [] }) {
+  runCleanup(); // a new screen drops the last one's timers
+  state.masthead = null;
+  const { heading, head, notices, body } = screenParts(title, meta);
+  replaceChildren(root, h("main", { id: "main", class: "auth" },
+    h("div", { class: "auth-panel", "data-rol": "marco" }, h("p", { class: "brand-word auth-brand" }, T.brand), head, notices, body)));
+  setTitle(title);
+  return { heading, notices, body };
 }
 
 // A notice in the page, one at a time in its zone (MAR-04), never floating (COM-17).
@@ -293,15 +313,14 @@ function showAccessError(error) {
   layout.body.append(h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.retry));
 }
 
-// EST-05: what cannot be done and whom to ask. The email they came in with is said, because the most likely cause is
-// another address. «Salir» is the way out (and to come back with another email). The name is plain text (NAV-09):
-// there is no home to go to without access.
+// EST-05: what cannot be done and whom to ask, in the sign-in's panel. The email they came in with is said, because the
+// most likely cause is another address. «Salir» is the way out (and to come back with another email).
 function showNoAccess(email) {
   state.view = "no-access";
-  const layout = frameLayout({ title: T.noAccessTitle, meta: [email ? t("signedInAs", { email }) : null], brandLink: false });
-  layout.body.append(h("div", { class: "stack" },
-    h("div", { class: "notice", role: "status" }, h("p", {}, T.noAccess)),
-    h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: signOut }, T.signOut)));
+  const layout = panelLayout({ title: T.noAccessTitle, meta: [email ? t("signedInAs", { email }) : null] });
+  layout.body.append(
+    h("p", { class: "auth-text", role: "status" }, T.noAccess),
+    h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: signOut }, T.signOut));
   layout.heading.focus({ preventScroll: true });
 }
 
@@ -567,7 +586,7 @@ function station(item, index, ctx) {
     "aria-expanded": String(open), "aria-controls": openId }, chevron());
   const region = h("div", { class: "station-open", id: openId, hidden: !open },
     reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-    cells || h("p", { class: "analysis-none" }, T.analysisNone), // why it is there is already in the row's own line
+    cells || h("p", { class: "checks-none" }, T.analysisNone), // why it is there is already in the row's own line
     h("div", { class: "station-foot" },
       h("div", { class: "station-actions" }, interested, discard, comment),
       h("a", { class: "station-evidence", href, "aria-describedby": titleId }, T.stationEvidence),
@@ -1476,7 +1495,7 @@ function renderPain(layout, id, email, data) {
   const open = h("div", { class: "detail-open" },
     lineNotice ? h("div", { class: "notice detail-notice" }, lineNotice) : null,
     duelLine,
-    checkCells(data.pain.gate) || h("p", { class: "analysis-none" }, T.analysisNone),
+    checkCells(data.pain.gate) || h("p", { class: "checks-none" }, T.analysisNone),
     h("div", { class: "detail-foot" },
       h("div", { class: "actions detail-actions" }, interested, discard,
         h("button", { type: "button", class: "button button--quiet", onclick: goToComment }, speech(), T.commentAction)),
@@ -1553,18 +1572,17 @@ async function requestCode(email) {
 
 const systemErrorText = (kind) => (kind === "network" ? T.networkError : T.otherError);
 
-// How signing in works, as a sheet of the report: its h2 on the head band, then one row per step.
+// How signing in works, at the panel's foot under a hairline: a small h2, then the steps as a numbered list.
 function stepsSection() {
-  return h("section", { class: "section sheet steps-sheet", "aria-labelledby": "steps-title" },
-    h("div", { class: "sheet-head" }, h("h2", { id: "steps-title" }, T.stepsTitle)),
-    h("ol", { class: "steps" }, [T.step1, t("step2", { length: EMAIL_OTP_LENGTH }), T.step3].map((text, i) =>
-      h("li", {}, h("span", { class: "step-number" }, `${i + 1}. `), text))));
+  return h("section", { class: "auth-steps", "aria-labelledby": "steps-title" },
+    h("h2", { id: "steps-title" }, T.stepsTitle),
+    h("ol", {}, [T.step1, t("step2", { length: EMAIL_OTP_LENGTH }), T.step3].map((text) => h("li", {}, text))));
 }
 
-// Both sign-in screens keep one composition: the form (its primary action last, MAR-06) and what goes after it,
-// then how signing in works, side by side from 672 px.
+// Both sign-in screens keep one composition in the panel: the form (its primary action last, MAR-06) and what goes
+// after it, then how signing in works.
 function signInBody(body, form, after = null) {
-  body.append(h("div", { class: "split" }, h("div", { class: "section" }, form, after), stepsSection()));
+  body.append(...[form, after, stepsSection()].filter(Boolean));
 }
 
 function showSignIn({ notice = null } = {}) {
@@ -1575,7 +1593,7 @@ function showSignIn({ notice = null } = {}) {
 
 function showEmailStep(prefill = "", { notice = null } = {}) {
   state.view = "sign-in";
-  const { notices, body } = frameLayout({ title: T.signInTitle, meta: [T.signInLead], brandLink: false });
+  const { notices, body } = panelLayout({ title: T.signInTitle, meta: [T.signInLead] });
   setTitle(T.signInPageTitle);
   if (notice) showNotice(notices, notice);
   const input = h("input", {
@@ -1635,14 +1653,28 @@ function showEmailStep(prefill = "", { notice = null } = {}) {
 
 function showCodeStep(pending, { notice = null } = {}) {
   state.view = "sign-in";
-  const { notices, body } = frameLayout({
-    title: T.codeTitle, meta: [t("codeSentTo", { length: EMAIL_OTP_LENGTH, email: pending.email })], brandLink: false,
+  const { notices, body } = panelLayout({
+    title: T.codeTitle, meta: [t("codeSentTo", { length: EMAIL_OTP_LENGTH, email: pending.email })],
   });
   if (notice) showNotice(notices, notice);
   const input = h("input", {
     id: "code", name: "code", type: "text", inputmode: "numeric", autocomplete: "one-time-code",
     pattern: "[0-9]*", class: "code-input", required: true, "aria-describedby": "code-error",
   });
+  // One field over the code's boxes: the field takes the typing, the paste and the phone's autofill as before, its own
+  // text unseen; the boxes show its digits, the next one to fill marked (it carries the focus ring). Hidden from a
+  // screen reader, which reads the field.
+  const boxes = Array.from({ length: EMAIL_OTP_LENGTH }, () => h("span", { class: "code-box" }));
+  function showDigits() {
+    const digits = input.value;
+    boxes.forEach((box, i) => {
+      box.textContent = digits[i] || "";
+      box.toggleAttribute("data-next", i === Math.min(digits.length, EMAIL_OTP_LENGTH - 1));
+    });
+  }
+  showDigits();
+  // A click lands the caret after the last digit, where the marked box says the next one goes.
+  input.addEventListener("click", () => input.setSelectionRange(input.value.length, input.value.length));
   const error = fieldError("code-error");
   const button = h("button", { type: "submit", class: "button button--primary", "data-rol": "accion-principal" }, T.verify);
   const resendStatus = h("p", { class: "hint" }); // changes every second: not a live region
@@ -1697,6 +1729,7 @@ function showCodeStep(pending, { notice = null } = {}) {
   input.addEventListener("input", () => {
     const digits = input.value.replace(/\D/g, "").slice(0, EMAIL_OTP_LENGTH);
     if (digits !== input.value) input.value = digits;
+    showDigits();
     if (!error.hidden) setFieldError(input, error, "");
     if (digits.length === EMAIL_OTP_LENGTH) verify();
   });
@@ -1734,7 +1767,8 @@ function showCodeStep(pending, { notice = null } = {}) {
   });
 
   const form = h("form", { class: "form", "data-medida": "formulario", novalidate: true, onsubmit: verify },
-    h("div", { class: "field" }, h("label", { for: "code" }, t("codeLabel", { length: EMAIL_OTP_LENGTH })), input, error),
+    h("div", { class: "field" }, h("label", { for: "code" }, t("codeLabel", { length: EMAIL_OTP_LENGTH })),
+      h("div", { class: "code-field" }, input, h("div", { class: "code-boxes", "aria-hidden": "true" }, boxes)), error),
     button);
   signInBody(body, form, h("div", { class: "secondary-actions" }, resendStatus, resendButton, otherEmail, live));
   input.focus();

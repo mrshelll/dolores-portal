@@ -70,9 +70,9 @@ test("the line's steps are drawn in their final state, every icon hidden from a 
 });
 
 test("lamp() keeps the internal names and falls back to off", () => {
-  const made = withFakeDocument(() => [lamp("amber"), lamp(null), lamp("red", { size: "small" })]);
+  const made = withFakeDocument(() => [lamp("amber"), lamp(null), lamp("red")]);
   assert.deepEqual(made.map((l) => l.attributes["data-lamp"]), ["amber", "off", "red"]);
-  assert.deepEqual(made.map((l) => l.attributes.class), ["lamp", "lamp", "lamp lamp--small"]);
+  assert.deepEqual(made.map((l) => l.attributes.class), ["lamp", "lamp", "lamp"]);
   assert.ok(made.every((l) => l.attributes["aria-hidden"] === "true" && !l.hasAttribute("data-lit")));
 });
 
