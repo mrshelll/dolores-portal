@@ -472,6 +472,7 @@ const NICHE_TABLE = ".niche-table";
 const NICHE_JUDGE_NOTE = T.nicheNoteJudge.split("{")[0];
 export function scenarios() {
   const oldLine = fill(T.lineTitleOld, { date: formatDate(daysAgo(7)) });
+  const weekRow = `.niche-table tr:has(.niche-name:text-is("${NICHE_WEEK}"))`; // the week's niche's own row in the table
   return [
     { name: "sign-in-email", hash: "", signedIn: false, data: empty(), ready: "#email", expectedTitle: T.signInTitle },
     { name: "sign-in-code", hash: "", signedIn: false, pendingSignIn: ME, data: empty(), ready: "#code", expectedTitle: T.codeTitle },
@@ -547,7 +548,9 @@ export function scenarios() {
     { name: "niches-vetoed-current", hash: "#/nichos", data: nichesData({ vetoedCurrent: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
       mustRead: [T.nicheVetoNextVetoed, fill(T.nicheVetoedBy, { name: "Beto", date: formatDayMonth(NICHE_BETO_VETOED_AT) }), T.nicheUnveto],
       mustNotRead: [T.nicheVetoWeek, T.nicheNoVeto, T.nicheVetoNext, ...NICHE_IDS],
-      mustShow: [".niche-week .station-state[data-lamp=red]", `.niche-table tr:has(.niche-name:text-is("${NICHE_WEEK}")) .niche-state[data-lamp=red]`] },
+      mustShow: [".niche-week .station-state[data-lamp=red]", `${weekRow} .niche-state[data-lamp=red]`,
+        `${weekRow} .niche-who:text-is("${fill(T.nicheVetoedBy, { name: "Beto", date: formatDayMonth(NICHE_BETO_VETOED_AT) })}")`,
+        `${weekRow} .niche-veto:text-is("${T.nicheUnveto}")`] },
     // Review Focus 4: the week was counted, not judged: «Ruido» reads «sin medir» and the note says why.
     { name: "niches-counts", hash: "#/nichos", data: nichesData({ counts: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
       mustRead: [T.nicheNoiseUnmeasured, T.nicheNoteCounts], mustNotRead: [NICHE_JUDGE_NOTE, ...NICHE_IDS] },
