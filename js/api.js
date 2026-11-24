@@ -88,6 +88,34 @@ export async function loadRuns(client) {
   return objects(result.data);
 }
 
+// Everything the «Nichos» tab shows: { traces, niches, vetoes, pains, marks, people }. The traces are the year Corridas
+// shows (the chooser's choices live in them); each pain brings `team_discard` from its doc so the tab can tell which
+// pains the team discarded. Every read starts at once; the first one refused rejects, tagged with its source, and here
+// run_traces is not softened as on the home: without it the tab has nothing to say about the choices.
+export async function loadNiches(client) {
+  const results = await Promise.all([
+    readTraces(client, RUNS_TRACES),
+    client.from("niches").select("name,label,summary,state,state_by,state_changed_at,proposed_at"),
+    client.from("territory_vetoes").select("*"),
+    client.from("pains").select("id,territory,status,team_discard:doc->team_discard"),
+    client.from("marks").select("*"),
+    client.from("people").select("*"),
+  ]);
+  const sources = ["run_traces", "niches", "territory_vetoes", "pains", "marks", "people"];
+  results.forEach((result, i) => {
+    if (result.error) throw refused(result.error, result.status, sources[i]);
+  });
+  const [traces, niches, vetoes, pains, marks, people] = results;
+  return {
+    traces: objects(traces.data),
+    niches: rows(niches.data),
+    vetoes: rows(vetoes.data),
+    pains: rows(pains.data),
+    marks: rows(marks.data),
+    people: rows(people.data),
+  };
+}
+
 // A pain's detail also brings its quotes and the attacks' verdicts, for «Cómo llegamos a este dolor», and its gate, for
 // the analysis table (model.js, analysisRows).
 const PAIN_COLUMNS = "id,territory,status,team_discard:doc->team_discard,evidence:doc->evidence,verdicts:doc->verdicts,gate:doc->gate";
@@ -172,4 +200,10 @@ export function addComment(client, painId, body) {
 // Deletes one of the caller's comments; P0002 when it is gone or not theirs.
 export async function deleteComment(client, id) {
   await call(client, "delete_comment", { p_id: id });
+}
+
+// Vetoes (or lifts the veto of) a niche or a territory by its slug; the base decides which it is. 42501 when the caller
+// is not a member, P0002 when the name is not a slug.
+export async function setNicheVeto(client, name, vetoed) {
+  await call(client, "set_niche_veto", { p_name: name, p_vetoed: vetoed });
 }

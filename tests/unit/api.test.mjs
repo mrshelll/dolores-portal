@@ -2,7 +2,7 @@
 // verdicts on its detail. Fictional rows only: this repository is public.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { loadHome, loadPain, loadRuns, loadTitles, loadWeek } from "../../js/api.js";
+import { loadHome, loadNiches, loadPain, loadRuns, loadTitles, loadWeek, setNicheVeto } from "../../js/api.js";
 import { classifyError } from "../../js/model.js";
 
 // A fake supabase-js: from().select() is a thenable builder with eq() and in(); rpc() resolves. Answers are keyed by
@@ -235,4 +235,54 @@ test("loadTitles reads the titles of the ids asked for in one read; a failure gi
   assert.deepEqual(none.calls, []);
   assert.deepEqual([...(await loadTitles(fakeClient({ pain_cards: new TypeError("Failed to fetch") }), ["dol-9401"]))], []);
   assert.deepEqual([...(await loadTitles(fakeClient({ pain_cards: { status: 500, error: { code: "XX000", message: "x" } } }), ["dol-9401"]))], []);
+});
+
+// The «Nichos» tab: the trace list, the niches, the vetoed territories, the pains, the marks and the people, all at once.
+test("loadNiches reads the six sources with their selects and returns them", async () => {
+  const niche = { name: "example-niche", label: "Example niche", summary: "A summary", state: "proposed", state_by: null, state_changed_at: null, proposed_at: "2030-02-01" };
+  const veto = { name: "example-territory", vetoed_by: "ana@example.com", vetoed_at: "2030-02-02" };
+  const client = fakeClient({
+    "rpc:run_traces": { data: [TRACE, null, OLDER] },
+    niches: { data: [niche] },
+    territory_vetoes: { data: [veto] },
+    pains: { data: [{ id: "dol-9201", territory: "example-territory", status: "watching", team_discard: null }] },
+    marks: { data: [{ pain_id: "dol-9201" }] },
+    people: { data: [{ email: "ana@example.com" }] },
+  });
+  const out = await loadNiches(client);
+  assert.deepEqual(out.traces, [TRACE, OLDER]);
+  assert.deepEqual(out.niches, [niche]);
+  assert.deepEqual(out.vetoes, [veto]);
+  assert.equal(out.pains.length, 1);
+  assert.equal(out.marks.length, 1);
+  assert.equal(out.people.length, 1);
+  assert.deepEqual(callOf(client, "run_traces"), ["rpc", "run_traces", { p_limit: 52 }]);
+  assert.equal(callOf(client, "niches")[2], "name,label,summary,state,state_by,state_changed_at,proposed_at");
+  assert.equal(callOf(client, "territory_vetoes")[2], "*");
+  assert.equal(callOf(client, "pains")[2], "id,territory,status,team_discard:doc->team_discard");
+  assert.equal(callOf(client, "marks")[2], "*");
+  assert.equal(callOf(client, "people")[2], "*");
+});
+
+test("loadNiches gives empty lists when the reads answer nothing", async () => {
+  assert.deepEqual(await loadNiches(fakeClient()), { traces: [], niches: [], vetoes: [], pains: [], marks: [], people: [] });
+});
+
+test("a failed read rejects loadNiches, tagged with its source", async () => {
+  const denied = { status: 403, error: { code: "42501", message: "not a member" } };
+  await assert.rejects(loadNiches(fakeClient({ "rpc:run_traces": denied })), (error) => error.source === "run_traces" && classifyError(error) === "no-access");
+  await assert.rejects(loadNiches(fakeClient({ niches: { status: 500, error: { code: "XX000", message: "boom" } } })), (error) => error.source === "niches");
+  await assert.rejects(loadNiches(fakeClient({ territory_vetoes: { status: 500, error: { code: "XX000", message: "boom" } } })), (error) => error.source === "territory_vetoes");
+  const expired = { status: 401, error: { code: "PGRST303", message: "JWT expired" } };
+  await assert.rejects(loadNiches(fakeClient({ people: expired })), (error) => classifyError(error) === "expired");
+});
+
+test("setNicheVeto calls set_niche_veto and rejects on an RPC error", async () => {
+  const client = fakeClient();
+  await setNicheVeto(client, "example-niche", true);
+  assert.deepEqual(callOf(client, "set_niche_veto"), ["rpc", "set_niche_veto", { p_name: "example-niche", p_vetoed: true }]);
+  await setNicheVeto(client, "example-niche", false);
+  assert.equal(client.calls[1][2].p_vetoed, false);
+  const bad = fakeClient({ "rpc:set_niche_veto": { status: 400, error: { code: "P0002", message: "not a slug" } } });
+  await assert.rejects(setNicheVeto(bad, "Not A Slug", true), (error) => error.code === "P0002" && error.source === "set_niche_veto");
 });
