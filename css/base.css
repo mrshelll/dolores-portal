@@ -837,9 +837,6 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 /* No gate on the pain: one line in words where the box cells would be (an open row, a pain's page). */
 .analysis-none { color: var(--muted); font-size: 14px; line-height: 20px; }
 
-/* Catálogo, Corridas and Nichos keep to the width of the home's rows and a pain's page, at the left as they are. */
-.catalog-body, .runs-body, .niches-body { max-width: 64rem; }
-
 /* One bordered list per state on the ground, in the board's order: its head row on the panel grey (the state's dot,
    its name, and how many in muted figures), then its rows divided by hairlines and «Ver 20 más» at its foot. A
    waiting state's dots are grey (an edge: 3.45:1 light, 4.18:1 dark); blue stays for attention, cuts and the primary
@@ -1206,7 +1203,7 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 @container runs (min-width: 60rem) {
   .run-columns, .run-row {
     display: grid;
-    grid-template-columns: minmax(10.5rem, 1.2fr) 11rem minmax(8rem, 1.5fr) 9rem 8rem 6rem;
+    grid-template-columns: minmax(10.5rem, 0.8fr) 11rem minmax(8rem, 1.6fr) 9rem 8rem 6rem;
     column-gap: var(--space-4);
     align-items: center;
   }
@@ -1352,9 +1349,9 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .niche-table thead th.niche-num { text-align: end; }
 .niche-table td.niche-num { font-size: 15px; font-weight: 600; text-align: end; white-space: nowrap; }
 .niche-num small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
-/* The state's column is held to about a sixth of the table and the veto's to its button, so the niche's column takes
-   the slack; a long state wraps inside its column, its dot on the first line, and who vetoed a niche under its button. */
-.niche-table thead th:first-child, .niche-table .niche-cell-state { width: 17%; }
+/* The state's column keeps 13rem at any width and the veto's shrinks to its button, so the niche's column takes the
+   slack; a long state wraps inside its column, its dot on the first line, and who vetoed a niche under its button. */
+.niche-table thead th:first-child, .niche-table .niche-cell-state { width: 13rem; }
 .niche-state { display: flex; align-items: flex-start; gap: var(--space-2); color: var(--ink); font-weight: 500; }
 .niche-state > .lamp { margin-top: 6px; }
 .niche-state[data-state="competing"] > .lamp { --lamp: var(--edge); }
