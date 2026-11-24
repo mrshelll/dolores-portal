@@ -61,6 +61,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   (quejas reales, gasto real, ruido) whose range column is «Frente a los otros N»: the value's marker on a band with a
   tick per rival niche, flagged «CON SEÑAL» / «SIN SEÑAL»; beside it «Sus dolores» and «Vetar este nicho». Then
   «CANDIDATOS»: one table, every niche with its state in words (Corrió esta semana / Compite / Descansa / Vetado /
-  Retirado), origin (Tuyo / Propuesto por dolores), the proposal's why, quejas, gasto, ruido, its pains, and Vetar /
+  Retirado), origin (Tuyo / Propuesto por tomoshi), the proposal's why, quejas, gasto, ruido, its pains, and Vetar /
   Quitar veto with who vetoed it. From 900 px down each row is a stacked block with the button full width.
 - The masthead's niche becomes a link to `#/nichos`.
