@@ -25,7 +25,7 @@ import {
   ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
 import { renderLine, lamp } from "./line.js";
-import { checkStack, checkCells, checkIcon } from "./checks.js";
+import { checkStack, checkCells, checkIcon, verdictIcon } from "./checks.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
 
@@ -236,7 +236,7 @@ async function route() {
     pageTitle: screen.pageTitle ? T[screen.pageTitle] : null,
     tab: screen.tab,
     context: target.name === "pain" ? backLink("#/", T.backToWeek, backChevron(), T.tabWeek)
-      : target.name === "run" ? backLink("#/corridas", T.runsBackLabel, T.runsBack) : null,
+      : target.name === "run" ? backLink("#/corridas", T.runsBackLabel, backChevron(), T.tabRuns) : null,
     actions: [signOutButton()],
   });
   layout.body.setAttribute("aria-busy", "true");
@@ -604,9 +604,9 @@ function station(item, index, ctx) {
 
 // ---- Catálogo: every pain by state --------------------------------------------------------
 
-// Every pain by state (catalogView): one section per state with its count, in the board's order, each a list of dense
-// rows. A section with no pain says so; with no pain anywhere the screen says so once and offers to load again, the way
-// out last (LIS-05, EST-01, MAR-06). The run's notice stays: it says how old the list is.
+// Every pain by state (catalogView): one bordered list per state, in the board's order, each pain a closed row like
+// the home's. A section with no pain says so; with no pain anywhere the screen says so once and offers to load again,
+// the way out last (LIS-05, EST-01, MAR-06). The run's notice stays: it says how old the list is.
 function renderCatalog(layout, home, email) {
   setWaiting(decideList(home), home.marks, lower(email));
   const view = catalogView(home);
@@ -621,36 +621,43 @@ function renderCatalog(layout, home, email) {
   replaceChildren(layout.body, blocks);
 }
 
-// A section, as one of the report's result tables: a hairline-bordered sheet, its head band on the section tint with
-// the lamp and the heading with the count, then its rows (and «Ver 20 más» at its foot) or the sentence that says it has
-// none. The discarded ones are folded away, since few need them (COM-06); their h2 is in the fold's summary, the band.
+// A state as a bordered list: its head row (the state's dot, its name and how many), then its rows (and «Ver 20 más»
+// at its foot) or the sentence that says it has none. The discarded ones are folded away, since few need them
+// (COM-06); their head row is the fold's summary. A waiting state's dot is grey (css/base.css, by data-section).
 function catalogSection(section) {
   const id = `seccion-${section.key}`;
-  const heading = h("h2", { id, class: "catalog-heading" }, lamp(section.lamp), h("span", {}, section.heading));
+  const heading = h("h2", { id, class: "catalog-heading" },
+    lamp(section.lamp), h("span", { class: "catalog-state" }, section.title), " ", h("span", { class: "catalog-count" }, section.countText));
+  const attrs = { class: "catalog-section", "data-section": section.key };
   if (!section.count) {
-    return h("section", { class: "catalog-section sheet", "aria-labelledby": id },
-      h("div", { class: "sheet-head" }, heading), h("p", { class: "catalog-empty" }, section.emptyText));
+    return h("section", { ...attrs, "aria-labelledby": id },
+      h("div", { class: "catalog-head" }, heading), h("p", { class: "catalog-empty" }, section.emptyText));
   }
   const rows = painList(section.items, (item) => painRow(item, section));
   if (section.key === "discarded") {
-    return h("details", { class: "catalog-section catalog-fold sheet" }, h("summary", { class: "sheet-head catalog-summary" }, heading), rows);
+    return h("details", { ...attrs, class: "catalog-section catalog-fold" }, h("summary", { class: "catalog-head" }, heading), rows);
   }
-  return h("section", { class: "catalog-section sheet", "aria-labelledby": id }, h("div", { class: "sheet-head" }, heading), rows);
+  return h("section", { ...attrs, "aria-labelledby": id }, h("div", { class: "catalog-head" }, heading), rows);
 }
 
-// One row per pain, dense: its lamp and its state in words, the title as the link to it (the whole row is its target),
-// who suffers it, then the trend and topic and the team's marks (LIS-01). The pain id only travels in the address.
+// One pain as the home's row, closed and with no chevron: the title as the link to it (the whole row is its target),
+// who suffers it and its trend and topic; its checks (checkStack) or, without a gate, why it is there in its facts
+// line; its state (a dot and its words) and the team's marks (LIS-01). Its actions live on its page. The pain id only
+// travels in the address.
 function painRow(item, section) {
   const meta = stationMeta(item);
   const marks = rowMarks(item);
+  const facts = stationFactLines(item.facts);
   return h("li", { class: "pain-row" },
-    h("p", { class: "pain-state" }, lamp(section.lamp), h("span", {}, section.state)),
-    h("div", { class: "pain-main" },
+    h("div", { class: "pain-name" },
       h("h3", { class: "pain-title" }, h("a", { href: `#/dolor/${encodeURIComponent(item.id)}` }, item.title)),
-      item.who ? h("p", { class: "pain-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null),
-    h("div", { class: "pain-side" },
-      meta.length ? h("p", { class: "pain-meta" }, meta.join(" · ")) : null,
-      h("p", { class: marks.length ? "pain-marks" : "pain-marks is-empty" }, marks.length ? marks.join(" · ") : T.noMarksYet)));
+      item.who ? h("p", { class: "pain-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null,
+      meta.length ? h("p", { class: "pain-meta" }, meta.join(" · ")) : null),
+    checkStack(item.gate) || (facts.length
+      ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null),
+    h("div", { class: "pain-status" },
+      h("p", { class: "pain-state" }, lamp(section.lamp), h("span", {}, section.state)),
+      h("p", { class: "pain-marks" }, marks.length ? marks.join(" · ") : T.noMarksYet)));
 }
 
 // LIS-04: past 50 rows the list shows 20, and «Ver 20 más» adds the next ones; the focus goes to the first row added.
@@ -710,8 +717,8 @@ async function showNiches(layout, email) {
   renderNiches(layout, { data, email, viewId, busy: false, buttons: new Map() });
 }
 
-// The board from the screen's data, drawn whole: «ESTA SEMANA», the niche that ran as a result block, then
-// «CANDIDATOS», every niche in one table. A veto redraws it from the data with the veto mirrored (withVeto).
+// The board from the screen's data, drawn whole: «Esta semana», the niche that ran as an open row, then «Candidatos»,
+// every niche in one table. A veto redraws it from the data with the veto mirrored (withVeto).
 function renderNiches(layout, ctx) {
   const board = nicheBoard(ctx.data);
   ctx.buttons = new Map();
@@ -770,76 +777,77 @@ function vetoControl(row, place, ctx, layout, nameId) {
   return { button, note };
 }
 
-// «ESTA SEMANA»: the niche that ran as the report's result block. Its head: the name, where it came from and its state
-// on a chip, the same words and lamp as its row («Corrió esta semana», «Corrió el <día>», «Se eligió el <día>; la
-// corrida falló», or «Vetado · …»). Its body: why it was chosen, then the week's sounding as an analysis
-// table, each side against the other niches (the versus bar: a tick per rival and the niche's marker, hidden from a
-// screen reader, its place in words beside it); at the right its pains, the veto and what a veto does now.
+// «Esta semana»: the niche that ran as the home's open row, in a bordered list of one. Its line: the name and where it
+// came from; its pains, the paid runs in this niche and how many came close to weight; its state (a dot and the same
+// words as its row in the table: «Corrió esta semana», «Corrió el <día>», «Se eligió el <día>; la corrida falló», or
+// «Vetado · …») and its veto. Open under it: why it was chosen, the week's three figures in cells, and the veto with what
+// a veto does now.
 function nicheWeek(week, ctx, layout) {
   const { row } = week;
   const nameId = "nicho-semana";
   const pains = painsText(row.pains, { retired: row.state === "retired" });
   const control = row.canVeto ? vetoControl(row, "week", ctx, layout, nameId) : null;
-  return h("section", { class: "results niche-week-section", "aria-labelledby": "esta-semana" },
-    h("p", { class: "section-label results-label", id: "esta-semana" }, T.nicheWeekLabel),
-    h("div", { class: "station niche-week" },
-      h("div", { class: "station-head" },
-        h("div", { class: "station-name" }, h("h2", { class: "station-title", id: nameId }, row.name)),
-        h("p", { class: "station-tags" }, h("span", { class: "station-tag niche-origin-tag" }, row.originText)),
-        h("p", { class: "station-state", "data-lamp": row.lamp },
-          lamp(row.lamp, { size: "small" }), h("span", { class: "station-state-text" }, row.stateText))),
-      h("div", { class: "station-body" },
-        h("div", { class: "station-main" },
-          h("p", { class: "station-duel niche-why" }, h("span", { class: "station-duel-label" }, T.nicheWhyLabel), " ", week.why),
-          nicheAnalysis(week)),
-        h("div", { class: "station-side" },
-          h("p", { class: "section-label niche-side-label", id: "sus-dolores" }, T.nicheOwnPains),
-          h("ul", { class: "niche-side-list", role: "list", "aria-labelledby": "sus-dolores" },
-            ...(pains.none ? [h("li", {}, pains.none)] : pains.week.map((line) => h("li", {}, boldNumbers(line)))),
-            week.advanced ? h("li", {}, boldNumbers(week.advanced)) : null,
-            h("li", {}, boldNumbers(paidRunsText(row.paidRuns, { long: true })))),
-          h("div", { class: "station-foot" },
-            h("p", { class: "station-marks" }, row.vetoNote ?? (row.vetoed ? row.stateText : T.nicheNoVeto)),
-            control ? h("div", { class: "station-actions" }, control.button) : null,
-            control ? control.note : null,
-            h("p", { class: "niche-veto-next" }, week.vetoNext))))));
+  return h("section", { class: "niche-section niche-week-section", "aria-labelledby": "esta-semana" },
+    h("h2", { class: "niche-section-title", id: "esta-semana" }, T.nicheWeekLabel),
+    h("div", { class: "niche-week" },
+      h("div", { class: "niche-week-row" },
+        h("div", { class: "station-name" },
+          h("h3", { class: "station-title", id: nameId }, row.name),
+          h("span", { class: "station-tag niche-origin-tag" }, row.originText)),
+        h("ul", { class: "niche-side-list", role: "list", "aria-label": T.nicheOwnPains },
+          ...(pains.none ? [h("li", {}, pains.none)] : pains.week.map((line) => h("li", {}, boldNumbers(line)))),
+          week.advanced ? h("li", {}, boldNumbers(week.advanced)) : null,
+          h("li", {}, boldNumbers(paidRunsText(row.paidRuns, { long: true })))),
+        h("div", { class: "niche-week-status" },
+          h("p", { class: "station-state", "data-lamp": row.lamp },
+            lamp(row.lamp), h("span", { class: "station-state-text" }, row.stateText)),
+          h("p", { class: "station-marks" }, row.vetoNote ?? (row.vetoed ? row.stateText : T.nicheNoVeto)))),
+      h("div", { class: "niche-week-open" },
+        h("p", { class: "niche-week-why" }, h("span", { class: "niche-week-why-label" }, T.nicheWhyLabel), " ", week.why),
+        nicheFigures(week),
+        h("div", { class: "niche-week-foot" },
+          control ? control.button : null,
+          h("p", { class: "niche-veto-next" }, week.vetoNext),
+          control ? control.note : null))));
 }
 
-// The week's sounding: «Quejas reales», «Gasto real» and «Ruido», as a table with explicit roles (its rows are laid
-// out as grids, and a table whose CSS display is changed can lose its semantics in some browsers). The versus bar only
-// where there is a value to place.
-function nicheAnalysis(week) {
+// The week's sounding as the pain's box cells: «Quejas reales», «Gasto real» and «Ruido», each its figure; for quejas
+// and gasto its place against the other niches drawn beside it (the versus bar: a tick per rival and the niche's own
+// rule, hidden from a screen reader) and said in words under it, and whether it has a signal at all: ✓ «Con señal» on
+// the ground, ✗ «Sin señal» on the fail tint. Over the cells, the day of the sounding and how many niches it was
+// measured against; in them, the week's note.
+function nicheFigures(week) {
   const rivals = Math.max(0, ...week.analysis.map((a) => a.positions.length));
   const caption = week.date ? fill(T.nicheProbeCaption, { date: week.date }) : T.nicheProbeCaptionUndated;
-  const versus = (a) => (a.at === null || a.flag === null ? null : h("span", { class: "versus", "aria-hidden": "true" },
-    a.positions.map((at) => h("span", { class: "versus-tick", style: `--at: ${at}%` })),
-    h("span", { class: "versus-at", style: `--at: ${a.at}%` })));
-  return h("table", { class: "analysis niche-analysis", role: "table" },
-    h("caption", { class: "analysis-caption" }, caption),
-    h("thead", { role: "rowgroup" }, h("tr", { role: "row" },
-      h("td", { class: "analysis-corner", role: "cell" }),
-      h("th", { scope: "col", role: "columnheader" }, T.analysisValueLabel),
-      h("th", { scope: "col", role: "columnheader" }, versusLabel(rivals)),
-      h("th", { scope: "col", role: "columnheader" }, T.analysisFlagLabel))),
-    h("tbody", { role: "rowgroup" }, week.analysis.map((a) => h("tr", { class: "analysis-row", role: "row", "data-flag": a.flag },
-      h("th", { scope: "row", role: "rowheader", class: "analysis-label" }, a.label),
-      h("td", { class: "analysis-value", role: "cell" }, a.value ?? noValue()),
-      h("td", { class: "analysis-range", role: "cell" }, versus(a), a.rank ? h("span", { class: "analysis-range-text" }, a.rank) : null),
-      h("td", { class: "analysis-flag", role: "cell" }, a.flag
-        ? h("span", { class: `range-flag range-flag--${a.flag}` }, lamp(a.flag === "in" ? "green" : "red", { size: "small" }), a.flagText)
-        : null)))),
-    week.note ? h("tfoot", { role: "rowgroup" }, h("tr", { role: "row" }, h("td", { class: "analysis-note", role: "cell", colspan: 4 }, week.note))) : null);
+  const cell = (a) => {
+    const result = a.flag === "in" ? "pass" : a.flag === "out" ? "fail" : null;
+    // A value in words («sin medir») or missing reads at the size of the words, as a check with no result does.
+    const words = a.value === null || a.value === T.nicheNoiseUnmeasured;
+    const versus = a.at === null || a.flag === null ? null : h("span", { class: "versus", "aria-hidden": "true" },
+      a.positions.map((at) => h("span", { class: "versus-tick", style: `--at: ${at}%` })),
+      h("span", { class: "versus-at", style: `--at: ${a.at}%` }));
+    return h("div", { class: "check-cell", "data-result": result ?? (words ? "none" : null) },
+      h("p", { class: "check-label" }, a.label),
+      h("p", { class: "check-value" }, h("strong", { class: "check-figure" }, a.value ?? noValue()), versus),
+      result ? h("p", { class: "check-flag" }, verdictIcon(result), a.flagText) : null,
+      a.rank ? h("p", { class: "check-min" }, a.rank) : null);
+  };
+  return [
+    h("p", { class: "niche-probe" }, `${caption} · ${versusLabel(rivals)}`),
+    h("div", { class: "check-cells niche-cells" }, week.analysis.map(cell), week.note ? h("p", { class: "check-note" }, week.note) : null),
+  ];
 }
 
-// «CANDIDATOS»: one table, a row per niche (a <th scope="row"> with its name, where it came from and, for a proposed
-// one, why), its state in words, quejas, gasto and ruido, its pains and its veto. Below 900 px each row is a stacked
-// block (css/base.css): the explicit roles keep it a table, and each figure says its column (data-label).
+// «Candidatos»: one table on a bordered panel, a row per niche (a <th scope="row"> with its name, where it came from
+// and, for a proposed one, why), its state (a dot and its words), quejas, gasto and ruido, its pains and its veto.
+// Below 900 px each row is a stacked block (css/base.css): the explicit roles keep it a table, and each figure says its
+// column (data-label).
 const QUIET_STATES = new Set(["resting", "vetoed", "retired"]);
 function nicheCandidates(rows, ctx, layout) {
   const col = (text, cls = null) => h("th", { scope: "col", role: "columnheader", class: cls }, text);
-  return h("section", { class: "niche-candidates", "aria-labelledby": "candidatos" },
-    h("p", { class: "section-label niche-candidates-label", id: "candidatos" }, T.nicheCandidatesLabel),
-    h("div", { class: "sheet" },
+  return h("section", { class: "niche-section niche-candidates", "aria-labelledby": "candidatos" },
+    h("h2", { class: "niche-section-title", id: "candidatos" }, T.nicheCandidatesLabel),
+    h("div", { class: "niche-table-panel" },
       h("table", { class: "niche-table", role: "table", "aria-labelledby": "candidatos" },
         h("thead", { role: "rowgroup" }, h("tr", { role: "row" },
           col(T.nicheColState), col(T.nicheColName),
@@ -855,12 +863,11 @@ function nicheRow(row, index, ctx, layout) {
   const control = row.canVeto ? vetoControl(row, "row", ctx, layout, nameId) : null;
   const figure = (label, value, extra = null) => h("td", { role: "cell", class: "niche-num", "data-label": label }, value ?? noValue(), extra);
   const unmeasured = row.noise === T.nicheNoiseUnmeasured;
-  // The faint green of the niche that ran only when its run did run: a failed one keeps the plain row beside its red.
-  const ran = row.state === "current" && row.lamp === "green";
-  const classes = [ran ? "niche-row--current" : null, QUIET_STATES.has(row.state) ? "niche-row--quiet" : null];
-  return h("tr", { role: "row", class: classes.filter(Boolean).join(" ") || null },
+  // A niche out of the race (resting, vetoed, retired) reads muted. A competing one waits: its dot is grey (css/base.css,
+  // by data-state), its lamp still amber.
+  return h("tr", { role: "row", class: QUIET_STATES.has(row.state) ? "niche-row--quiet" : null },
     h("td", { role: "cell", class: "niche-cell-state" },
-      h("span", { class: "niche-state", "data-lamp": row.lamp }, lamp(row.lamp, { size: "small" }), row.stateText),
+      h("span", { class: "niche-state", "data-lamp": row.lamp, "data-state": row.state }, lamp(row.lamp), row.stateText),
       row.stateNote ? h("span", { class: "niche-state-note" }, row.stateNote) : null),
     h("th", { scope: "row", role: "rowheader", class: "niche-cell-name" },
       h("span", { class: "niche-name", id: nameId }, row.name),
@@ -912,35 +919,26 @@ async function showRuns(layout, email) {
   const [list, more] = painList(rows, runListRow);
   list.className = "run-list";
   list.setAttribute("aria-label", T.runsListLabel);
-  // The sheet's head band names the columns for the eye, once the rows have them (from 720 px); each row says its parts
-  // in words, so a screen reader skips it.
-  const columns = h("div", { class: "sheet-head run-columns", "aria-hidden": "true" },
-    h("span", { class: "section-label" }, T.lineColFlag),
-    h("span", { class: "section-label" }, T.runTitle),
-    h("span", { class: "section-label run-columns-mini" }, T.runMiniLabel));
-  replaceChildren(layout.body, h("div", { class: "sheet run-sheet" }, columns, list, more));
+  // The head row names the columns for the eye, once the rows lay them out (css/base.css); each row says its values in
+  // words, so a screen reader skips it.
+  const columns = h("div", { class: "run-columns", "aria-hidden": "true" },
+    [T.runColRun, T.runColState, T.runColNiche, T.runColFound, T.runColDuration, T.runColCost].map((label) => h("span", {}, label)));
+  replaceChildren(layout.body, h("div", { class: "run-table" }, columns, list, more));
 }
 
-// One run, dense: its lamp and its state in words, its date as the link to it (the whole row is its target), its niche,
-// how long it took, its cost and its new pains; then the mini line, each stage's lamp and count, and how many stages had
-// a cut in words (the lamps are only drawn: the words beside them say it). Every lamp is drawn in its final state on
-// the first paint: the lab report has no lighting sequence.
+// One run as a deployments list draws one, a value per fixed column: its date as the link to it (the whole row is its
+// target), its state as a pill (a dot and its words), its niche, its new pains, how long it took and its cost. A value
+// the run did not leave is a dash for the eye and is not said; on a phone, where the values stack, it is left out.
 function runListRow(row) {
-  const mini = row.hasCounts
-    ? h("div", { class: "run-mini" },
-      h("ol", { class: "run-mini-stages", role: "list", "aria-label": T.runMiniLabel }, row.stages.map((stage) => h("li", {},
-        lamp(stage.lamp, { size: "small" }),
-        h("span", { class: "visually-hidden" }, `${stage.label}: `),
-        h("span", { class: stage.count === null ? "run-mini-count is-empty" : "run-mini-count" }, stage.count ?? "–"),
-        stage.count === null ? h("span", { class: "visually-hidden" }, T.stageNoData) : null))),
-      h("p", { class: "run-mini-state" }, row.cutStages))
-    : h("p", { class: "run-mini run-mini--none" }, T.runMiniNone);
+  const value = (key, text, label = null) => h("p", { class: text ? `run-cell run-${key}` : `run-cell run-${key} is-empty` },
+    text ? [label ? h("span", { class: "visually-hidden" }, `${label}: `) : null, text] : h("span", { "aria-hidden": "true" }, "—"));
   return h("li", { class: "run-row" },
-    h("p", { class: "run-state" }, lamp(row.lamp), h("span", {}, row.state)),
-    h("div", { class: "run-main" },
-      h("h2", { class: "run-title" }, h("a", { href: row.href }, row.title)),
-      row.facts.length ? h("p", { class: "run-facts" }, row.facts.join(" · ")) : null),
-    mini);
+    h("h2", { class: "run-title" }, h("a", { href: row.href }, row.title)),
+    h("p", { class: "run-state", "data-lamp": row.lamp }, lamp(row.lamp), h("span", {}, row.state)),
+    value("niche", row.niche, T.keyNiche),
+    value("found", row.found),
+    value("duration", row.duration),
+    value("cost", row.cost));
 }
 
 // One run opened: it reads the runs again (the list is a year at most) and, for the masthead, the session's week (it
@@ -975,12 +973,12 @@ async function showRun(layout, id, email) {
   renderRun(layout, trace, titles);
 }
 
-// The run's sections: the cost, the cuts and the duels in words, each with what it says when it has none; then
-// «Detalle técnico», closed, the only place where the run's raw texts show.
+// The run's sections, as a pain's page draws its own: a plain block under a hairline, its h2, then its rows (the
+// cost, the cuts and the duels in words) or what it says when it has none.
 function runSection(key, title, items, emptyText, list = "ul") {
   const id = `corrida-${key}`;
-  return h("section", { class: "run-section sheet", "aria-labelledby": id },
-    h("div", { class: "sheet-head" }, h("h2", { id }, title)),
+  return h("section", { class: "detail-section run-section", "aria-labelledby": id },
+    h("h2", { id }, title),
     items.length ? h(list, { class: `run-${key}-list`, role: list === "ul" ? "list" : null }, items) : h("p", { class: "run-empty" }, emptyText));
 }
 
@@ -988,16 +986,20 @@ function technicalPart(title, items) {
   return items.length ? h("div", { class: "tech-part" }, h("h3", {}, title), h("ul", { role: "list" }, items)) : null;
 }
 
+// One run opened reads as a pain's page: the way back to Corridas, the title, its state as the same pill and its key
+// data on one muted line; then its line across the page's width (renderLine: every step, what remained, each cut in
+// words); then its cost, its cuts and its duels as plain sections, and «Detalle técnico», closed, the only place where
+// the run's raw texts show.
 function renderRun(layout, trace, titles) {
   const title = runTitle(trace);
   layout.heading.textContent = title;
   setTitle(title);
   const status = runState(trace.status);
   const keys = runKeys(trace);
-  layout.head.classList.add("run-head");
+  layout.head.classList.add("detail-head", "run-head");
   // Element.append writes a null as the text «null»: only what exists goes in.
   layout.head.append(...[
-    h("p", { class: "detail-status", "data-lamp": status.lamp }, lamp(status.lamp), h("span", {}, status.text)),
+    h("div", { class: "detail-meta" }, h("p", { class: "detail-status", "data-lamp": status.lamp }, lamp(status.lamp), h("span", {}, status.text))),
     keys.length ? h("ul", { class: "key-data", role: "list" }, keys.map(keyItem)) : null,
   ].filter(Boolean));
 
@@ -1006,8 +1008,8 @@ function renderRun(layout, trace, titles) {
   const duels = runDuelLines(trace, titles);
   const tech = runTechnical(trace, titles);
   const counted = Array.isArray(trace.funnel) && trace.funnel.some((stage) => stage && typeof stage.count === "number");
-  const technical = h("details", { class: "run-tech sheet" },
-    h("summary", { class: "sheet-head" }, T.techTitle),
+  const technical = h("details", { class: "detail-section run-tech fold" },
+    h("summary", {}, T.techTitle),
     h("div", { class: "run-tech-body" },
       h("p", { class: "run-tech-lead" }, T.techLead),
       tech.empty ? h("p", { class: "run-empty" }, T.techNone) : null,
@@ -1015,14 +1017,15 @@ function renderRun(layout, trace, titles) {
       technicalPart(T.techNotes, tech.notes.map((n) => h("li", {}, h("p", { class: "raw-label" }, n.label), h("p", { class: "raw" }, n.text)))),
       technicalPart(T.techReasons, tech.reasons.map((r) => h("li", {}, h("p", { class: "raw-label" }, r.label), h("p", { class: "raw" }, r.text))))));
 
+  layout.notices.classList.add("detail-notices");
   layout.body.removeAttribute("aria-busy");
-  layout.body.classList.add("run-body");
+  layout.body.classList.add("detail-body", "run-body");
   replaceChildren(layout.body, h("div", { class: "run-detail" },
     h("div", { class: "run-line" }, renderLine(trace, {
       idPrefix: "corrida-linea", costs: false, otherCuts: false,
       note: counted ? null : T.runMiniNone })),
     h("div", { class: "run-sections" },
-      runSection("costo", T.runCostTitle, costs.map((row) => h("div", { class: row.total ? "run-cost run-cost--total" : "run-cost" },
+      runSection("costo", T.runCostTitle, costs.map((row) => h("div", { class: row.total ? "run-cost-row run-cost-row--total" : "run-cost-row" },
         h("dt", {}, row.label), h("dd", {}, row.value))), T.runCostNone, "dl"),
       runSection("recortes", T.runCutsTitle, cuts.map((line) => h("li", {}, line)), T.runCutsNone),
       runSection("duelos", T.runDuelsTitle, duels.map((line) => h("li", {}, line)), T.runDuelsNone),
@@ -1031,8 +1034,8 @@ function renderRun(layout, trace, titles) {
 
 // ---- a pain: the home's open row at full width, its card, «Cómo llegamos» and the comments ------
 
-// The way back, on one line above the title; its accessible name says where it goes (MAR-14). A pain goes back to
-// «Esta semana» after a drawn chevron, an opened run to Corridas.
+// The way back, on one line above the title, after a drawn chevron; its accessible name says where it goes (MAR-14). A
+// pain goes back to «Esta semana», an opened run to Corridas.
 const backLink = (href, label, ...content) => h("a", { class: "back-link", href, "aria-label": label }, content);
 const backChevron = () => icon("back-chevron", { paths: ["m15 18-6-6 6-6"] });
 

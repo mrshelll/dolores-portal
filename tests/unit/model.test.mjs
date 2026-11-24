@@ -89,6 +89,8 @@ test("an alive pain marked interested lands in weighty", () => {
     trend: { direction: "steady", last_evidence: "2026-09-18" },
     topic: "Sacar datos de documentos",
     marks: [{ name: "Carla", mark: "interested" }],
+    gate: null,
+    facts: { testimonies: null, attacks: null, duelReason: null },
   });
 });
 
@@ -246,6 +248,31 @@ test("marks name people case-insensitively, fall back to the email, and skip unk
   assert.deepEqual(sections.interested[0].marks, [{ name: "alguien@example.org", mark: "discarded" }, { name: "Carla", mark: "interested" }]);
 });
 
+// Catálogo's rows draw a pain's checks (checkStack) from its gate, or, without one, why it is there in its facts line.
+test("buildSections: each item carries the pain's gate (null without one) and its facts", () => {
+  const gate = { testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: { testimonies: 3, tiers: 2, survivals: 3, verdicts: 5 } };
+  const history = [{ run_id: "r1", date: "2026-11-10", inputs: { testimonies: 5 } }];
+  const sections = buildSections({
+    pains: [
+      { id: "dol-0027", territory: null, status: "alive", gate },
+      { id: "dol-0028", territory: null, status: "watching", gate: null, history },
+      { id: "dol-0029", territory: null, status: "watching", gate: "not an object" },
+      { id: "dol-0030", territory: null, status: "watching" },
+    ],
+    cards: ["dol-0027", "dol-0028", "dol-0029", "dol-0030"].map((id) => fullCard(id)),
+    marks: [],
+    people: PEOPLE,
+  });
+  const byId = Object.fromEntries([...sections.weighty, ...sections.watching].map((i) => [i.id, i]));
+  assert.equal(byId["dol-0027"].gate, gate); // the pain's own object, as stored
+  assert.equal(byId["dol-0028"].gate, null);
+  assert.equal(byId["dol-0029"].gate, null);
+  assert.equal(byId["dol-0030"].gate, null);
+  assert.deepEqual(byId["dol-0028"].facts, { testimonies: 5, attacks: null, duelReason: null });
+  assert.deepEqual(stationFactLines(byId["dol-0028"].facts), [fill(T.factTestimoniesMany, { count: "5" })]);
+  assert.deepEqual(byId["dol-0030"].facts, { testimonies: null, attacks: null, duelReason: null });
+});
+
 test("buildSections copes with missing inputs and an unknown trend direction", () => {
   assert.deepEqual(idsOf(buildSections({})), { weighty: [], interested: [], watching: [], discarded: [] });
   const sections = buildSections({
@@ -254,6 +281,7 @@ test("buildSections copes with missing inputs and an unknown trend direction", (
   });
   assert.deepEqual(sections.weighty[0], {
     id: "dol-0002", title: "Duele.", who: "", trend: { direction: null, last_evidence: null }, topic: "Otro tema", marks: [],
+    gate: null, facts: { testimonies: null, attacks: null, duelReason: null },
   });
 });
 
@@ -988,14 +1016,14 @@ test("catalogView: the browser fixtures' catalog has 1 with weight, 1 kept by «
   assert.equal(new Set(ids).size, ids.length);
 });
 
-test("catalogView: each section's title, heading with its count, lamp and state in words", () => {
+test("catalogView: each section's title, its count as written, lamp and state in words", () => {
   const { data } = scenarios().find((s) => s.name === "catalog");
   const [weighty, interested, watching, discarded] = catalogView(data).sections;
-  assert.deepEqual([weighty.title, weighty.heading, weighty.lamp, weighty.state],
-    [T.sectionWeighty, fill(T.sectionCount, { title: T.sectionWeighty, count: "1" }), "green", T.statusWeighty]);
+  assert.deepEqual([weighty.title, weighty.countText, weighty.lamp, weighty.state],
+    [T.sectionWeighty, "1", "green", T.statusWeighty]);
   assert.deepEqual([interested.lamp, interested.state], ["amber", T.statusInterested]);
-  assert.deepEqual([watching.heading, watching.lamp, watching.state],
-    [fill(T.sectionCount, { title: T.sectionWatching, count: "55" }), "amber", T.statusWatching]);
+  assert.deepEqual([watching.title, watching.countText, watching.lamp, watching.state],
+    [T.sectionWatching, "55", "amber", T.statusWatching]);
   assert.deepEqual([discarded.title, discarded.lamp, discarded.state], [T.sectionDiscarded, "off", T.statusDiscarded]);
   assert.equal(T.sectionDiscarded, "Descartados por el equipo");
 });
@@ -1014,7 +1042,7 @@ test("catalogView: a section with no pain says so in plain words; with none anyw
   // A count past a thousand is written the Spanish way.
   const many = Array.from({ length: 1200 }, (_, i) => ({ id: `dol-${10000 + i}`, status: "watching" }));
   const big = catalogView({ pains: many, cards: many.map((p) => lineCard(p.id)) });
-  assert.equal(big.sections[2].heading, fill(T.sectionCount, { title: T.sectionWatching, count: new Intl.NumberFormat("es").format(1200) }));
+  assert.equal(big.sections[2].countText, new Intl.NumberFormat("es").format(1200));
 });
 
 test("brandLampShort: the brand lamp's state in two or three words, for beside the lamp", () => {

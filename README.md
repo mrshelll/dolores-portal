@@ -143,7 +143,14 @@ What runs:
   same button sends `false` and the row competes again; a session that ends while vetoing (401, `PGRST303`) says «Tu
   sesión terminó»; a veto the base refuses (42501) shows «sin permiso»; a base error is said in words beside the
   button, which works again. At 1440 × 900 (the top bar's week data shows from 768 px), the top bar's niche opens
-  `#/nichos` on the same niche. Each behaviour also fails on a request the fake does not know.
+  `#/nichos` on the same niche. Also at 1440 × 900, Catálogo, Corridas, a run and Nichos read in the home's standard:
+  each of Catálogo's states is a bordered list headed by its dot, its name and its count, each pain a closed row with
+  its checks (or, without a gate, its facts line) and no actions, the waiting state's dots grey; Corridas' runs sit in
+  six fixed columns, newest first, each state a pill with its words; a run's page has «Corridas» as the way back, the
+  state's pill and the key data, its line across the page's width, then plain sections and «Detalle técnico» folded;
+  Nichos' week niche is an open row with why it was chosen, its three figures in cells (the place against the others
+  drawn and hidden from a screen reader, «Con señal» in words) and «Vetar este nicho», under plain headings, and a
+  competing niche's dot is grey. Each behaviour also fails on a request the fake does not know.
 
 Exceptions, each printed at the end of every run (no check is removed):
 

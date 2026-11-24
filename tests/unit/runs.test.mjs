@@ -49,50 +49,38 @@ test("runTitle: «Corrida del <fecha>», or without a date", () => {
   assert.equal(runTitle(trace("2030-02-04-1", "not a date")), T.runTitleUndated);
 });
 
-test("runRow: date, niche, state, duration, cost, new pains and the mini line's counts", () => {
+test("runRow: one value per column: the date as the title, the state, the niche, new pains, duration and cost", () => {
   const row = runRow(trace("2030-02-04-1", "2030-02-04"));
   assert.equal(row.id, "2030-02-04-1");
   assert.equal(row.href, "#/corridas/2030-02-04-1");
   assert.equal(row.title, fill(T.runTitleDated, { date: formatDate("2030-02-04") }));
   assert.equal(row.lamp, "green");
   assert.equal(row.state, T.runStateComplete);
-  assert.deepEqual(row.facts, [
-    "Cuotas de clubes", fill(T.durationMinutes, { minutes: 26 }), fill(T.costUsd, { amount: "3,66" }), fill(T.newPainsMany, { count: "6" }),
-  ]);
-  assert.equal(row.stages.length, 10);
-  assert.deepEqual(row.stages[0], { label: "Etapa 1", count: "617", lamp: "green" });
-  assert.equal(row.stages[3].lamp, "green"); // 44 of 50: not at the cap
-  assert.equal(row.hasCounts, true);
-  assert.equal(row.cutStages, T.lineStripClean);
+  assert.equal(row.niche, "Cuotas de clubes");
+  assert.equal(row.found, fill(T.newPainsMany, { count: "6" }));
+  assert.equal(row.duration, fill(T.durationMinutes, { minutes: 26 }));
+  assert.equal(row.cost, fill(T.costUsd, { amount: "3,66" }));
 });
 
-test("runRow: what the trace does not say is left out, never invented", () => {
+test("runRow: what the trace does not say is null, never invented", () => {
   const old = trace("2030-01-28-1", "2030-01-28", {
     niche: { id: null, name: null }, status: "failed", finished_at: null, cost: { total_usd: null, by_model: null, cards_usd: null },
     sources: null, funnel: funnel([]), new_pains: null,
   });
   const row = runRow(old);
-  assert.deepEqual(row.facts, []);
+  assert.deepEqual([row.niche, row.found, row.duration, row.cost], [null, null, null, null]);
   assert.equal(row.lamp, "red");
   assert.equal(row.state, T.runStateFailed);
-  assert.equal(row.hasCounts, false);
-  assert.ok(row.stages.every((s) => s.count === null && s.lamp === "off"));
   // A niche with no name goes by its topic's plain name when the page knows it, never by its id.
-  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: null } })).facts[0], "Preparar documentos para la IA");
-  assert.ok(!runRow(trace("x", "2030-01-28", { niche: { id: "nicho-raro", name: " " } })).facts.includes("nicho-raro"));
+  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: null } })).niche, "Preparar documentos para la IA");
+  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "nicho-raro", name: " " } })).niche, null);
   // A name that is only the id humanized (dolores' nicheName) is no name: the topic's, or nothing at all.
-  assert.ok(!runRow(trace("x", "2030-01-28", { niche: { id: "new-latam-territory", name: "New latam territory" } })).facts.includes("New latam territory"));
-  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: "Documents for ai" } })).facts[0], "Preparar documentos para la IA");
-  assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 0 })).facts.at(-1), T.newPainsNone);
-  assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 1 })).facts.at(-1), T.newPainsOne);
+  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "new-latam-territory", name: "New latam territory" } })).niche, null);
+  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: "Documents for ai" } })).niche, "Preparar documentos para la IA");
+  assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 0 })).found, T.newPainsNone);
+  assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 1 })).found, T.newPainsOne);
   assert.equal(runRow(null), null);
   assert.equal(runRow({ run_id: "" }), null);
-});
-
-test("runRow: the mini line says how many stages had a cut", () => {
-  const cut = trace("x", "2030-02-04", { cuts: [{ kind: "extraction-cap", count: 253, cap: 50, text: "253 quedaron sin analizar", original: null }] });
-  assert.equal(runRow(cut).stages[3].lamp, "amber");
-  assert.equal(runRow(cut).cutStages, T.lineStripCutsOne);
 });
 
 test("runRows: newest first, each run once, anything that is not a trace left out", () => {

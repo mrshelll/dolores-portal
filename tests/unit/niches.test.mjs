@@ -490,7 +490,7 @@ test("week analysis: complaints and spending with rank, rivals' positions and fl
   assert.deepEqual(complaints.positions, [38, 27, 27]); // 41, 29, 29 over 107
   assert.equal(complaints.at, 100);
   assert.equal(complaints.flag, "in");
-  assert.equal(complaints.flagText, "CON SEÑAL");
+  assert.equal(complaints.flagText, "Con señal");
   assert.equal(spending.value, "96");
   assert.equal(spending.rank, "3.º de 4"); // 447, 109 above
   assert.deepEqual(spending.positions, [24, 12, 100]); // 109, 52, 447 over 447
@@ -509,7 +509,7 @@ test("week analysis: a side at zero has no signal; a tie with the highest is the
   const { week } = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking } })] }));
   const [complaints, spending] = week.analysis;
   assert.equal(complaints.flag, "out");
-  assert.equal(complaints.flagText, "SIN SEÑAL");
+  assert.equal(complaints.flagText, "Sin señal");
   assert.equal(complaints.rank, "2.º de 2");
   assert.equal(spending.rank, "el más alto");
   assert.equal(week.note, "Gana el nicho con más en su lado más débil; aquí, 0 de quejas.");

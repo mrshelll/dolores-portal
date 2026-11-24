@@ -41,7 +41,9 @@ function marksOf(painId, marks, names) {
     .sort(byName);
 }
 
-// A row needs a card with a line to read: the title (a version-1 card has none, so what hurts stands in) and who.
+// A row needs a card with a line to read: the title (a version-1 card has none, so what hurts stands in) and who. It
+// carries the counts the run judged the pain by (`gate`, as stored; null before the gate existed), which its checks
+// read, and why it is there in facts (stationFacts), which a row without a gate says instead.
 function itemOf(pain, card, marks, names) {
   const line = card && typeof card === "object" && card.line && typeof card.line === "object" ? card.line : null;
   const title = line && (text(line.title) ?? text(line.what_hurts));
@@ -57,6 +59,8 @@ function itemOf(pain, card, marks, names) {
     },
     topic: topicName(pain.territory),
     marks: marksOf(pain.id, marks, names),
+    gate: isObject(pain.gate) ? pain.gate : null,
+    facts: stationFacts(pain, card),
   };
 }
 
@@ -119,8 +123,9 @@ export function buildSections({ pains = [], cards = [], marks = [], people = [] 
 // Catálogo: every pain by its section, the same as buildSections.
 export const catalogSections = (input) => buildSections(input);
 
-// Catálogo's sections in order, each with its title, its heading with the count, its lamp and its state in words (the
-// same words as a pain's tag), its pains, and what it says when it has none. `empty` when no section has a pain.
+// Catálogo's sections in order, each with its title, its count (and the count as written), its lamp and its state in
+// words (the same words as a pain's tag), its pains, and what it says when it has none. `empty` when no section has a
+// pain.
 const CATALOG = [
   ["weighty", "sectionWeighty", "statusWeighty", "catalogEmptyWeighty"],
   ["interested", "sectionInterested", "statusInterested", "catalogEmptyInterested"],
@@ -132,8 +137,8 @@ export function catalogView(input) {
   const list = CATALOG.map(([key, title, state, empty]) => ({
     key,
     title: T[title],
-    heading: fill(T.sectionCount, { title: T[title], count: formatNumber(sections[key].length) }),
     count: sections[key].length,
+    countText: formatNumber(sections[key].length),
     lamp: painLamp(key),
     state: T[state],
     emptyText: T[empty],
@@ -416,9 +421,8 @@ export function decideList({ pains = [], cards = [], marks = [], people = [], tr
       ...item, section, lamp: painLamp(section), fresh: hasNewEvidence(pain, latest), winner: won,
       // The ranked board: the duel's winner and the pains with weight are full stations, the rest compact.
       full: won || section === "weighty",
+      // The winner's facts also say why it won the duel.
       facts: stationFacts(pain, cardOf.get(pain.id), { winner: won }),
-      // The counts the run judged it by, as stored (analysisRows reads and checks them); null before the gate existed.
-      gate: isObject(pain.gate) ? pain.gate : null,
     });
   }
   const rank = (item) => (item.winner ? 0 : item.section === "weighty" ? 1 : 2);

@@ -830,223 +830,103 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 }
 .catalog-line-link:hover { text-decoration-color: currentColor; }
 
-/* ---- Nichos' week block: the lab report's result block, until Task 5 makes it a row ---------------- */
+/* ---- Catálogo: every pain by state, each state a bordered list of the home's closed rows ------------- */
 
-/* A small tracked section label: «ESTA SEMANA», «CANDIDATOS», «SUS DOLORES», the analysis table's caption and column
-   heads. */
-.section-label, .analysis-caption, .analysis thead th {
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-align: start;
-}
-.results { margin-top: var(--space-4); }
-.results-label { display: flex; align-items: center; gap: 12px; margin-bottom: var(--space-2); }
-.results-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
-/* The block: a hairline border, its head on the pale section tint, its body on the panel; two columns from 601 px of
-   its own width, stacked below. */
-.niche-week {
-  container: result / inline-size;
-  position: relative;
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: var(--panel);
-}
-.niche-week .station-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  min-height: var(--target);
-  padding: 6px var(--space-4);
-  border-bottom: 1px solid var(--line);
-  border-radius: calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;
-  background: var(--section);
-}
-.niche-week .station-name { display: flex; align-items: baseline; gap: 12px; min-width: 0; margin-right: 4px; }
-.niche-week .station-title { min-width: 0; color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.3; }
-.niche-week .station-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
-/* The state flag at the head's right: its dot and words on a panel chip, so a green dot never sits on the tint. */
-.niche-week .station-state {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 24px;
-  margin-left: auto;
-  padding: 0 6px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-chip);
-  background: var(--panel);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-.niche-week .station-state[data-lamp="green"] { color: var(--state-ok-text); border-color: color-mix(in srgb, var(--state-ok) 45%, var(--panel)); }
-.niche-week .station-state[data-lamp="amber"] { color: var(--state-attention-text); border-color: color-mix(in srgb, var(--state-attention) 45%, var(--panel)); }
-.niche-week .station-state[data-lamp="red"] { color: var(--state-fail-text); border-color: color-mix(in srgb, var(--state-fail) 45%, var(--panel)); }
-
-.niche-week .station-body { display: grid; grid-template-columns: minmax(0, 1fr); }
-.niche-week :is(.station-main, .station-side) { min-width: 0; padding: 12px var(--space-4); }
-.niche-week .station-side { display: flex; flex-direction: column; gap: 10px; padding-bottom: var(--space-4); }
-/* The left column is the analysis table's container: the table takes its wide layout by the column's width. */
-.niche-week .station-main { container-type: inline-size; display: grid; align-content: start; gap: 10px; }
-.niche-week .station-main + .station-side { border-top: 1px solid var(--line); }
-@container result (min-width: 601px) {
-  .niche-week .station-body { grid-template-columns: minmax(0, 1.3fr) minmax(15rem, 1fr); }
-  .niche-week .station-main + .station-side { border-top: 0; border-left: 1px solid var(--line); }
-}
-.niche-week .station-duel { font-size: var(--text-small); }
-.niche-week .station-duel-label { color: var(--brand); font-weight: 600; }
-/* The veto's state, then its button and what it does, at the foot of the column. */
-.niche-week .station-foot { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-top: auto; }
-.niche-week .station-marks { flex-basis: 100%; color: var(--muted); font-size: var(--text-small); }
-.niche-week .station-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) 12px; width: 100%; }
-.niche-week .station-actions > .button { flex: 1 1 auto; padding-inline: 12px; white-space: nowrap; }
-
-/* ---- the analysis table (js/analysis.js) ------------------------------------------------- */
-
-/* Rows are laid out as grids, so each row keeps its words together at any width; the table's semantics stay with
-   explicit roles (js/analysis.js). Narrow (by default): the label and the value on a line, the range bar, its words and
-   the flag under them. Wide (its container 27rem or more): four columns under a head row, the caption in its corner,
-   the flag on one line. */
-.analysis { position: relative; display: block; width: 100%; border-collapse: collapse; font-size: var(--text-small); }
-.analysis > thead, .analysis > tbody, .analysis > tfoot { display: block; }
-.analysis-caption { display: block; padding-bottom: 4px; border-bottom: 1px solid var(--ink); }
-.analysis > thead {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
-.analysis-row {
-  display: grid;
-  grid-template-columns: minmax(auto, 1fr) auto auto; /* the bar and its words never narrower than they need */
-  grid-template-areas: "label label value" "range flag flag";
-  align-items: center;
-  gap: 2px 12px;
-  padding-block: 5px;
-  border-bottom: 1px solid var(--line);
-}
-.analysis-label { grid-area: label; font-weight: 400; text-align: start; }
-.analysis-value { grid-area: value; justify-self: end; font-size: var(--text-body); font-weight: 700; line-height: 1.25; }
-.analysis-range { grid-area: range; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; }
-.analysis-range-text { white-space: nowrap; }
-.analysis-flag { grid-area: flag; }
-/* Incomplete attacks: no result to judge, so its words take the value's and the flag's room. */
-.analysis-row[data-flag="none"] { grid-template-areas: "label label label" "value value value" "range range range"; }
-.analysis-row[data-flag="none"] .analysis-value { justify-self: start; font-size: var(--text-small); font-weight: 600; }
-/* Out of range, the value is marked as a lab report marks it: bold, in the failing state's text colour. */
-.analysis-row[data-flag="out"] .analysis-value { color: var(--state-fail-text); font-weight: 700; }
-.analysis-note { display: block; padding-top: 4px; color: var(--muted); font-size: var(--text-xs); }
-/* No gate on the pain: one line in words where the table would be (a full result, a pain's page). */
-.analysis-none { color: var(--muted); font-size: var(--text-small); }
-
-/* The flag in words, in the state's text colour, after its dot. */
-.range-flag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; line-height: 1.3; }
-.range-flag--in { color: var(--state-ok-text); }
-.range-flag--out { color: var(--state-fail-text); }
-
-/* The reference-range bar: a track from 0 to the row's top, the in-range part shaded from the threshold with a green
-   edge, and a mark at the value. Hidden from a screen reader; the row's words carry it. */
-.range-bar {
-  position: relative;
-  display: block;
-  flex: 1 1 auto;
-  min-width: 48px;
-  max-width: 200px;
-  height: 8px;
-  border: 1px solid var(--line);
-  border-radius: 2px;
-  background: var(--section);
-}
-.range-bar-in {
-  position: absolute;
-  top: -1px;
-  bottom: -1px;
-  right: -1px;
-  left: var(--from);
-  border-left: 2px solid var(--state-ok);
-  border-radius: 0 2px 2px 0;
-  background: color-mix(in srgb, var(--state-ok) 24%, var(--panel));
-}
-.range-bar-at {
-  position: absolute;
-  top: -5px;
-  left: clamp(-1px, calc(var(--at) - 1.5px), calc(100% - 2px));
-  width: 3px;
-  height: 16px;
-  border-radius: 1px;
-  background: var(--ink);
-}
-
-@container (min-width: 27rem) {
-  .analysis-caption { position: absolute; top: 0; left: 0; padding: 0; border: 0; line-height: 24px; }
-  .analysis > thead { position: static; width: auto; height: auto; margin: 0; overflow: visible; clip: auto; white-space: normal; }
-  .analysis > thead > tr, .analysis-row {
-    display: grid;
-    /* The flag's column fits «DENTRO DEL RANGO» on one line (138 px at 11 px); the four minimums and the gaps fit 27rem. */
-    grid-template-columns: minmax(6rem, 1.1fr) minmax(3.5rem, 0.55fr) minmax(6rem, 1fr) minmax(9rem, 0.9fr);
-    column-gap: 12px;
-  }
-  .analysis > thead > tr { align-items: center; min-height: 24px; border-bottom: 1px solid var(--ink); }
-  .analysis-row { grid-template-areas: "label value range flag"; min-height: 44px; padding-block: 6px; }
-  .analysis-value { justify-self: start; }
-  .analysis-range { flex-direction: column; align-items: stretch; gap: 6px; }
-  .analysis-row[data-flag="none"] { grid-template-areas: "label value value flag" ". range range flag"; }
-  .range-flag { white-space: nowrap; }
-}
-
-/* ---- Catálogo: every pain by state, one dense row per pain ------------------------------- */
-
+/* A sentence that stands for an empty screen (the home, Catálogo, Corridas, Nichos). */
 .week-sentence { max-width: var(--measure-text); }
-/* Each state is a sheet: its lamp and its heading with the count on the band, then its rows. */
-.catalog-body { display: grid; gap: var(--space-5); }
-.catalog-heading { display: flex; align-items: center; gap: 10px; }
-.catalog-empty { padding: 14px var(--space-4); color: var(--muted); }
-.catalog-summary:hover .catalog-heading { text-decoration: underline; text-decoration-color: var(--edge); text-underline-offset: 3px; }
+/* No gate on the pain: one line in words where the box cells would be (an open row, a pain's page). */
+.analysis-none { color: var(--muted); font-size: 14px; line-height: 20px; }
 
-/* The rows sit on the sheet, divided by rules. The title's link covers its whole row, so the row is the target. */
-.pain-list { padding: 0; list-style: none; }
-.pain-row { position: relative; display: grid; gap: 4px; padding: 10px var(--space-4) 12px; }
-.pain-row + .pain-row { border-top: 1px solid var(--line); }
-.pain-row:hover { background: var(--hover); }
-.pain-row:last-child { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
-.pain-state {
+/* Catálogo, Corridas and Nichos keep to the width of the home's rows and a pain's page, at the left as they are. */
+.catalog-body, .runs-body, .niches-body { max-width: 64rem; }
+
+/* One bordered list per state on the ground, in the board's order: its head row on the panel grey (the state's dot,
+   its name, and how many in muted figures), then its rows divided by hairlines and «Ver 20 más» at its foot. A
+   waiting state's dots are grey (an edge: 3.45:1 light, 4.18:1 dark); blue stays for attention, cuts and the primary
+   action. The model's lamp for it is amber, shared with «Nos interesa», so the section tells them apart. */
+.catalog-body { display: grid; gap: var(--space-5); }
+.catalog-section {
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--ground);
+}
+.catalog-section[data-section="watching"] .lamp { --lamp: var(--edge); }
+.catalog-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: var(--text-small);
-  font-weight: 600;
-  line-height: 1.3;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--panel);
 }
-.pain-title { color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.25; }
-.pain-title a { text-decoration: none; }
+.catalog-head:last-child, .catalog-fold:not([open]) > .catalog-head { border-bottom: 0; }
+.catalog-heading { display: flex; align-items: center; gap: var(--space-2); font-size: 14px; font-weight: 600; line-height: 20px; }
+.catalog-count { color: var(--muted); font-weight: 500; }
+.catalog-empty { padding: 14px var(--space-4); color: var(--muted); }
+/* The discarded ones, folded: the head row is the fold's summary, the chevron after its words, turned when open. */
+summary.catalog-head { list-style: none; cursor: pointer; }
+summary.catalog-head::-webkit-details-marker { display: none; }
+summary.catalog-head::after {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-left: 2px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: translateY(-25%) rotate(45deg);
+  transition: transform 200ms var(--ease-out);
+}
+.catalog-fold[open] > summary.catalog-head::after { transform: translateY(25%) rotate(225deg); }
+summary.catalog-head:hover { background: color-mix(in srgb, var(--ink) 3%, var(--panel)); }
+summary.catalog-head:hover::after { border-color: var(--ink); }
+summary.catalog-head:focus-visible { outline-offset: -2px; }
+/* «Ver N más»: under what it adds to; at a list's foot, across it under a hairline. */
+.more-button { margin-top: var(--space-2); }
+:is(.catalog-section, .run-table) > .more-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding-inline: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+
+/* A pain as the home's closed row with no chevron. The list is the container its rows lay out by: stacked on a phone;
+   from 34rem the checks take a column at the right; from 46rem the home's columns (the title and who suffers it, the
+   checks, the state and the marks). The title's link covers its whole row, so the row is the target. */
+.pain-list { container: pain / inline-size; margin: 0; padding: 0; list-style: none; }
+.pain-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "name" "checks" "status";
+  align-items: start;
+  gap: 10px 14px;
+  padding: var(--space-4);
+}
+.pain-row + .pain-row { border-top: 1px solid var(--hairline); }
+.pain-row:hover { background: color-mix(in srgb, var(--ink) 2%, var(--ground)); }
+.pain-name { grid-area: name; min-width: 0; }
+.pain-title { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; }
+.pain-title a { color: inherit; text-decoration: none; }
 .pain-title a::after { content: ""; position: absolute; inset: 0; }
 .pain-title a:focus-visible { outline: none; }
-.pain-title a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius); }
+.pain-title a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
 .pain-row:hover .pain-title a { text-decoration: underline; text-decoration-color: var(--edge); }
-.pain-who { margin-top: 2px; color: var(--muted); font-size: 15px; line-height: 1.35; }
-.pain-meta, .pain-marks { font-size: var(--text-small); line-height: 1.35; }
-.pain-meta, .pain-marks.is-empty { color: var(--muted); }
-.more-button { margin-top: var(--space-2); }
-
-/* From 720 px the state is a column at the left; from 1200 px the title, who suffers it and the marks are columns too,
-   so most rows take two lines. */
-@media (min-width: 720px) {
-  .pain-row { grid-template-columns: 12.5rem minmax(0, 1fr); column-gap: var(--space-5); row-gap: 4px; }
-  .pain-state { grid-row: 1 / span 2; align-self: start; min-height: 21px; }
-  .pain-main, .pain-side { grid-column: 2; }
+.pain-who { max-width: 62ch; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
+.pain-meta { margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 18px; }
+.pain-row > :is(.check-stack, .station-facts) { grid-area: checks; padding-top: 2px; }
+.pain-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
+.pain-state { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+.pain-state > .lamp { margin-left: 4px; }
+.pain-marks { margin-top: 2px; color: var(--muted); }
+@container pain (min-width: 34rem) and (max-width: 45.99rem) {
+  .pain-row { grid-template-columns: minmax(0, 1fr) 12rem; grid-template-areas: "name checks" "status checks"; }
 }
-@media (min-width: 1200px) {
-  .pain-row { grid-template-columns: 12.5rem minmax(0, 1fr) minmax(13rem, 18rem); padding-block: 9px 10px; }
-  .pain-meta, .pain-marks { line-height: 1.3; }
-  .pain-state { grid-row: auto; }
-  .pain-main { display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); column-gap: var(--space-5); align-items: baseline; }
-  .pain-who { margin-top: 0; }
-  .pain-side { grid-column: 3; }
+@container pain (min-width: 46rem) {
+  .pain-row { grid-template-columns: minmax(0, 1fr) 12rem 10.5rem; grid-template-areas: "name checks status"; }
 }
 
 /* ---- a pain's page: the home's open row at full width, then its card, «Cómo llegamos» and the comments --------- */
@@ -1082,11 +962,11 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 .detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .detail-who { max-width: 72ch; margin-top: var(--space-2); color: var(--muted); font-size: 15px; line-height: 22px; }
 
-/* A pain's or a run's state: a pill, its dot and its words, tinted by the state as the masthead's run pill. A pain
-   waiting under watch is neutral with a grey dot (an edge: 3.45:1 light, 4.18:1 dark); blue stays for attention, cuts
-   and the primary action. The model's lamp for it is amber, shared with «Nos interesa», so its section tells them
-   apart. */
-.detail-status {
+/* A pain's or a run's state (its page's head, and a run's row in Corridas): a pill, its dot and its words, tinted by
+   the state as the masthead's run pill. A pain waiting under watch is neutral with a grey dot (an edge: 3.45:1 light,
+   4.18:1 dark); blue stays for attention, cuts and the primary action. The model's lamp for it is amber, shared with
+   «Nos interesa», so its section tells them apart. */
+:is(.detail-status, .run-state) {
   --pill-mark: var(--edge);
   --pill-text: var(--ink);
   --pill-tint: var(--ground);
@@ -1106,16 +986,16 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
   line-height: 16px;
 }
 .page-head > .detail-status { margin-top: var(--space-2); }
-.detail-status > .lamp { --lamp: var(--pill-mark); width: 7px; height: 7px; }
-.detail-status[data-lamp="green"] {
+:is(.detail-status, .run-state) > .lamp { --lamp: var(--pill-mark); width: 7px; height: 7px; }
+:is(.detail-status, .run-state)[data-lamp="green"] {
   --pill-mark: var(--pass); --pill-text: var(--pass-text); --pill-tint: var(--pass-tint);
   --pill-edge: color-mix(in srgb, var(--pass) 35%, var(--ground));
 }
-.detail-status[data-lamp="amber"] {
+:is(.detail-status, .run-state)[data-lamp="amber"] {
   --pill-mark: var(--accent); --pill-text: var(--accent); --pill-tint: var(--accent-tint);
   --pill-edge: color-mix(in srgb, var(--accent) 35%, var(--ground));
 }
-.detail-status[data-lamp="red"] {
+:is(.detail-status, .run-state)[data-lamp="red"] {
   --pill-mark: var(--fail); --pill-text: var(--fail-text); --pill-tint: var(--fail-tint);
   --pill-edge: color-mix(in srgb, var(--fail) 35%, var(--ground));
 }
@@ -1281,86 +1161,215 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 .comment-form textarea { resize: vertical; }
 .form-notices:empty { display: none; }
 
-/* ---- Nichos: the week's niche and why, every candidate, and the veto ------------------------ */
+/* ---- Corridas: every run as a deployments list, and one run opened ------------------------------ */
 
-/* «ESTA SEMANA»: the niche that ran as a result block (.station). A proposed niche's origin is a long tag, and a state
-   like «Se eligió el <día>; la corrida falló» a long flag: both wrap. */
-.niche-origin-tag, .niche-week .station-state { white-space: normal; }
-.niche-week .station-duel { max-width: var(--measure-prose); }
-.niche-analysis .analysis-range-text { display: block; }
-/* The versus bar: a band with one tick per rival and the niche's own marker, each at its value over the week's
-   highest. Hidden from a screen reader; the place in words beside it carries it. */
-.versus {
-  position: relative;
-  display: block;
-  flex: none;
-  width: 100%;
-  max-width: 132px;
-  height: 10px;
-  margin-top: 6px;
-  border-radius: var(--radius-chip);
-  background: color-mix(in srgb, var(--line) 70%, var(--panel));
+/* The list: a bordered panel on the ground, a run per row, newest first. The panel is the container its rows lay out
+   by. Narrow: the run's date (the link, which covers its whole row) and its state's pill on a line (on a phone, the
+   pill under it), the niche under them, then its new pains, how long it took and its cost; a value the run did not
+   leave is left out. From 60rem the six values are fixed columns under a head row on the panel grey, and a missing one
+   is a muted dash. */
+.run-table {
+  container: runs / inline-size;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--ground);
 }
-.niche-analysis .analysis-range { flex-wrap: wrap; }
-.versus-tick, .versus-at { position: absolute; left: clamp(0px, calc(var(--at) - 1px), calc(100% - 3px)); }
-.versus-tick { top: 1px; width: 2px; height: 8px; background: var(--state-off); }
-.versus-at { top: -3px; width: 3px; height: 16px; border-radius: 1px; background: var(--ink); }
-.niche-side-label { margin: 0 0 8px; }
-.niche-side-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: var(--text-small); }
-.niche-veto-next { margin: 6px 0 0; color: var(--muted); font-size: var(--text-xs); }
+.run-columns { display: none; }
+.run-list { margin: 0; padding: 0; list-style: none; }
+.run-row {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px var(--space-4);
+  padding: 12px var(--space-4) 14px;
+  font-size: 13px;
+  line-height: 20px;
+}
+.run-row + .run-row { border-top: 1px solid var(--hairline); }
+.run-row:hover { background: color-mix(in srgb, var(--ink) 2%, var(--ground)); }
+.run-title { flex: 1 1 auto; min-width: 0; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 22px; }
+.run-title a { color: inherit; text-decoration: none; }
+.run-title a::after { content: ""; position: absolute; inset: 0; }
+.run-title a:focus-visible { outline: none; }
+.run-title a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
+.run-row:hover .run-title a { text-decoration: underline; text-decoration-color: var(--edge); }
+.run-niche { flex: 1 0 100%; margin-top: 4px; }
+.run-duration { color: var(--muted); }
+.run-cell.is-empty { display: none; }
+/* On a phone the pill goes under the date in every row, so the rows do not change their shape by the pill's length. */
+@container runs (max-width: 25.99rem) {
+  .run-title { flex-basis: 100%; }
+  .run-state { margin-top: 4px; }
+}
+@container runs (min-width: 60rem) {
+  .run-columns, .run-row {
+    display: grid;
+    grid-template-columns: minmax(10.5rem, 1.2fr) 11rem minmax(8rem, 1.5fr) 9rem 8rem 6rem;
+    column-gap: var(--space-4);
+    align-items: center;
+  }
+  .run-columns {
+    min-height: 36px;
+    padding: 0 var(--space-4);
+    border-bottom: 1px solid var(--hairline);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+  }
+  .run-row { min-height: 52px; padding-block: 10px; }
+  .run-niche { margin-top: 0; }
+  .run-cell.is-empty { display: block; color: var(--muted); }
+  .run-cost, .run-columns > :last-child { text-align: end; }
+}
 
-/* «CANDIDATOS»: one table on a sheet, its head on the section tint, a hairline between rows; the niche that ran on a
-   faint green, the ones out of the race (resting, vetoed, retired) in muted ink. */
-.niche-candidates { margin-top: 48px; }
-.niche-candidates-label { display: block; margin-bottom: var(--space-2); }
-.niche-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+/* One run opened reads as a pain's page: the same head (the pill and the key data), then its line across the page's
+   width, then its sections as plain blocks under a hairline, «Detalle técnico» last and folded. */
+.run-detail { display: grid; gap: var(--space-6); }
+.run-sections { min-width: 0; }
+.run-empty { max-width: var(--measure-text); margin-top: var(--space-2); color: var(--muted); }
+
+/* The cost: each model, the cards, then the total in ink, as label and value on a hairline row. */
+.run-costo-list { max-width: 26rem; margin-top: var(--space-2); }
+.run-cost-row { display: flex; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-2); border-bottom: 1px solid var(--hairline); font-size: 14px; line-height: 20px; }
+.run-cost-row dt { color: var(--muted); }
+.run-cost-row dd { margin: 0; font-weight: 500; }
+.run-cost-row--total { border-bottom: 0; }
+.run-cost-row--total :is(dt, dd) { color: var(--ink); font-weight: 600; }
+
+.run-recortes-list, .run-duelos-list { max-width: 70ch; margin-top: var(--space-1); padding: 0; list-style: none; font-size: 14px; line-height: 22px; }
+.run-recortes-list li, .run-duelos-list li { padding-block: 10px; }
+.run-recortes-list li:last-child, .run-duelos-list li:last-child { padding-bottom: 0; }
+.run-recortes-list li + li, .run-duelos-list li + li { border-top: 1px solid var(--hairline); }
+
+/* «Detalle técnico»: a fold whose summary reads as the sections' h2; inside, the raw texts as the run wrote them, each
+   part under its own small heading, as hairline rows. */
+.run-tech > summary { margin-block: -9px; font-size: 18px; font-weight: 600; line-height: 26px; letter-spacing: -0.015em; }
+.run-tech-body { max-width: 70ch; margin-top: var(--space-2); }
+.run-tech-lead { color: var(--muted); font-size: 13px; line-height: 20px; }
+.run-tech-body > .run-empty { margin-top: var(--space-3); }
+.tech-part { margin-top: var(--space-5); }
+.tech-part h3 { font-size: 13px; font-weight: 600; line-height: 20px; }
+.tech-part ul { display: grid; margin-top: var(--space-1); padding: 0; list-style: none; }
+.tech-part li { padding-block: var(--space-2); }
+.tech-part li + li { border-top: 1px solid var(--hairline); }
+.raw { font-size: 14px; line-height: 22px; overflow-wrap: anywhere; }
+.raw-label { margin-bottom: 2px; color: var(--muted); font-size: 12px; font-weight: 500; line-height: 18px; }
+
+/* ---- Nichos: the week's niche as an open row, every candidate in one table, and the veto -------- */
+
+.niche-section + .niche-section { margin-top: 40px; }
+.niche-section-title { margin-bottom: var(--space-3); font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -0.01em; }
+
+/* «Esta semana»: a bordered list of one row, open. Its line lays out by its own width as a home row does: stacked on a
+   phone; from 34rem the pains take a column at the right; from 46rem the name, the pains and the state with the veto
+   are three columns. */
+.niche-week {
+  container: nweek / inline-size;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-panel);
+  background: var(--ground);
+}
+.niche-week-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "name" "pains" "status";
+  align-items: start;
+  gap: 10px 14px;
+  padding: var(--space-4);
+}
+.niche-week .station-name { grid-area: name; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.niche-week .station-title { min-width: 0; color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; }
+.niche-origin-tag { white-space: normal; } /* a proposed niche's origin is a long tag */
+.niche-side-list { grid-area: pains; display: grid; gap: 2px; margin: 0; padding: 2px 0 0; list-style: none; font-size: 13px; line-height: 20px; }
+:is(.niche-side-list, .niche-cell-pains) b { font-weight: 600; }
+.niche-week-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
+/* Its state: its dot and its words in ink (a long one, «Se eligió el <día>; la corrida falló», wraps beside its dot);
+   who vetoed it, or «Sin veto», under them. */
+.niche-week .station-state { display: flex; align-items: flex-start; gap: var(--space-2); font-weight: 500; }
+.niche-week .station-state > .lamp { margin: 6px 0 0 4px; }
+.niche-week .station-marks { margin-top: 2px; color: var(--muted); }
+@container nweek (min-width: 34rem) and (max-width: 45.99rem) {
+  .niche-week-row { grid-template-columns: minmax(0, 1fr) 15rem; grid-template-areas: "name pains" "status pains"; }
+}
+@container nweek (min-width: 46rem) {
+  .niche-week-row { grid-template-columns: minmax(0, 1fr) 18rem 12rem; grid-template-areas: "name pains status"; }
+}
+
+/* Open under it, on the panel grey: why it was chosen, the day of the sounding, the three figures as the pain's box
+   cells (the versus bar where the boxes go), then the veto and what a veto does now. */
+.niche-week-open {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-4) 18px;
+  border-top: 1px solid var(--hairline);
+  background: var(--panel);
+}
+.niche-week-why { max-width: 72ch; font-size: 14px; line-height: 22px; }
+.niche-week-why-label { color: var(--muted); font-weight: 500; }
+.niche-probe { margin-bottom: calc(-1 * var(--space-1)); color: var(--muted); font-size: 13px; line-height: 20px; }
+.niche-cells .check-cell { flex-basis: 12rem; }
+.niche-week-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-4); }
+.niche-week-foot > .niche-veto { white-space: nowrap; }
+.niche-veto-next { color: var(--muted); font-size: 13px; line-height: 20px; }
+
+/* The versus bar: a band, a grey tick per rival and the niche's own ink rule, each at its value over the week's
+   highest. Hidden from a screen reader: the place in words under it carries it. */
+.versus { position: relative; flex: 1 1 auto; min-width: 48px; max-width: 132px; height: 8px; border-radius: 2px; background: var(--hairline); }
+.versus-tick, .versus-at { position: absolute; left: clamp(0px, calc(var(--at) - 1px), calc(100% - 2px)); }
+.versus-tick { top: 0; width: 2px; height: 8px; background: var(--edge); }
+.versus-at { top: -5px; width: 2px; height: 18px; border-radius: 1px; background: var(--ink); }
+
+/* «Candidatos»: one table on a bordered panel, the column heads on the panel grey, a hairline between rows; each state
+   a dot and its words in ink, the niches out of the race (resting, vetoed, retired) in muted ink. A competing niche
+   waits: its dot is grey, as every waiting state's (its lamp is still amber). */
+.niche-table-panel { overflow: hidden; border: 1px solid var(--hairline); border-radius: var(--radius-panel); background: var(--ground); }
+.niche-table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 20px; }
 .niche-table thead th {
-  padding: 10px var(--space-4);
-  border-bottom: 1px solid var(--line);
-  background: var(--section);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--hairline);
+  background: var(--panel);
   color: var(--muted);
   font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-align: left;
-  text-transform: uppercase;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: start;
 }
 .niche-table td, .niche-table tbody th {
   padding: 12px var(--space-4);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--hairline);
   font-weight: 400;
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 .niche-table tbody tr:first-child > * { border-top: 0; }
-.niche-table thead th.niche-num { text-align: right; }
-.niche-table td.niche-num { font-size: 17px; font-weight: 600; text-align: right; white-space: nowrap; }
-.niche-num small { display: block; color: var(--muted); font-size: var(--text-xs); font-weight: 400; }
-/* The indicator column is held to about a fifth of the table, as in the sketch, so the niche's column takes the slack
-   and its origin line stays whole; a long state («Se eligió el <día>; la corrida falló», «Vetado · corrió esta semana»)
-   wraps inside it, its dot on the first line. */
-.niche-table thead th:first-child, .niche-table .niche-cell-state { width: 20%; }
-.niche-cell-state > * { display: block; }
-.niche-state { display: inline-flex; align-items: flex-start; gap: 8px; font-size: var(--text-small); font-weight: 600; }
-.niche-state > .lamp { margin-top: calc((1lh - 8px) / 2); }
-.niche-state[data-lamp="green"] { color: var(--state-ok-text); }
-.niche-state[data-lamp="amber"] { color: var(--state-attention-text); }
-.niche-state[data-lamp="red"] { color: var(--state-fail-text); }
-.niche-state[data-lamp="off"] { color: var(--muted); }
-.niche-state-note { margin-top: 2px; color: var(--muted); font-size: var(--text-small); }
-.niche-name { display: block; color: var(--ink); font-size: 17px; font-weight: 600; }
-.niche-origin { display: block; margin-top: 2px; color: var(--muted); font-size: var(--text-small); }
-.niche-why { display: block; max-width: 44ch; margin-top: 6px; font-size: var(--text-small); }
-.niche-row--current { background: color-mix(in srgb, var(--state-ok) 6%, var(--panel)); }
-.niche-row--quiet .niche-num, .niche-row--quiet .niche-name { color: var(--muted); }
-.niche-cell-pains { font-size: var(--text-small); white-space: nowrap; }
-.niche-cell-pains b { font-size: 15px; }
+.niche-table thead th.niche-num { text-align: end; }
+.niche-table td.niche-num { font-size: 15px; font-weight: 600; text-align: end; white-space: nowrap; }
+.niche-num small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
+/* The state's column is held to about a sixth of the table and the veto's to its button, so the niche's column takes
+   the slack; a long state wraps inside its column, its dot on the first line, and who vetoed a niche under its button. */
+.niche-table thead th:first-child, .niche-table .niche-cell-state { width: 17%; }
+.niche-state { display: flex; align-items: flex-start; gap: var(--space-2); color: var(--ink); font-weight: 500; }
+.niche-state > .lamp { margin-top: 6px; }
+.niche-state[data-state="competing"] > .lamp { --lamp: var(--edge); }
+.niche-state-note { display: block; margin-top: 2px; color: var(--muted); }
+.niche-name { display: block; color: var(--ink); font-size: 14px; font-weight: 600; }
+.niche-origin { display: block; margin-top: 2px; color: var(--muted); }
+.niche-why { display: block; max-width: 44ch; margin-top: 6px; }
+.niche-row--quiet :is(.niche-num, .niche-name, .niche-state) { color: var(--muted); }
+.niche-cell-pains { white-space: nowrap; }
 .niche-pains-line { display: block; }
-.niche-cell-action { text-align: right; white-space: nowrap; }
-.niche-cell-action .button { min-width: 7.5rem; }
-.niche-who { display: block; margin-top: 4px; color: var(--muted); font-size: var(--text-xs); }
-.niche-cell-action .station-note { max-width: 14rem; margin: 6px 0 0 auto; text-align: left; white-space: normal; }
-.niche-table-foot { padding: 12px var(--space-4); border-top: 1px solid var(--line); color: var(--muted); font-size: var(--text-small); }
+.niche-cell-action { width: 1%; text-align: end; }
+.niche-cell-action .button { min-width: 7.5rem; white-space: nowrap; }
+.niche-who { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 18px; }
+.niche-cell-action .station-note { max-width: 14rem; margin: 6px 0 0 auto; text-align: start; white-space: normal; }
+.niche-table-foot { padding: 12px var(--space-4); border-top: 1px solid var(--hairline); color: var(--muted); font-size: 13px; line-height: 20px; }
 
 /* Below 900 px each niche is a stacked block: its state, its name, the three figures side by side as one group (each
    says its column; three tracks of at most 8rem, the slack in a fourth, empty one), its pains and the veto across the
@@ -1373,153 +1382,28 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
     grid-template-columns: repeat(3, minmax(0, 8rem)) minmax(0, 1fr);
     gap: 10px 12px;
     padding: 14px var(--space-4);
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--hairline);
   }
   .niche-table tbody tr:first-child { border-top: 0; }
   .niche-table td, .niche-table tbody th { padding: 0; border: 0; }
   .niche-table .niche-cell-state { grid-column: 1 / -1; grid-row: 1; width: auto; }
   .niche-table .niche-cell-name { grid-column: 1 / -1; grid-row: 2; }
-  .niche-table td.niche-num { font-size: 16px; text-align: left; white-space: normal; }
+  .niche-table td.niche-num { text-align: start; white-space: normal; }
   .niche-table td.niche-num::before {
     content: attr(data-label);
     display: block;
     color: var(--muted);
-    font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
   }
-  .niche-table .niche-cell-pains, .niche-table .niche-cell-action { grid-column: 1 / -1; }
+  .niche-table :is(.niche-cell-pains, .niche-cell-action) { grid-column: 1 / -1; }
   .niche-cell-pains { white-space: normal; }
-  .niche-table .niche-cell-action { text-align: left; white-space: normal; }
+  .niche-table .niche-cell-action { width: auto; text-align: start; }
   .niche-cell-action .button { width: 100%; }
   .niche-cell-action .station-note { max-width: none; margin-left: 0; }
   .niche-table .niche-cell-action:empty { display: none; }
 }
-
-/* ---- Corridas: every run week by week, and one run opened --------------------------------- */
-
-/* The list: one dense row per run on a sheet, as in Catálogo, under a band that names the columns once the rows have
-   them. The date's link covers its whole row. */
-.run-list { padding: 0; list-style: none; }
-.run-columns { display: none; }
-.run-row:last-child { border-radius: 0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px); }
-.run-row { position: relative; display: grid; gap: 6px; padding: 12px var(--space-4) 14px; }
-.run-row + .run-row { border-top: 1px solid var(--line); }
-.run-row:hover { background: var(--hover); }
-.run-state {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: var(--text-small);
-  font-weight: 600;
-  line-height: 1.3;
-}
-.run-title { color: var(--ink); font-size: 17px; font-weight: 600; line-height: 1.25; }
-.run-title a { text-decoration: none; }
-.run-title a::after { content: ""; position: absolute; inset: 0; }
-.run-title a:focus-visible { outline: none; }
-.run-title a:focus-visible::after { outline: 2px solid var(--focus); outline-offset: -2px; border-radius: var(--radius); }
-.run-row:hover .run-title a { text-decoration: underline; text-decoration-color: var(--edge); }
-.run-facts { margin-top: 2px; color: var(--muted); font-size: var(--text-small); line-height: 1.35; }
-
-/* The mini line: one small lamp per stage on a rail, its count under it, and in words how many stages had a cut. Ten
-   to a row when the row has room for them; five to a row on a narrow phone. */
-.run-mini { container: mini / inline-size; margin-top: 4px; }
-.run-mini--none { color: var(--muted); font-size: var(--text-small); }
-.run-mini-stages {
-  display: grid;
-  grid-template-columns: repeat(10, minmax(0, 1fr));
-  row-gap: 10px;
-  max-width: 32rem;
-  padding: 0;
-  list-style: none;
-}
-.run-mini-stages li { position: relative; display: grid; justify-items: center; gap: 4px; }
-.run-mini-stages li::before {
-  content: "";
-  position: absolute;
-  top: 4px;
-  left: calc(50% + 8px);
-  width: calc(100% - 16px);
-  height: 2px;
-  background: var(--line);
-}
-.run-mini-stages li:last-child::before { display: none; }
-.run-mini-count { font-size: 12px; font-weight: 600; line-height: 1; white-space: nowrap; }
-.run-mini-count.is-empty { color: var(--muted); font-weight: 400; }
-.run-mini-state { margin-top: 6px; color: var(--muted); font-size: var(--text-xs); }
-@container mini (max-width: 19rem) {
-  .run-mini-stages { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-  .run-mini-stages li:nth-child(5n)::before { display: none; }
-}
-
-/* From 720 px the state is a column at the left; from 1200 px the mini line is a column at the right. */
-@media (min-width: 720px) {
-  .run-columns, .run-row { grid-template-columns: 11rem minmax(0, 1fr); column-gap: var(--space-5); }
-  .run-columns { display: grid; min-height: 0; padding-block: 6px; }
-  .run-columns-mini { display: none; }
-  .run-state { grid-row: 1 / span 2; align-self: start; min-height: 24px; }
-  .run-main, .run-mini { grid-column: 2; }
-}
-@media (min-width: 1200px) {
-  .run-columns, .run-row { grid-template-columns: 11rem minmax(0, 1fr) minmax(24rem, 32rem); }
-  .run-row { align-items: start; padding-block: 14px; }
-  .run-columns-mini { display: block; }
-  .run-state { grid-row: auto; }
-  .run-main { grid-column: 2; }
-  .run-mini { grid-column: 3; margin-top: 2px; }
-}
-
-/* One run opened: its line in a hairline-bordered panel, then the cost, the cuts, the duels and the technical
-   detail. From 1024 px the line is a column at the left and the rest reads beside it. */
-.run-head .key-data { margin-top: var(--space-2); }
-.run-detail { display: grid; gap: var(--space-6); }
-@media (min-width: 1024px) {
-  .run-detail { grid-template-columns: minmax(24rem, 30rem) minmax(0, var(--measure-text)); align-items: start; gap: 48px; }
-}
-/* Beside the line, the cost, the cuts, the duels and «Detalle técnico», each a sheet of the report. */
-.run-sections { display: grid; gap: var(--space-5); align-content: start; max-width: var(--measure-text); }
-.run-empty { max-width: var(--measure-text); color: var(--muted); }
-.run-section > .run-empty { padding: 12px var(--space-4); }
-
-.run-costo-list { padding-inline: var(--space-4); }
-.run-cost { display: flex; justify-content: space-between; gap: var(--space-4); padding-block: 8px; border-bottom: 1px solid var(--line); }
-.run-cost dt { color: var(--muted); }
-.run-cost dd { font-weight: 600; }
-.run-cost--total { border-bottom: 0; border-top: 1px solid var(--ink); margin-top: -1px; }
-.run-cost--total dt { color: var(--ink); font-weight: 700; }
-.run-cost--total dd { font-weight: 700; }
-
-.run-recortes-list, .run-duelos-list { padding: 0; list-style: none; }
-.run-recortes-list li, .run-duelos-list li { padding: 12px var(--space-4); line-height: 1.4; }
-.run-recortes-list li + li, .run-duelos-list li + li { border-top: 1px solid var(--line); }
-
-/* «Detalle técnico»: closed, its band says it is technical; inside, the raw texts as hairline rows, as the run wrote
-   them, each part under a small tracked label. */
-.run-tech > summary { color: var(--brand); font-size: 17px; font-weight: 600; }
-.run-tech-body { padding: 12px var(--space-4) var(--space-4); }
-.run-tech-lead { color: var(--muted); font-size: var(--text-small); }
-.run-tech-body > .run-empty { margin-top: var(--space-2); }
-.tech-part { margin-top: var(--space-5); }
-.tech-part h3 {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 2px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 16px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.tech-part h3::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-.tech-part ul { display: grid; padding: 0; list-style: none; }
-.tech-part li { padding-block: 8px; }
-.tech-part li + li { border-top: 1px solid var(--line); }
-.raw { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
-.raw-label { margin-bottom: 2px; color: var(--muted); font-size: var(--text-xs); font-weight: 600; }
 
 /* ---- index.html's fallback when the page could not load ---------------------------------- */
 

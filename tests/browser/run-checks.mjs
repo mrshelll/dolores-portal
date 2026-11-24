@@ -847,6 +847,165 @@ async function behaviours(browser, base) {
     await context.close();
   }
 
+  // The same colours everywhere: a waiting state is a grey dot (the edge, #8A8A8A in light), «Nos interesa» the
+  // attention blue, «Con peso para trabajar» green.
+  const GREY = "rgb(138, 138, 138)";
+  const BLUE = "rgb(37, 99, 235)";
+  const GREEN = "rgb(22, 163, 74)";
+  const DESK = { width: 1440, height: 900, scheme: "light" };
+
+  // Catálogo (Task 5): each state a bordered list whose head row says its dot, its state and its count; each pain a
+  // closed row like the home's, with no chevron and no actions (they live on the pain's page): its title is the link,
+  // then who suffers it, its checks (or, without a gate, its facts line), its state and its marks. The discarded ones
+  // stay folded.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("catalog"), DESK);
+    const seen = await page.evaluate(() => {
+      const dot = (el) => (el ? getComputedStyle(el).backgroundColor : null);
+      const row = (id) => {
+        const li = document.querySelector(`.pain-list li:has(a[href="#/dolor/${id}"])`);
+        const shown = (sel) => { const el = li && li.querySelector(sel); return Boolean(el && el.checkVisibility()); };
+        return li && { stack: shown(".check-stack"), facts: shown(".station-facts"), dot: dot(li.querySelector(".pain-state .lamp")),
+          state: li.querySelector(".pain-state")?.textContent ?? null, marks: li.querySelector(".pain-marks")?.textContent ?? null };
+      };
+      return {
+        sections: [...document.querySelectorAll(".catalog-section")].map((section) => {
+          const style = getComputedStyle(section);
+          const head = section.querySelector(".catalog-heading");
+          return {
+            tag: section.tagName, open: section.tagName === "DETAILS" ? section.open : null,
+            bordered: style.borderTopWidth === "1px" && style.borderLeftWidth === "1px" && style.borderTopLeftRadius === "8px",
+            state: head?.querySelector(".catalog-state")?.textContent ?? null, count: head?.querySelector(".catalog-count")?.textContent ?? null,
+            dot: dot(head?.querySelector(".lamp")),
+          };
+        }),
+        controls: document.querySelectorAll(".pain-list :is(button, .station-toggle, .station-actions)").length,
+        weighty: row("dol-0027"), interested: row("dol-0002"), winner: row("dol-0101"),
+      };
+    });
+    const [weighty, interested, watching, discarded] = seen.sections;
+    check("Catálogo: each state a bordered list headed by its dot, state and count; rows with checks or facts, no actions; waiting is grey",
+      seen.sections.length === 4 && seen.sections.slice(0, 3).every((s) => s.tag === "SECTION" && s.bordered)
+        && discarded.tag === "DETAILS" && discarded.open === false && discarded.bordered
+        && [weighty.state, weighty.count, weighty.dot].join() === [T.sectionWeighty, "1", GREEN].join()
+        && [interested.state, interested.count, interested.dot].join() === [T.sectionInterested, "1", BLUE].join()
+        && [watching.state, watching.count, watching.dot].join() === [T.sectionWatching, "55", GREY].join()
+        && discarded.state === T.sectionDiscarded && seen.controls === 0
+        && seen.weighty && seen.weighty.stack && !seen.weighty.facts && seen.weighty.dot === GREEN && seen.weighty.marks === "Nos interesa: Carla"
+        && seen.interested && !seen.interested.stack && seen.interested.facts && seen.interested.dot === BLUE
+        && seen.winner && seen.winner.stack && seen.winner.dot === GREY && seen.winner.state === T.statusWatching && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Corridas (Task 5): a list like a deployments list, newest first, in fixed columns: the run as the link, its state
+  // as a pill with its words, its niche, its new pains, how long it took and its cost. A value the run did not leave is
+  // a dash for the eye.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("runs"), DESK);
+    const seen = await page.evaluate(() => {
+      const COLS = [".run-title", ".run-state", ".run-niche", ".run-found", ".run-duration", ".run-cost"];
+      const rows = [...document.querySelectorAll(".run-list > li.run-row")];
+      const left = (el) => (el && el.checkVisibility() ? Math.round(el.getBoundingClientRect().left) : null);
+      const heads = [...document.querySelectorAll(".run-columns > span")];
+      return {
+        rows: rows.map((li) => ({
+          href: li.querySelector(".run-title a")?.getAttribute("href") ?? null,
+          cells: COLS.map((sel) => li.querySelector(sel)?.textContent.trim() ?? null),
+          lefts: COLS.map((sel) => left(li.querySelector(sel))),
+          dot: li.querySelector(".run-state .lamp")?.getAttribute("aria-hidden") ?? null,
+        })),
+        heads: heads.map((span) => [span.textContent, left(span)]),
+        hidden: document.querySelector(".run-columns")?.getAttribute("aria-hidden") ?? null,
+      };
+    });
+    const [first] = seen.rows;
+    const aligned = seen.rows.length === 3 && [0, 1, 2, 3, 4, 5].every((i) => seen.rows.every((row) => row.lefts[i] !== null
+      && Math.abs(row.lefts[i] - first.lefts[i]) <= 1) && seen.heads[i] && Math.abs(seen.heads[i][1] - first.lefts[i]) <= 1);
+    check("Corridas: rows in fixed columns, newest first: the run, its state's pill, the niche, new pains, duration and cost",
+      aligned && seen.hidden === "true" && seen.rows.map((row) => row.href).join() === [RUN_ID, "2026-11-03-1", "2026-10-27-1"].map((id) => `#/corridas/${id}`).join()
+        && first.cells.slice(1).join("|") === [T.runStateComplete, `${T.keyNiche}: Cuotas y cobros de clubes`, fill(T.newPainsMany, { count: "6" }),
+          fill(T.durationMinutes, { minutes: 26 }), fill(T.costUsd, { amount: "3,66" })].join("|")
+        && seen.rows[1].cells[1] === T.runStateFailed && seen.rows[1].cells[4] === "—" && seen.rows.every((row) => row.dot === "true")
+        && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // A run's page (Task 5) reads as a pain's: «Corridas» as the way back after the chevron, the state's pill and the key
+  // data under the title; then its line across the page's width, then its sections as plain blocks under a hairline,
+  // «Detalle técnico» folded.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("run-detail"), DESK);
+    const seen = await page.evaluate(() => {
+      const box = (el) => (el ? el.getBoundingClientRect() : null);
+      const back = document.querySelector(".back-link");
+      const pill = document.querySelector(".page-head .detail-meta .detail-status");
+      const line = document.querySelector(".run-line > .line");
+      const body = document.querySelector(".run-detail");
+      const sections = [...document.querySelectorAll(".run-detail .run-section, .run-detail details.run-tech")];
+      return {
+        back: back && { text: back.textContent.trim(), href: back.getAttribute("href"), chevron: Boolean(back.querySelector(".back-chevron")) },
+        pill: pill && { text: pill.textContent.trim(), dot: getComputedStyle(pill.querySelector(".lamp")).backgroundColor },
+        keys: Boolean(document.querySelector(".page-head .key-data")),
+        full: Boolean(line && body) && Math.abs(box(line).width - box(body).width) <= 1 && box(line).width >= 900,
+        below: Boolean(line && sections.length) && box(line).bottom <= box(sections[0]).top,
+        plain: sections.length === 4 && sections.every((s) => {
+          const style = getComputedStyle(s);
+          return style.borderTopWidth === "1px" && style.borderLeftWidth === "0px" && style.borderRightWidth === "0px";
+        }),
+        tech: sections.length ? sections[sections.length - 1].tagName === "DETAILS" && !sections[sections.length - 1].open : false,
+      };
+    });
+    check("a run's page reads as a pain's: «Corridas» back, the pill and key data, its line full width, then plain sections",
+      seen.back && seen.back.text === T.tabRuns && seen.back.href === "#/corridas" && seen.back.chevron
+        && seen.pill && seen.pill.text === T.runStateComplete && seen.pill.dot === GREEN && seen.keys
+        && seen.full && seen.below && seen.plain && seen.tech && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Nichos (Task 5): «Esta semana» and «Candidatos» are headings, not tracked labels. The week's niche is an open row:
+  // its line (name and origin, its pains, its state and veto) and, under it, why it was chosen, its three figures in
+  // cells (each with its place against the others drawn and hidden from a screen reader, its words and, for quejas and
+  // gasto, «Con señal» or «Sin señal») and «Vetar este nicho». In the table a competing niche waits: a grey dot.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("niches"), DESK);
+    const seen = await page.evaluate(() => {
+      const week = document.querySelector(".niche-week");
+      const open = week && week.querySelector(".niche-week-open");
+      const dot = (state) => {
+        const el = [...document.querySelectorAll(".niche-table .niche-state")].find((s) => s.textContent === state);
+        return el ? getComputedStyle(el.querySelector(".lamp")).backgroundColor : null;
+      };
+      return {
+        headings: [...document.querySelectorAll(".niches-body h2")].map((h2) => [h2.textContent, getComputedStyle(h2).textTransform]),
+        open: Boolean(open && open.checkVisibility()),
+        why: open?.querySelector(".niche-week-why")?.textContent ?? null,
+        cells: open ? [...open.querySelectorAll(".check-cell")].map((cell) => ({
+          label: cell.querySelector(".check-label")?.textContent ?? null,
+          marker: cell.querySelector(".versus")?.getAttribute("aria-hidden") ?? null,
+          flag: cell.querySelector(".check-flag")?.textContent ?? null,
+          words: cell.querySelector(".check-min")?.textContent ?? null,
+        })) : [],
+        pains: week ? week.querySelectorAll(".niche-week-row .niche-side-list li").length : 0,
+        veto: open?.querySelector(".niche-veto")?.textContent ?? null,
+        competing: dot("Compite"),
+        current: dot("Corrió esta semana"),
+      };
+    });
+    const [complaints, spending, noise] = seen.cells;
+    check("Nichos: the week's niche as an open row with why, three figure cells and its veto; headings plain; a competing niche's dot grey",
+      seen.headings.map(([text, transform]) => `${text}:${transform}`).join() === `${T.nicheWeekLabel}:none,${T.nicheCandidatesLabel}:none`
+        && seen.open && seen.why && seen.why.startsWith(T.nicheWhyLabel) && seen.cells.length === 3
+        && [complaints, spending].every((c) => c.marker === "true" && c.flag === T.nicheSignalIn && c.words === T.nicheRankTop)
+        && [complaints.label, spending.label, noise.label].join() === [T.nicheComplaints, T.nicheSpending, T.nicheNoise].join()
+        && noise.flag === null && noise.words === T.nicheNoiseOf && seen.pains >= 3 && seen.veto === T.nicheVetoWeek
+        && seen.competing === GREY && seen.current === GREEN && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
   // A pain's page belongs to no tab: none is the current one.
   {
     const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), PHONE);

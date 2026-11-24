@@ -17,9 +17,10 @@ const CIRCLE_MARK = { pass: "m4.9 8.2 2.1 2.1 4.1-4.4", fail: "m5.6 5.6 4.8 4.8m
 export const checkIcon = (result) => svg("svg", { class: "check-icon", viewBox: "0 0 16 16", width: 16, height: 16, "aria-hidden": "true" },
   svg("circle", { cx: 8, cy: 8, r: 7.5 }), svg("path", { d: CIRCLE_MARK[result] }));
 
-// The cell's verdict: a stroke tick or cross before its words. A check with no result has no verdict.
+// The cell's verdict: a stroke tick or cross before its words. A check with no result has no verdict. Nichos draws it
+// too, before a figure's «Con señal» or «Sin señal».
 const VERDICT_MARK = { pass: "M20 6 9 17l-5-5", fail: "M18 6 6 18M6 6l12 12" };
-const verdictIcon = (result) => svg("svg", { class: "check-flag-icon", viewBox: "0 0 24 24", width: 14, height: 14, "aria-hidden": "true" },
+export const verdictIcon = (result) => svg("svg", { class: "check-flag-icon", viewBox: "0 0 24 24", width: 14, height: 14, "aria-hidden": "true" },
   svg("path", { d: VERDICT_MARK[result] }));
 
 // The boxes: one per unit up to the row's `max`, the first `at` filled, the rule right after box `min` (so before box

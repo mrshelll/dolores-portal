@@ -6,7 +6,7 @@
 // runTechnical reads them, and the page shows them only inside the closed «Detalle técnico» (Review Focus 3).
 
 import { T, TOPICS, fill, topicName, formatDate, formatNumber, formatUsd } from "./text.js";
-import { lineView, runDuration, costRows, ownNicheName } from "./model.js";
+import { runDuration, costRows, ownNicheName } from "./model.js";
 
 const text = (value) => (typeof value === "string" && value.trim() ? value.trim() : null);
 const isObject = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -51,25 +51,22 @@ function newPains(trace) {
   return n === 0 ? T.newPainsNone : n === 1 ? T.newPainsOne : fill(T.newPainsMany, { count: formatNumber(n) });
 }
 
-// A row of the list: the run's date as its title, its state, its niche, how long it took (only when both times
-// exist), its cost and its new pains, then the mini line: each stage's lamp and count (lineView), and how many stages
-// had a cut. What the trace does not say is left out. null for what is not a trace.
+// A row of the list, one value per column: the run's date as its title, its state, its niche, its new pains, how long
+// it took (only when both times exist) and its cost. What the trace does not say is null, never invented. null for
+// what is not a trace.
 export function runRow(trace) {
   if (!isTrace(trace)) return null;
   const { lamp, text: state } = runState(trace.status);
-  const view = lineView(trace);
-  const stages = view.stages.map((s) => ({ label: s.label, count: s.count === null ? null : formatNumber(s.count), lamp: s.lamp }));
-  const cut = view.stages.filter((s) => s.lamp === "amber").length;
   return {
     id: trace.run_id,
     href: `#/corridas/${encodeURIComponent(trace.run_id)}`,
     title: runTitle(trace),
     lamp,
     state,
-    facts: [nicheName(trace), runDuration(trace), usd(isObject(trace.cost) ? trace.cost.total_usd : null), newPains(trace)].filter(Boolean),
-    stages,
-    hasCounts: stages.some((s) => s.count !== null),
-    cutStages: cut === 0 ? T.lineStripClean : cut === 1 ? T.lineStripCutsOne : fill(T.lineStripCuts, { count: formatNumber(cut) }),
+    niche: nicheName(trace),
+    found: newPains(trace),
+    duration: runDuration(trace),
+    cost: usd(isObject(trace.cost) ? trace.cost.total_usd : null),
   };
 }
 
