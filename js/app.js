@@ -482,7 +482,7 @@ const speech = () => icon("station-speech", { paths: ["M21 15a2 2 0 0 1-2 2H7l-4
 // and who suffers it; its checks (checkStack: each count against the run's own threshold, a ✓ or ✗ beside its words)
 // or, without a gate, why it is there in a facts line; its state (a dot and its words) and the team's marks. Open, under
 // it: the duel's line (for the winner); the box cells (checkCells) or, without a gate, a line that says there is no
-// analysis and the facts line; then «Nos interesa», «Descartar» and «Comentar», and at the right the way to its
+// analysis; then «Nos interesa», «Descartar» and «Comentar», and at the right the way to its
 // testimonies and attacks. The first row starts open, the rest closed; a row opens and closes by its chevron or a click
 // on its title area, never leaving the page, and opening one never closes another. Each button says what pressing it
 // does and names its pain for a screen reader (aria-describedby). A mark changes the row in place: a discarded pain
@@ -519,6 +519,7 @@ function station(item, index, ctx) {
     const color = painLamp(section);
     light.dataset.lamp = color;
     stateFlag.dataset.lamp = color;
+    stateFlag.dataset.section = section ?? "out"; // a waiting pain's dot is grey (css/base.css), its lamp still amber
     stateText.textContent = stationStateText(section);
     const labels = stationButtonLabels(mine());
     interested.textContent = labels.interested;
@@ -565,7 +566,7 @@ function station(item, index, ctx) {
     "aria-expanded": String(open), "aria-controls": openId }, chevron());
   const region = h("div", { class: "station-open", id: openId, hidden: !open },
     reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-    cells || [h("p", { class: "analysis-none" }, T.analysisNone), factsLine()],
+    cells || h("p", { class: "analysis-none" }, T.analysisNone), // why it is there is already in the row's own line
     h("div", { class: "station-foot" },
       h("div", { class: "station-actions" }, interested, discard, comment),
       h("a", { class: "station-evidence", href, "aria-describedby": titleId }, T.stationEvidence),

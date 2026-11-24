@@ -755,10 +755,13 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 .station-row > .check-stack, .station-row > .station-facts { grid-area: checks; padding-top: 2px; }
 .station-facts { font-size: 13px; line-height: 20px; }
 
-/* The state: its dot and its words in ink; the team's marks under it. */
+/* The state: its dot and its words in ink; the team's marks under it. The dot's colour is the pain's lamp. */
 .station-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
 .stations .station-state { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
 .stations .station-state > .lamp { margin-inline: 4px 0; }
+/* A pain waiting under watch is grey (an edge: 3.45:1 light, 4.18:1 dark); blue stays for attention, cuts and the
+   primary action. The model's lamp for it is amber, shared with «Nos interesa», so the section tells them apart. */
+.stations .station-state[data-section="watching"] > .lamp { --lamp: var(--edge); }
 .stations .station-marks { margin-top: 2px; color: var(--muted); }
 
 /* Open: on the panel grey, aligned with the title, the duel's line, the box cells and the actions, «Ver los testimonios
@@ -794,7 +797,7 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 @container station (max-width: 33.99rem) {
   .station-open { padding-inline: var(--space-4); } /* the whole row's width: the cells and the three actions fit a phone */
   .station-open > .station-foot { order: 1; }
-  .station-open > :is(.check-cells, .analysis-none, .station-facts) { order: 2; }
+  .station-open > :is(.check-cells, .analysis-none) { order: 2; }
   .station-evidence { margin-left: 0; }
 }
 @container station (min-width: 34rem) and (max-width: 45.99rem) {

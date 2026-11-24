@@ -402,6 +402,9 @@ async function behaviours(browser, base) {
         region: Boolean(region && li.contains(region) && region.classList.contains("station-open")),
         open: Boolean(region && region.checkVisibility()),
         stack: shown(".check-stack"), actions: shown(".station-actions"), facts: shown(".station-facts"),
+        openFacts: region ? region.querySelectorAll(".station-facts").length : null,
+        none: Boolean(region && region.querySelector(".analysis-none") && region.querySelector(".analysis-none").checkVisibility()),
+        dot: (() => { const d = li.querySelector(".station-state .lamp"); return d ? getComputedStyle(d).backgroundColor : null; })(),
       };
     }));
     const before = await rows();
@@ -424,9 +427,16 @@ async function behaviours(browser, base) {
         && [2, 3].every((i) => after[i] && after[i].open && after[i].expanded === "true" && after[i].actions)
         && after.filter((row) => row.open).length === 3 && clean(log, problems),
       `hash ${hash}; ${JSON.stringify(after)}; ${why(log, problems)}`);
-    check("Esta semana's rows: a pain without a gate shows its facts line and no checks",
-      at(before, "dol-0002").facts === true && at(before, "dol-0002").stack === false && clean(log, problems),
-      `${JSON.stringify(at(before, "dol-0002"))}; ${why(log, problems)}`);
+    // Opened, a pain without a gate says there is no analysis, and why it is there only once: in its row's own line.
+    check("Esta semana's rows: a pain without a gate shows its facts line and no checks; open, it says so once",
+      at(before, "dol-0002").facts === true && at(before, "dol-0002").stack === false
+        && at(after, "dol-0100").open && at(after, "dol-0100").none && at(after, "dol-0100").openFacts === 0 && clean(log, problems),
+      `${JSON.stringify([at(before, "dol-0002"), at(after, "dol-0100")])}; ${why(log, problems)}`);
+    // A pain waiting under watch (the duel's winner) has a grey dot, the edge's #8A8A8A; one kept by «Nos interesa»
+    // (dol-0002) keeps the attention blue.
+    check("Esta semana's rows: a waiting pain's dot is grey, an interested one's blue",
+      at(before, "dol-0101").dot === "rgb(138, 138, 138)" && at(before, "dol-0002").dot === "rgb(37, 99, 235)" && clean(log, problems),
+      `${JSON.stringify(["dol-0101", "dol-0002"].map((id) => [id, at(before, id).dot]))}; ${why(log, problems)}`);
     await context.close();
   }
 
