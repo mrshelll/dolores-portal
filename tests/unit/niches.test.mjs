@@ -109,7 +109,7 @@ test("rows: every territory (mine) and every proposed niche, each name once; a t
   assert.equal(proposed.name, "Reclamos de seguros médicos");
   assert.equal(proposed.why, "Vacantes que piden conciliar reclamos a mano.");
   assert.equal(proposed.originText, fill(T.nicheOriginProposed, { date: formatDayMonth("2030-01-20T10:00:00Z") }));
-  assert.equal(fill(T.nicheOriginProposed, { date: "20 de enero" }), "Propuesto por dolores el 20 de enero");
+  assert.equal(fill(T.nicheOriginProposed, { date: "20 de enero" }), "Propuesto por tomoshi el 20 de enero");
   assert.equal(T.nicheOriginMine, "Tuyo");
 });
 
@@ -187,7 +187,7 @@ test("state: current, competing, resting, retired, each with its lamp and words"
   assert.equal(retired.state, "retired");
   assert.equal(retired.lamp, "off");
   assert.equal(retired.stateText, "Retirado");
-  assert.equal(retired.stateNote, "Lo retiró dolores el 2 de febrero para dejar lugar a otros propuestos");
+  assert.equal(retired.stateNote, "Lo retiró tomoshi el 2 de febrero para dejar lugar a otros propuestos");
   assert.equal(retired.canVeto, false);
   assert.equal(retired.vetoed, false);
 });
@@ -431,7 +431,7 @@ test("week analysis: the niche that ran missing from the ranking leaves its valu
 test("the tab's own strings, word for word", () => {
   assert.equal(T.tabNiches, "Nichos");
   assert.equal(T.nichesTitle, "Nichos");
-  assert.equal(T.nichesLead, "Cada lunes dolores mide todos los nichos sin gastar y paga la corrida del que trae a la vez quejas y dinero. Si uno no les interesa, vétenlo: deja de competir desde el lunes siguiente.");
+  assert.equal(T.nichesLead, "Cada lunes tomoshi mide todos los nichos sin gastar y paga la corrida del que trae a la vez quejas y dinero. Si uno no les interesa, vétenlo: deja de competir desde el lunes siguiente.");
   assert.equal(T.nichesEmpty, "Todavía no hay sondeo de nichos. El primero llega con la próxima corrida del lunes.");
   assert.equal(fill(T.nicheVetoDone, { name: "Pagos atrasados" }), "Vetaste «Pagos atrasados». Deja de competir desde el próximo lunes.");
   assert.equal(fill(T.nicheVetoUndone, { name: "Pagos atrasados" }), "Quitaste el veto a «Pagos atrasados». Vuelve a competir desde el próximo lunes.");
@@ -449,4 +449,25 @@ test("each row and the week carry exactly the fields the tab draws; the input is
   assert.deepEqual(Object.keys(board.week).sort(), ["advanced", "analysis", "date", "note", "row", "vetoNext", "why"]);
   for (const r of board.week.analysis) assert.deepEqual(Object.keys(r).sort(), ["at", "flag", "flagText", "label", "positions", "rank", "value"]);
   assert.equal(nicheBoard(given).rows.length, board.rows.length);
+});
+
+const REASONS_RANKED = ["first", "switched-stalled", "switched-unavailable"];
+const REASONS_OTHER = ["kept-advancing", "kept-guaranteed", "kept-no-signal", "requested", "fallback-no-signal", undefined, null, "something-new"];
+
+test("the judge note only for a week the ranking decided; any other reason has none", () => {
+  const judged = "Gana el nicho con más en su lado más débil; aquí, 96 de gasto.";
+  for (const reason of REASONS_RANKED) {
+    assert.equal(nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, reason } })] })).week.note, judged, reason);
+  }
+  for (const reason of REASONS_OTHER) {
+    assert.equal(nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, reason } })] })).week.note, null, String(reason));
+  }
+});
+
+test("the counts note for every counted week, whatever the reason", () => {
+  const ranking = trace().choice.ranking.map((e) => ({ ...e, source: "counts" }));
+  for (const reason of [...REASONS_RANKED, ...REASONS_OTHER]) {
+    const board = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking, reason } })] }));
+    assert.equal(board.week.note, "Esta semana se contó sin revisar: el ruido no se midió.", String(reason));
+  }
 });

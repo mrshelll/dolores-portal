@@ -195,7 +195,7 @@ function weekOf(trace, row, ranking, probes) {
     date: dayMonth(dayOf(trace.date)),
     why: text(trace.why) ?? T.nicheWhyMissing,
     analysis,
-    note: noteOf(rank),
+    note: noteOf(rank, trace.choice.reason),
     advanced: advanced === null || advanced < 1
       ? null
       : advanced === 1 ? T.nicheAdvancedOne : fill(T.nicheAdvancedMany, { count: formatNumber(advanced) }),
@@ -203,12 +203,16 @@ function weekOf(trace, row, ranking, probes) {
   };
 }
 
-// A judged week says the rule and the niche's weaker side; a counted week says the noise went unmeasured.
-function noteOf(rank) {
+// The reasons of a week the ranking decided (dolores/scripts/lib/chooser.mjs): only then does the rule pick the winner.
+const RANKED = new Set(["first", "switched-stalled", "switched-unavailable"]);
+
+// A counted week says the noise went unmeasured, whatever the reason. A judged week the ranking decided says the rule
+// and the niche's weaker side; one kept, requested or fallen back to says nothing (its `why` says the real reason).
+function noteOf(rank, reason) {
   if (!rank) return null;
   if (rank.source === "counts") return T.nicheNoteCounts;
   const score = number(rank.score);
-  if (rank.source !== "judge" || score === null) return null;
+  if (rank.source !== "judge" || score === null || !RANKED.has(reason)) return null;
   const complaints = number(rank.complaints);
   const spending = number(rank.spending);
   const side = complaints !== null && spending !== null && spending < complaints ? T.nicheSideSpending : T.nicheSideComplaints;
