@@ -1390,3 +1390,79 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 /* ---- index.html's fallback when the page could not load ---------------------------------- */
 
 .fallback { display: grid; justify-items: start; gap: var(--space-2); padding: var(--space-3) var(--pad); }
+
+/* ---- a pain's checks (js/checks.js) ------------------------------------------------------ */
+/* Literal colours from the plan's palette until the tokens arrive with the new shell; ratios are WCAG 2.x contrast.
+   The stack: one line per check, a filled circle (ok #16A34A 3.30:1 and fail #DC2626 4.83:1 on white, the mark white
+   inside) and the words, ink when it passes, fail text #B91C1C (6.47:1) when it fails, muted #525252 (7.81:1) when it
+   has no result. The cells: a bordered panel cut into one cell per check, side by side while each keeps 11rem and
+   stacked one per line below; the cells' own borders are the dividers (pulled 1 px under the panel's edge), so a
+   wrapped cell never leaves a gap. A failed cell takes the pale red tint; its words go fail red (5.91:1 on it) and its
+   figure #DC2626 (4.41:1, large text). The boxes shrink before they overflow and are clipped past the cell's width:
+   the figure says the count, the boxes only draw it. */
+.check-stack { margin: 0; padding: 0; list-style: none; font-size: 13px; line-height: 20px; }
+.check { display: flex; align-items: center; gap: 8px; min-height: 20px; color: #0A0A0A; }
+.check[data-result="fail"] { color: #B91C1C; }
+.check[data-result="none"] { color: #525252; }
+.check-icon { flex: none; width: 16px; height: 16px; }
+.check-icon circle { fill: #16A34A; }
+.check[data-result="fail"] .check-icon circle { fill: #DC2626; }
+.check[data-result="none"] .check-icon circle { fill: #525252; }
+.check-icon path { fill: none; stroke: #FFFFFF; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+
+.check-cells {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  border: 1px solid #E5E5E5;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+.check-cell, .check-note {
+  flex: 1 1 11rem;
+  min-width: 0;
+  margin: -1px 0 0 -1px;
+  border-top: 1px solid #E5E5E5;
+  border-left: 1px solid #E5E5E5;
+}
+.check-cell { padding: 12px 18px 14px; }
+.check-cell[data-result="fail"] { background: #FEF2F2; }
+.check-label, .check-min { color: #525252; font-size: 13px; line-height: 20px; }
+.check-label { font-weight: 500; }
+.check-value { display: flex; align-items: center; gap: 14px; min-height: 34px; margin: 2px 0 6px; }
+.check-figure { flex: none; color: #0A0A0A; font-size: 28px; font-weight: 600; line-height: 34px; letter-spacing: -0.03em; }
+.check-cell[data-result="none"] .check-figure { flex: 1 1 auto; font-size: 14px; font-weight: 500; line-height: 20px; letter-spacing: 0; }
+.box-row { display: flex; flex: 0 1 auto; align-items: center; gap: 3px; min-width: 0; overflow: hidden; }
+/* A width, not a flex-basis: a flex item's intrinsic size ignores its basis, so the row would size itself to 2 px boxes. */
+.box { flex: 0 1 auto; width: 14px; min-width: 2px; height: 8px; border-radius: 2px; background: #E5E5E5; }
+.check-cell[data-result="pass"] .box--filled { background: #16A34A; }
+.check-cell[data-result="fail"] .box--filled { background: #DC2626; }
+.box-rule { flex: none; width: 2px; height: 18px; margin-inline: 3px; border-radius: 1px; background: #0A0A0A; }
+.check-flag { display: flex; align-items: center; gap: 6px; color: #15803D; font-size: 13px; font-weight: 600; line-height: 20px; }
+.check-flag-icon { flex: none; width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.check-cell[data-result="fail"] :is(.check-label, .check-flag, .check-min) { color: #B91C1C; }
+.check-cell[data-result="fail"] .check-figure { color: #DC2626; }
+.check-note { flex-basis: 100%; padding: 8px 18px; color: #525252; font-size: 13px; line-height: 20px; }
+
+/* Dark: the panel #111111, ink #EDEDED (16.13:1), muted #A1A1A1 (7.31:1), ok #22C55E (8.29:1), fail #F87171 (6.83:1;
+   6.35:1 on the fail tint #2A1215); the circles' marks take the dark ground (8.69:1 on ok, 7.16:1 on fail). */
+@media (prefers-color-scheme: dark) {
+  .check { color: #EDEDED; }
+  .check[data-result="fail"] { color: #F87171; }
+  .check[data-result="none"] { color: #A1A1A1; }
+  .check-icon circle { fill: #22C55E; }
+  .check[data-result="fail"] .check-icon circle { fill: #F87171; }
+  .check[data-result="none"] .check-icon circle { fill: #A1A1A1; }
+  .check-icon path { stroke: #0A0A0A; }
+  .check-cells { border-color: #262626; background: #111111; }
+  .check-cell, .check-note { border-color: #262626; }
+  .check-cell[data-result="fail"] { background: #2A1215; }
+  .check-label, .check-min, .check-note { color: #A1A1A1; }
+  .check-figure { color: #EDEDED; }
+  .box { background: #262626; }
+  .check-cell[data-result="pass"] .box--filled { background: #22C55E; }
+  .check-cell[data-result="fail"] .box--filled { background: #F87171; }
+  .box-rule { background: #EDEDED; }
+  .check-flag { color: #22C55E; }
+  .check-cell[data-result="fail"] :is(.check-label, .check-flag, .check-min, .check-figure) { color: #F87171; }
+}

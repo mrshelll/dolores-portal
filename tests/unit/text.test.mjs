@@ -2,11 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { T, TOPICS, topicName, formatDate, fill, formatDayMonth, formatUsd, formatNumber } from "../../js/text.js";
 
-// Nothing internal is ever visible (FUN-45 and the plan's constraints). Whole words only: «lente» inside «excelente»
-// is not jargon. \p{L} and \p{N} make accented letters count as word characters. «Corrida» left this list with tomoshi:
+// Nothing internal is ever visible (FUN-45 and the plan's constraints), nor the words of the dashboards the page is
+// modelled on («check», «deploy», «build»). Whole words only: «lente» inside «excelente» is not jargon. \p{L} and \p{N} make accented letters count as word characters. «Corrida» left this list with tomoshi:
 // the page now has a «Corridas» tab and shows each run's line (the tomoshi spec), so the word is the page's own.
 const SLUGS = [...TOPICS.keys()].filter((key) => typeof key === "string");
-const WORDS = ["tier", "tiers", "lente", "lentes", "score", "scores", "underserved", ...SLUGS];
+const WORDS = ["tier", "tiers", "lente", "lentes", "score", "scores", "underserved", "check", "checks", "deploy", "build", ...SLUGS];
 const escape = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const JARGON = new RegExp(String.raw`(?<![\p{L}\p{N}_-])(?:dol-|(?:${WORDS.map(escape).join("|")})(?![\p{L}\p{N}_-]))`, "iu");
 
@@ -16,11 +16,11 @@ const visible = () => [
 ];
 
 test("the jargon matcher matches whole words only", () => {
-  for (const s of ["lente", "Las lentes", "el tier 1", "score: 3", "dol-0027", "documents-for-ai"]) assert.match(s, JARGON, s);
-  for (const s of ["excelente", "relevante", "dolores", "Dolores de la semana", "frontier", "scoreboard", "lentejas"]) assert.doesNotMatch(s, JARGON, s);
+  for (const s of ["lente", "Las lentes", "el tier 1", "score: 3", "dol-0027", "documents-for-ai", "3 checks", "Check", "el deploy", "Build"]) assert.match(s, JARGON, s);
+  for (const s of ["excelente", "relevante", "dolores", "Dolores de la semana", "frontier", "scoreboard", "lentejas", "checkout", "builder"]) assert.doesNotMatch(s, JARGON, s);
 });
 
-test("no visible string in T contains dol-, tier, lente, score, underserved or a territory slug", () => {
+test("no visible string in T contains dol-, tier, lente, score, underserved, check, deploy, build or a territory slug", () => {
   for (const [where, value] of visible()) {
     assert.equal(typeof value, "string", `${where} is not a string`);
     assert.doesNotMatch(value, JARGON, `${where}: ${value}`);
@@ -151,19 +151,29 @@ test("no visible string calls a run «revisión»", () => {
   assert.equal(T.keyRunsValue, "{count} corridas");
 });
 
-// The lab report's analysis table: the copy is pinned word for word (the plan's brief), and the thresholds never live
-// here: «{n} o más» takes the gate's own number.
-test("the analysis table's copy", () => {
+// The checks' copy is pinned word for word (the plan's brief), and the thresholds never live here: «Mínimo {n}» takes
+// the gate's own number. Singular and plural are two strings, chosen by the number.
+test("the checks' copy", () => {
   assert.equal(T.analysisCaption, "Análisis");
   assert.equal(T.analysisTestimonies, "Testimonios");
   assert.equal(T.analysisTiers, "Tipos de fuente");
   assert.equal(T.analysisSurvivals, "Ataques resistidos");
   assert.equal(T.analysisStatement, "Descrito por quien lo sufre");
-  assert.equal(fill(T.analysisRange, { n: 3 }), "3 o más");
-  assert.equal(T.analysisIn, "DENTRO DEL RANGO");
-  assert.equal(T.analysisOut, "FUERA DEL RANGO");
+  assert.equal(fill(T.analysisRange, { n: 3 }), "Mínimo 3");
+  assert.equal(fill(T.analysisRangeOf, { n: 3, total: 5 }), "Mínimo 3 de 5");
+  assert.equal(T.analysisIn, "Dentro del rango");
+  assert.equal(T.analysisOut, "Fuera del rango");
   assert.equal(fill(T.analysisHeld, { held: 4, total: 5 }), "4 de 5");
   assert.equal(fill(T.analysisIncomplete, { n: 3, total: 5 }), "Sin resultado completo (3 de 5 respondieron)");
   assert.equal(T.analysisMissing, "Falta");
   assert.equal(T.analysisPerCountry, "Contado dentro de un solo país");
+  assert.equal(T.checkTestimoniesOne, "1 testimonio");
+  assert.equal(fill(T.checkTestimonies, { n: 4 }), "4 testimonios");
+  assert.equal(T.checkTiersOne, "1 tipo de fuente");
+  assert.equal(fill(T.checkTiers, { n: 2 }), "2 tipos de fuente");
+  assert.equal(fill(T.checkAttacks, { held: 4, total: 5 }), "4 de 5 ataques");
+  assert.equal(fill(T.checkAttacksOne, { held: 1 }), "1 de 1 ataque");
+  assert.equal(T.checkMissingOne, "falta 1");
+  assert.equal(fill(T.checkMissing, { n: 2 }), "faltan 2");
+  assert.equal(T.checkStatement, "Falta cómo lo cuenta quien lo sufre");
 });

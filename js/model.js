@@ -519,28 +519,30 @@ export function lineView(trace) {
   return { stages, sources, cuts, dateLabel: formatDate(trace.date) };
 }
 
-// ---- the lab report: a pain's judged counts as analysis rows --------------------------------------------------------
+// ---- a pain's judged counts as analysis rows -----------------------------------------------------------------------
 
 const isObject = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
 const isCount = (value) => Number.isInteger(value) && value >= 0;
 const isThreshold = (value) => Number.isInteger(value) && value > 0;
 
-// A row measured against its threshold. `min`, `max` and `at` are for the range bar: it spans `top` (by default twice
-// the threshold), stretched to the threshold or the value when one is past it, so neither falls off the bar.
-function measured(key, label, value, min, at, top = min * 2) {
+// A row measured against its threshold. `min`, `max` and `at` are for the box row (js/checks.js): it spans `top` (by
+// default twice the threshold), stretched to the threshold or the value when one is past it, so neither falls off it.
+// `range` says the minimum in words: «Mínimo 3» unless the row says it otherwise.
+function measured(key, label, value, min, at, { top = min * 2, range = fill(T.analysisRange, { n: formatNumber(min) }) } = {}) {
   const inRange = at >= min;
   return {
-    key, label, value, range: fill(T.analysisRange, { n: formatNumber(min) }), min, max: Math.max(top, min, at), at,
+    key, label, value, range, min, max: Math.max(top, min, at), at,
     flag: inRange ? "in" : "out", flagText: inRange ? T.analysisIn : T.analysisOut,
   };
 }
 
-// A pain's gate (dolores' decideStatus, stored on the pain's doc) as the analysis table's rows: testimonies, source
-// tiers, attacks held, and «Descrito por quien lo sufre» only when the statement is missing. Each threshold is the
-// gate's own, so the page says what the run used even if the rules change. Attacks held read out of those that
-// answered (gate.verdicts), as dolores' own reason says them, and their bar spans those: «4 de 5» marks 4 on a bar to 5.
+// A pain's gate (dolores' decideStatus, stored on the pain's doc) as the rows its checks are drawn from (checkRows):
+// testimonies, source tiers, attacks held, and «Descrito por quien lo sufre» only when the statement is missing. Each
+// threshold is the gate's own, so the page says what the run used even if the rules change. Attacks held read out of
+// those that answered (gate.verdicts), as dolores' own reason says them, and their boxes span those: «4 de 5» fills 4
+// of 5; their minimum is the rule's own, so many held of the attacks the run requires («Mínimo 3 de 5»).
 // With fewer answered than the run requires there is no result to judge: the row says how many answered of those
-// required, with no flag and no bar; with none answered it says no attack was evaluated (not «0 de 5», which would
+// required, with no flag and no boxes; with none answered it says no attack was evaluated (not «0 de 5», which would
 // claim five were sent: none may have been, ever). `note` says when the testimonies were counted within one country
 // (dolores' bestCount: not necessarily the one with the most). A missing gate (a pain stored before it existed) or a
 // malformed one gives no rows: the page then shows the facts line and never a range claim it cannot back.
@@ -552,13 +554,16 @@ export function analysisRows(gate) {
   if (survivals !== null && !isCount(survivals)) return none;
   if (![thresholds.testimonies, thresholds.tiers, thresholds.survivals, thresholds.verdicts].every(isThreshold)) return none;
   const answered = formatNumber(verdicts);
+  const required = formatNumber(thresholds.verdicts);
+  const attacksRange = fill(T.analysisRangeOf, { n: formatNumber(thresholds.survivals), total: required });
   const attacks = verdicts === 0 || survivals === null
     ? {
       key: "survivals", label: T.analysisSurvivals,
-      value: verdicts === 0 ? T.analysisNoAttacks : fill(T.analysisIncomplete, { n: answered, total: formatNumber(thresholds.verdicts) }),
-      range: fill(T.analysisRange, { n: formatNumber(thresholds.survivals) }), min: null, max: null, at: null, flag: "none", flagText: "",
+      value: verdicts === 0 ? T.analysisNoAttacks : fill(T.analysisIncomplete, { n: answered, total: required }),
+      range: attacksRange, min: null, max: null, at: null, flag: "none", flagText: "",
     }
-    : measured("survivals", T.analysisSurvivals, fill(T.analysisHeld, { held: formatNumber(survivals), total: answered }), thresholds.survivals, survivals, verdicts);
+    : measured("survivals", T.analysisSurvivals, fill(T.analysisHeld, { held: formatNumber(survivals), total: answered }), thresholds.survivals, survivals,
+      { top: verdicts, range: attacksRange });
   const rows = [
     measured("testimonies", T.analysisTestimonies, formatNumber(testimonies), thresholds.testimonies, testimonies),
     measured("tiers", T.analysisTiers, formatNumber(tiers), thresholds.tiers, tiers),
@@ -570,6 +575,48 @@ export function analysisRows(gate) {
     });
   }
   return { rows, note: gate.per_country === true ? T.analysisPerCountry : null };
+}
+
+// ---- the checks: each analysis row passed or failed, in a few words -------------------------------------------------
+
+const RESULTS = new Map([["in", "pass"], ["out", "fail"], ["none", "none"]]);
+
+// What a count out of range lacks to reach its threshold («falta 1», «faltan 2»); null when it lacks nothing or has no
+// count to say it with (the statement).
+function lacking(row) {
+  if (row.flag !== "out" || row.at === null) return null;
+  const n = row.min - row.at;
+  return n === 1 ? T.checkMissingOne : fill(T.checkMissing, { n: formatNumber(n) });
+}
+
+// A row's count in a few words: «4 testimonios», «1 tipo de fuente», «4 de 5 ataques» (out of those that answered, as
+// the row's value). Attacks with no result say so in the row's own words; the statement says what is missing.
+function shortOf(row, verdicts) {
+  if (row.key === "statement") return T.checkStatement;
+  if (row.flag === "none") return row.value;
+  const n = formatNumber(row.at);
+  if (row.key === "testimonies") return row.at === 1 ? T.checkTestimoniesOne : fill(T.checkTestimonies, { n });
+  if (row.key === "tiers") return row.at === 1 ? T.checkTiersOne : fill(T.checkTiers, { n });
+  return verdicts === 1 ? fill(T.checkAttacksOne, { held: n }) : fill(T.checkAttacks, { held: n, total: formatNumber(verdicts) });
+}
+
+// A pain's gate as its checks (js/checks.js draws them): each analysis row passes (in range), fails (out of range, or
+// the statement missing) or has no result (attacks not all answered). `short` is the row in a few words for a closed
+// row, with what it lacks when it fails; `flagText` is the box cell's verdict, with the same lack; `minText` the
+// threshold in words. No rows exactly when analysisRows gives none: the page then claims nothing.
+export function checkRows(gate) {
+  const { rows, note } = analysisRows(gate);
+  return {
+    rows: rows.map((row) => {
+      const lacks = lacking(row);
+      const said = (words) => (lacks ? `${words} · ${lacks}` : words);
+      return {
+        key: row.key, label: row.label, result: RESULTS.get(row.flag), short: said(shortOf(row, gate.verdicts)), value: row.value,
+        minText: row.range, min: row.min, max: row.max, at: row.at, flagText: said(row.flagText),
+      };
+    }),
+    note,
+  };
 }
 
 // ---- tomoshi: the shell, the stations and the line, in words --------------------------------------------------------

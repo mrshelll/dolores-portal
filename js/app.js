@@ -25,7 +25,7 @@ import {
   markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
 import { renderLine, lamp } from "./line.js";
-import { analysisTable } from "./analysis.js";
+import { checkCells } from "./checks.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
 
@@ -429,8 +429,8 @@ function stationList(items, ctx) {
 
 // One result, as the lab report's block. Its head: the number, the title as the link to the pain, its tags and its
 // state flag at the right (a dot with the state in words, on a chip). Its body, in two columns that stack in a narrow
-// block: at the left the duel's line (for the winner) and the «Análisis» table (analysisTable: the counts the run judged
-// it by against the run's own thresholds), or, without a gate, a line that says there is no analysis and why it is there
+// block: at the left the duel's line (for the winner) and its box cells (checkCells: the counts the run judged it by
+// against the run's own thresholds), or, without a gate, a line that says there is no analysis and why it is there
 // in a facts line; at the right «Quién lo
 // sufre», the trend and topic, the team's marks and «Nos interesa», «Descartar» and «Comentar». The duel's winner and
 // the pains with weight are full results; the rest are compact (`station--compact`): one head row with the facts line
@@ -448,8 +448,8 @@ function station(item, index, ctx) {
   const tags = stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" })
     .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
   const meta = item.full ? stationMeta(item) : [];
-  const table = item.full ? analysisTable(item.gate) : null;
-  const facts = table ? [] : stationFactLines(item.facts);
+  const checks = item.full ? checkCells(item.gate) : null;
+  const facts = checks ? [] : stationFactLines(item.facts);
   const factsLine = facts.length
     ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null;
   const reason = item.facts && item.facts.duelReason;
@@ -510,12 +510,12 @@ function station(item, index, ctx) {
   refresh();
 
   // The left column: the duel's line, said as what it is, then the analysis; when there is none, a line that says so
-  // where the table would be, and why it is there.
+  // where the cells would be, and why it is there.
   const main = [
     reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-    table,
-    item.full && !table ? h("p", { class: "analysis-none" }, T.analysisNone) : null,
-    item.full && !table ? factsLine : null,
+    checks,
+    item.full && !checks ? h("p", { class: "analysis-none" }, T.analysisNone) : null,
+    item.full && !checks ? factsLine : null,
   ].filter(Boolean);
   return h("li", { class: item.full ? "station" : "station station--compact", "aria-labelledby": titleId },
     h("div", { class: "station-head" },
@@ -740,8 +740,9 @@ function nicheWeek(week, ctx, layout) {
             h("p", { class: "niche-veto-next" }, week.vetoNext))))));
 }
 
-// The week's sounding: «Quejas reales», «Gasto real» and «Ruido», with explicit roles like js/analysis.js (its rows
-// are laid out as grids). The versus bar only where there is a value to place.
+// The week's sounding: «Quejas reales», «Gasto real» and «Ruido», as a table with explicit roles (its rows are laid
+// out as grids, and a table whose CSS display is changed can lose its semantics in some browsers). The versus bar only
+// where there is a value to place.
 function nicheAnalysis(week) {
   const rivals = Math.max(0, ...week.analysis.map((a) => a.positions.length));
   const caption = week.date ? fill(T.nicheProbeCaption, { date: week.date }) : T.nicheProbeCaptionUndated;
@@ -1362,11 +1363,11 @@ function renderPain(layout, id, email, data) {
     if (section.id === "como-llegamos") return cardSection(section, howBody(how));
     return cardSection(section);
   });
-  // The card opens with its «Análisis» (analysisTable: the counts the run judged it by against the run's own
+  // The card opens with its box cells (checkCells: the counts the run judged it by against the run's own
   // thresholds) on a panel that is its container; a pain stored before the gate existed has none, claims nothing, and
   // says so in one line where the panel would be.
-  const table = analysisTable(data.pain.gate);
-  const analysis = table ? h("div", { class: "detail-analysis" }, table) : h("p", { class: "analysis-none" }, T.analysisNone);
+  const checks = checkCells(data.pain.gate);
+  const analysis = checks ? h("div", { class: "detail-analysis" }, checks) : h("p", { class: "analysis-none" }, T.analysisNone);
   layout.body.removeAttribute("aria-busy");
   if (isLineCard(data.card)) {
     replaceChildren(layout.body, h("div", { class: "detail-sections" },
