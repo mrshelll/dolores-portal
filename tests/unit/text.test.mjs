@@ -84,9 +84,20 @@ test("the product is called tomoshi: the brand, its link and the tab title", () 
 // «dolores» is still the Spanish noun (the pains: «los dolores de la semana», «3 dolores»), never the product's name.
 // Every «dolores» must follow a word that makes it the noun.
 const NOUN_BEFORE = new Set(["los", "unos", "sus", "tus", "más", "demás", "hay", "{count}"]);
+// The «Nichos» tab names the weekly run «dolores» where it measures, proposes and retires niches, as the approved
+// design of the niche chooser words it (still never the page's name). Only these strings may, pinned word for word: one
+// that changes is checked again.
+const RUN_NAMED = new Map([
+  ["T.nichesLead", "Cada lunes dolores mide todos los nichos sin gastar y paga la corrida del que trae a la vez quejas y dinero. Si uno no les interesa, vétenlo: deja de competir desde el lunes siguiente."],
+  ["T.nicheOriginProposed", "Propuesto por dolores el {date}"],
+  ["T.nicheOriginProposedUndated", "Propuesto por dolores"],
+  ["T.nicheRetiredOn", "Lo retiró dolores el {date} para dejar lugar a otros propuestos"],
+  ["T.nicheRetiredUndated", "Lo retiró dolores para dejar lugar a otros propuestos"],
+]);
 test("no visible string uses «dolores» as the product's name", () => {
   const word = /(\S+)\s+dolores(?![\p{L}\p{N}_-])|(?<![\p{L}\p{N}_-])dolores(?![\p{L}\p{N}_-])/giu;
   for (const [where, value] of visible()) {
+    if (RUN_NAMED.get(where) === value) continue;
     for (const match of value.matchAll(word)) {
       const before = match[1] ? match[1].toLowerCase() : null;
       assert.ok(before !== null && (NOUN_BEFORE.has(before) || /^\d/.test(before)), `${where}: ${value}`);
