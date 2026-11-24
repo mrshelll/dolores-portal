@@ -1,9 +1,9 @@
 // The page's entry point: the session, the hash router and the screens. Signing in is two screens (email, then the
 // 8-digit code) with the manual's «formulario» pattern. Once in, every screen first checks that the person is on the
 // team's list (`people`); someone who is not, or who was taken off it, sees the «sin permiso» state (EST-05).
-// Routes: #/ is «Esta semana» (the home: «Para decidir» and the run's line), #/catalogo every pain by state, #/corridas
-// the runs week by week, #/corridas/<run_id> one run opened, #/dolor/<id> a pain. Without a session the page shows the
-// sign-in.
+// Routes: #/ is «Esta semana» (the home: «Para decidir» and the run's line), #/catalogo every pain by state, #/nichos
+// the week's niche and every candidate with its veto, #/corridas the runs week by week, #/corridas/<run_id> one run
+// opened, #/dolor/<id> a pain. Without a session the page shows the sign-in.
 // A pain's detail asks before leaving with a comment not yet published (NAV-06), and keeps that comment in the tab when
 // the session ends, so it comes back after signing in again (Review Focus 3).
 
@@ -18,7 +18,7 @@ import {
   catalogView, latestTrace, brandLamp, brandLampText, brandLampShort, painLamp, lineView, lineHeading, weekMeta, decideLead,
   stationMarks, stationMeta, stationTags, rowMarks, stationFactLines,
 } from "./model.js";
-import { loadHome, loadWeek, loadPain, loadRuns, loadTitles, setMark, addComment, deleteComment } from "./api.js";
+import { loadHome, loadWeek, loadPain, loadRuns, loadTitles, loadNiches, setMark, setNicheVeto, addComment, deleteComment } from "./api.js";
 import {
   nextMark, keyData, validComment, cardTitle, painStatus, statusLabel, cardSections, isLineCard, markLines, commentItems,
   sendErrorKind, draftKey, draftValue, readDraft, isDraftKey, discardNote, markErrorText, commentErrorText, COMMENT_MAX,
@@ -27,6 +27,7 @@ import {
 import { renderLine, lamp } from "./line.js";
 import { analysisTable } from "./analysis.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
+import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
 
 const root = document.getElementById("app");
 
@@ -67,7 +68,9 @@ function runCleanup() {
 
 const atHome = () => ["", "#", "#/"].includes(location.hash);
 
-const TABS = [["week", "#/", "tabWeek"], ["catalog", "#/catalogo", "tabCatalog"], ["runs", "#/corridas", "tabRuns"]];
+const TABS = [
+  ["week", "#/", "tabWeek"], ["catalog", "#/catalogo", "tabCatalog"], ["niches", "#/nichos", "tabNiches"], ["runs", "#/corridas", "tabRuns"],
+];
 
 // The masthead (NAV-08): the brand, lowercase «tomoshi» with the lamp of how the latest run went at its left; after
 // signing in the tabs, the week's data and «Salir». The name links home on every screen with a session (NAV-09); on
@@ -91,7 +94,8 @@ function masthead({ brandLink, actions, tab }) {
     actions.length ? h("div", { class: "masthead-actions" }, actions) : null);
 }
 
-// The brand lamp and the week's data from the session's week (state.week); until it is known the lamp stays off.
+// The brand lamp and the week's data from the session's week (state.week); until it is known the lamp stays off. The
+// week's niche is a link to Nichos, its words unchanged.
 function refreshMasthead() {
   const parts = state.masthead;
   if (!parts) return;
@@ -108,7 +112,8 @@ function refreshMasthead() {
     parts.words.hidden = false;
   }
   const rows = week ? weekMeta(week.summary, week.latest) : [];
-  replaceChildren(parts.meta, rows.map((row) => h("span", { class: "meta-item" }, `${row.label} `, h("b", {}, row.value))));
+  replaceChildren(parts.meta, rows.map((row) => h("span", { class: "meta-item" }, `${row.label} `,
+    row.label === T.metaNiche ? h("a", { class: "meta-link", href: "#/nichos" }, h("b", {}, row.value)) : h("b", {}, row.value))));
   parts.meta.hidden = !rows.length;
 }
 
@@ -161,7 +166,10 @@ function setFieldError(input, errorEl, text) {
 
 // ---- router ---------------------------------------------------------------------------------
 
-const SCREENS = new Map([["#/catalogo", "catalog"], ["#/catalogo/", "catalog"], ["#/corridas", "runs"], ["#/corridas/", "runs"]]);
+const SCREENS = new Map([
+  ["#/catalogo", "catalog"], ["#/catalogo/", "catalog"], ["#/nichos", "niches"], ["#/nichos/", "niches"],
+  ["#/corridas", "runs"], ["#/corridas/", "runs"],
+]);
 
 function parseRoute(hash) {
   if (SCREENS.has(hash)) return { name: SCREENS.get(hash) };
@@ -202,9 +210,10 @@ async function route() {
   if (access.kind === "expired") return sessionEnded();
   if (access.kind === "error") return showAccessError(access.error);
   if (access.kind === "no-access") return showNoAccess(email);
-  if (target.name === "pain" || target.name === "runs") ensureWeek();
+  if (target.name === "pain" || target.name === "runs" || target.name === "niches") ensureWeek();
   if (target.name === "pain") return showPain(layout, target.id, email);
   if (target.name === "catalog") return showCatalog(layout, email);
+  if (target.name === "niches") return showNiches(layout, email);
   if (target.name === "runs") return showRuns(layout, email);
   if (target.name === "run") return showRun(layout, target.id, email);
   return showHome(layout, email);
@@ -214,6 +223,7 @@ async function route() {
 const ROUTE_SCREEN = {
   home: { title: "homeTitle", pageTitle: "tabWeek", tab: "week" },
   catalog: { title: "catalogTitle", tab: "catalog" },
+  niches: { title: "nichesTitle", tab: "niches" },
   runs: { title: "runsTitle", tab: "runs" },
   run: { title: "runTitle", tab: "runs" },
   pain: { title: "painTitle", tab: null },
@@ -260,7 +270,7 @@ function showNoAccess(email) {
 
 // ---- the session's week: the masthead on every screen ----------------------------------------
 
-// A pain or Corridas opened first (a link, a reload) reads the week once for the session, so the brand lamp and the
+// A pain, Nichos or Corridas opened first (a link, a reload) reads the week once for the session, so the brand lamp and the
 // week's data are right there too; the home and Catálogo read it again with every load (loadInto). It never holds the
 // screen up, and a failure only leaves the lamp off: the next such screen tries again. An answer that comes after the
 // session ended, or after a home load already filled the week, is dropped. Returns what resolves to the session's week
@@ -597,6 +607,202 @@ function painList(items, row) {
   });
   showUpTo(firstPage(items.length));
   return [list, more];
+}
+
+// ---- Nichos: the week's niche and why, every candidate, and the veto -----------------------
+
+// Nichos keeps the frame route() drew (same title), so the screen does not flash. It reads the traces, the proposed
+// niches, the vetoes and the pains at once (loadNiches) and draws the board (nicheBoard): no sounding yet says so and
+// offers to load again, the way out last (EST-01, MAR-06).
+async function showNiches(layout, email) {
+  state.view = "niches";
+  const viewId = state.viewId;
+  layout.body.setAttribute("aria-busy", "true");
+  replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.nichesLoading));
+  layout.heading.focus({ preventScroll: true });
+  let data;
+  try { data = await loadNiches(supabase); }
+  catch (error) {
+    if (viewId !== state.viewId) return;
+    return showLoadError(layout, error, email, T.nichesError);
+  }
+  if (viewId !== state.viewId) return;
+  layout.body.removeAttribute("aria-busy");
+  layout.body.classList.add("niches-body");
+  if (nicheBoard(data).empty) {
+    replaceChildren(layout.body, h("div", { class: "stack", "data-rol": "vacio" },
+      h("p", { class: "week-sentence" }, T.nichesEmpty),
+      h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
+    return;
+  }
+  layout.head.append(h("p", { class: "page-lead" }, T.nichesLead));
+  renderNiches(layout, { data, email, viewId, busy: false, buttons: new Map() });
+}
+
+// The board from the screen's data, drawn whole: «ESTA SEMANA», the niche that ran as a result block, then
+// «CANDIDATOS», every niche in one table. A veto redraws it from the data with the veto mirrored (withVeto).
+function renderNiches(layout, ctx) {
+  const board = nicheBoard(ctx.data);
+  ctx.buttons = new Map();
+  replaceChildren(layout.body, nicheWeek(board.week, ctx, layout), nicheCandidates(board.rows, ctx, layout));
+}
+
+// A count said with its numbers in bold («<b>3</b> con peso · <b>12</b> en obs.»), as the report sets its figures.
+const NUMBER_RUN = /(\d+(?:[.  ]\d{3})*)/;
+const boldNumbers = (text) => String(text).split(NUMBER_RUN).map((part, i) => (i % 2 ? h("b", {}, part) : part)).filter((part) => part !== "");
+
+// A missing figure: a dash for the eye, words for a screen reader.
+const noValue = () => [h("span", { "aria-hidden": "true" }, "—"), h("span", { class: "visually-hidden" }, T.nicheNoValue)];
+
+// The veto's button for a niche, in the week's block (`week`) or its row (`row`), with its note (role="status") beside
+// it. It works like the marks' buttons: one veto at a time, aria-disabled while it is sent; a session that ended goes
+// back to signing in, someone the base refuses sees «sin permiso», any other failure says so in the note and the
+// button works again. Once the base took it, the board is redrawn with the veto mirrored, the focus goes back to the
+// same niche's button in the same place, and its note says what changed.
+function vetoControl(row, place, ctx, layout, nameId) {
+  const label = row.vetoed ? T.nicheUnveto : place === "week" ? T.nicheVetoWeek : T.nicheVeto;
+  const button = h("button", {
+    type: "button", class: `button ${row.vetoed ? "button--primary" : "button--secondary"} niche-veto`, "aria-describedby": nameId,
+  }, label);
+  const note = h("p", { class: "station-note niche-veto-status", role: "status" });
+  const key = `${place}:${row.id}`;
+  ctx.buttons.set(key, { button, note });
+  button.addEventListener("click", async () => {
+    if (ctx.busy) return;
+    const vetoed = !row.vetoed;
+    ctx.busy = true;
+    const all = [...ctx.buttons.values()];
+    all.forEach((b) => b.button.setAttribute("aria-disabled", "true"));
+    all.forEach((b) => { b.note.textContent = ""; delete b.note.dataset.tone; });
+    let error = null;
+    try { await setNicheVeto(supabase, row.id, vetoed); } catch (err) { error = err; }
+    ctx.busy = false;
+    if (ctx.viewId !== state.viewId) return;
+    if (error) {
+      all.forEach((b) => b.button.removeAttribute("aria-disabled"));
+      const kind = sendErrorKind(error);
+      if (kind === "expired") return sessionEnded();
+      if (kind === "no-access") return showNoAccess(ctx.email);
+      note.dataset.tone = "error";
+      note.textContent = kind === "network" ? T.nicheVetoOffline : T.nicheVetoError;
+      return;
+    }
+    ctx.data = withVeto(ctx.data, { name: row.id, vetoed, by: lower(ctx.email), at: new Date().toISOString() });
+    renderNiches(layout, ctx);
+    const next = ctx.buttons.get(key);
+    if (!next) { layout.heading.focus({ preventScroll: true }); return; }
+    next.button.focus();
+    // The note is in the page before its words change, so a screen reader announces them.
+    const done = fill(vetoed ? T.nicheVetoDone : T.nicheVetoUndone, { name: row.name });
+    requestAnimationFrame(() => { if (ctx.viewId === state.viewId) next.note.textContent = done; });
+  });
+  return { button, note };
+}
+
+// «ESTA SEMANA»: the niche that ran as the report's result block. Its head: the name, where it came from and its state
+// on a chip («Corrió el <día>», or «Vetado»). Its body: why it was chosen, then the week's sounding as an analysis
+// table, each side against the other niches (the versus bar: a tick per rival and the niche's marker, hidden from a
+// screen reader, its place in words beside it); at the right its pains, the veto and what a veto does now.
+function nicheWeek(week, ctx, layout) {
+  const { row } = week;
+  const nameId = "nicho-semana";
+  const stateText = row.state === "current" && week.date ? fill(T.nicheRanOn, { date: week.date }) : row.stateText;
+  const pains = painsText(row.pains, { retired: row.state === "retired" });
+  const control = row.canVeto ? vetoControl(row, "week", ctx, layout, nameId) : null;
+  return h("section", { class: "results niche-week-section", "aria-labelledby": "esta-semana" },
+    h("p", { class: "section-label results-label", id: "esta-semana" }, T.nicheWeekLabel),
+    h("div", { class: "station niche-week" },
+      h("div", { class: "station-head" },
+        h("div", { class: "station-name" }, h("h2", { class: "station-title", id: nameId }, row.name)),
+        h("p", { class: "station-tags" }, h("span", { class: "station-tag niche-origin-tag" }, row.originText)),
+        h("p", { class: "station-state", "data-lamp": row.lamp },
+          lamp(row.lamp, { size: "small" }), h("span", { class: "station-state-text" }, stateText))),
+      h("div", { class: "station-body" },
+        h("div", { class: "station-main" },
+          h("p", { class: "station-duel niche-why" }, h("span", { class: "station-duel-label" }, T.nicheWhyLabel), " ", week.why),
+          nicheAnalysis(week)),
+        h("div", { class: "station-side" },
+          h("p", { class: "section-label niche-side-label", id: "sus-dolores" }, T.nicheOwnPains),
+          h("ul", { class: "niche-side-list", role: "list", "aria-labelledby": "sus-dolores" },
+            h("li", {}, pains.none ?? boldNumbers(pains.full)),
+            week.advanced ? h("li", {}, boldNumbers(week.advanced)) : null,
+            h("li", {}, boldNumbers(paidRunsText(row.paidRuns, { long: true })))),
+          h("div", { class: "station-foot" },
+            h("p", { class: "station-marks" }, row.vetoNote ?? (row.vetoed ? row.stateText : T.nicheNoVeto)),
+            control ? h("div", { class: "station-actions" }, control.button) : null,
+            control ? control.note : null,
+            h("p", { class: "niche-veto-next" }, week.vetoNext))))));
+}
+
+// The week's sounding: «Quejas reales», «Gasto real» and «Ruido», with explicit roles like js/analysis.js (its rows
+// are laid out as grids). The versus bar only where there is a value to place.
+function nicheAnalysis(week) {
+  const rivals = Math.max(0, ...week.analysis.map((a) => a.positions.length));
+  const caption = week.date ? fill(T.nicheProbeCaption, { date: week.date }) : T.nicheProbeCaptionUndated;
+  const versus = (a) => (a.at === null || a.flag === null ? null : h("span", { class: "versus", "aria-hidden": "true" },
+    a.positions.map((at) => h("span", { class: "versus-tick", style: `--at: ${at}%` })),
+    h("span", { class: "versus-at", style: `--at: ${a.at}%` })));
+  return h("table", { class: "analysis niche-analysis", role: "table" },
+    h("caption", { class: "analysis-caption" }, caption),
+    h("thead", { role: "rowgroup" }, h("tr", { role: "row" },
+      h("td", { class: "analysis-corner", role: "cell" }),
+      h("th", { scope: "col", role: "columnheader" }, T.analysisValueLabel),
+      h("th", { scope: "col", role: "columnheader" }, versusLabel(rivals)),
+      h("th", { scope: "col", role: "columnheader" }, T.analysisFlagLabel))),
+    h("tbody", { role: "rowgroup" }, week.analysis.map((a) => h("tr", { class: "analysis-row", role: "row", "data-flag": a.flag },
+      h("th", { scope: "row", role: "rowheader", class: "analysis-label" }, a.label),
+      h("td", { class: "analysis-value", role: "cell" }, a.value ?? noValue()),
+      h("td", { class: "analysis-range", role: "cell" }, versus(a), a.rank ? h("span", { class: "analysis-range-text" }, a.rank) : null),
+      h("td", { class: "analysis-flag", role: "cell" }, a.flag
+        ? h("span", { class: `range-flag range-flag--${a.flag}` }, lamp(a.flag === "in" ? "green" : "red", { size: "small" }), a.flagText)
+        : null)))),
+    week.note ? h("tfoot", { role: "rowgroup" }, h("tr", { role: "row" }, h("td", { class: "analysis-note", role: "cell", colspan: 4 }, week.note))) : null);
+}
+
+// «CANDIDATOS»: one table, a row per niche (a <th scope="row"> with its name, where it came from and, for a proposed
+// one, why), its state in words, quejas, gasto and ruido, its pains and its veto. Below 900 px each row is a stacked
+// block (css/base.css): the explicit roles keep it a table, and each figure says its column (data-label).
+const QUIET_STATES = new Set(["resting", "vetoed", "retired"]);
+function nicheCandidates(rows, ctx, layout) {
+  const col = (text, cls = null) => h("th", { scope: "col", role: "columnheader", class: cls }, text);
+  return h("section", { class: "niche-candidates", "aria-labelledby": "candidatos" },
+    h("p", { class: "section-label niche-candidates-label", id: "candidatos" }, T.nicheCandidatesLabel),
+    h("div", { class: "sheet" },
+      h("table", { class: "niche-table", role: "table", "aria-labelledby": "candidatos" },
+        h("thead", { role: "rowgroup" }, h("tr", { role: "row" },
+          col(T.nicheColState), col(T.nicheColName),
+          col(T.nicheColComplaints, "niche-num"), col(T.nicheColSpending, "niche-num"), col(T.nicheNoise, "niche-num"),
+          col(T.nicheOwnPains), col(h("span", { class: "visually-hidden" }, T.nicheColVeto)))),
+        h("tbody", { role: "rowgroup" }, rows.map((row, index) => nicheRow(row, index, ctx, layout)))),
+      h("p", { class: "niche-table-foot" }, T.nicheFootnote)));
+}
+
+function nicheRow(row, index, ctx, layout) {
+  const nameId = `nicho-${index + 1}`;
+  const pains = painsText(row.pains, { retired: row.state === "retired" });
+  const control = row.canVeto ? vetoControl(row, "row", ctx, layout, nameId) : null;
+  const figure = (label, value, extra = null) => h("td", { role: "cell", class: "niche-num", "data-label": label }, value ?? noValue(), extra);
+  const unmeasured = row.noise === T.nicheNoiseUnmeasured;
+  const classes = [row.state === "current" ? "niche-row--current" : null, QUIET_STATES.has(row.state) ? "niche-row--quiet" : null];
+  return h("tr", { role: "row", class: classes.filter(Boolean).join(" ") || null },
+    h("td", { role: "cell", class: "niche-cell-state" },
+      h("span", { class: "niche-state", "data-lamp": row.lamp }, lamp(row.lamp, { size: "small" }), row.stateText),
+      row.stateNote ? h("span", { class: "niche-state-note" }, row.stateNote) : null),
+    h("th", { scope: "row", role: "rowheader", class: "niche-cell-name" },
+      h("span", { class: "niche-name", id: nameId }, row.name),
+      h("span", { class: "niche-origin" }, `${row.originText} · ${paidRunsText(row.paidRuns)}`),
+      row.why ? h("span", { class: "niche-why" }, row.why) : null),
+    figure(T.nicheColComplaints, row.complaints === null ? null : formatNumber(row.complaints)),
+    figure(T.nicheColSpending, row.spending === null ? null : formatNumber(row.spending)),
+    unmeasured
+      ? figure(T.nicheNoise, [h("span", { "aria-hidden": "true" }, "—")], h("small", {}, row.noise))
+      : figure(T.nicheNoise, row.noise),
+    h("td", { role: "cell", class: "niche-cell-pains" }, pains.none
+      ?? [h("span", { "aria-hidden": "true" }, boldNumbers(pains.short)), h("span", { class: "visually-hidden" }, pains.full)]),
+    h("td", { role: "cell", class: "niche-cell-action" },
+      control ? control.button : null,
+      row.vetoNote ? h("span", { class: "niche-who" }, row.vetoNote) : null,
+      control ? control.note : null));
 }
 
 // ---- Corridas: what the workflow did, week by week -----------------------------------------

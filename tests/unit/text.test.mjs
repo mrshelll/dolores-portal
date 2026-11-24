@@ -81,9 +81,9 @@ test("the product is called tomoshi: the brand, its link and the tab title", () 
   assert.equal(fill(T.pageTitle, { title: "Para decidir" }), "Para decidir · tomoshi");
 });
 
-// «dolores» is still the Spanish noun (the pains: «los dolores de la semana», «3 dolores»), never the product's name.
-// Every «dolores» must follow a word that makes it the noun.
-const NOUN_BEFORE = new Set(["los", "unos", "sus", "tus", "más", "demás", "hay", "{count}"]);
+// «dolores» is still the Spanish noun (the pains: «los dolores de la semana», «3 dolores», «Sin dolores aún»), never the
+// product's name. Every «dolores» must follow a word that makes it the noun.
+const NOUN_BEFORE = new Set(["los", "unos", "sus", "tus", "más", "demás", "hay", "sin", "{count}"]);
 test("no visible string uses «dolores» as the product's name", () => {
   const word = /(\S+)\s+dolores(?![\p{L}\p{N}_-])|(?<![\p{L}\p{N}_-])dolores(?![\p{L}\p{N}_-])/giu;
   for (const [where, value] of visible()) {

@@ -261,15 +261,15 @@ export function runNotice(summary, today = new Date()) {
   return key ? { kind: summary.status, text: T[key] } : null;
 }
 
-// The functions that raise 42501 for someone who is not on the list (Task 1's migration, and run_traces from the
-// traces' migration).
-const MEMBER_RPCS = new Set(["week_summary", "run_traces", "set_mark", "add_comment", "delete_comment"]);
+// The functions that raise 42501 for someone who is not on the list (Task 1's migration, run_traces from the traces'
+// migration and set_niche_veto from the niches' one).
+const MEMBER_RPCS = new Set(["week_summary", "run_traces", "set_mark", "add_comment", "delete_comment", "set_niche_veto"]);
 
 // What a failed read or write means for the reader. The token is no longer accepted (HTTP 401, PostgREST
 // PGRST301/PGRST303): sign in again. 42501 from a function (week_summary, run_traces, set_mark, add_comment,
-// delete_comment) is the base refusing someone who is not on the list. On a table read (api.js tags each one in
-// `source`) it is a lost grant instead, since RLS filters rows and never raises: an error. A fetch that never reached
-// the server is the connection.
+// delete_comment, set_niche_veto) is the base refusing someone who is not on the list. On a table read (api.js tags
+// each one in `source`) it is a lost grant instead, since RLS filters rows and never raises: an error. A fetch that
+// never reached the server is the connection.
 export function classifyError(error) {
   if (!error || typeof error !== "object") return "other";
   const code = String(error.code ?? "");

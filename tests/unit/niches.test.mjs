@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { T, fill, formatDayMonth, topicName } from "../../js/text.js";
-import { nicheBoard } from "../../js/niches.js";
+import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "../../js/niches.js";
 
 // Nichos: the board the tab draws from the newest trace with a choice (dolores' buildTrace: choice, probe, why,
 // territories, niche, date, status), the proposed niches, the vetoes, the pains, the marks and the people. Every name
@@ -470,4 +470,84 @@ test("the counts note for every counted week, whatever the reason", () => {
     const board = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking, reason } })] }));
     assert.equal(board.week.note, "Esta semana se contó sin revisar: el ruido no se midió.", String(reason));
   }
+});
+
+// ---- the veto, mirrored locally after the base took it (P3) -------------------------------------------
+
+const AT = "2030-02-05T12:00:00.000Z";
+
+test("withVeto on a territory adds its vetoes row, with who and when, and the board shows it vetoed", () => {
+  const data = input();
+  const next = withVeto(data, { name: "us-consumer-finance", vetoed: true, by: "carla@example.com", at: AT });
+  assert.deepEqual(next.vetoes, [{ name: "us-consumer-finance", vetoed_by: "carla@example.com", vetoed_at: AT }]);
+  assert.deepEqual(data.vetoes, [], "the input is left as it was");
+  const row = rowOf(nicheBoard(next), "us-consumer-finance");
+  assert.equal(row.state, "vetoed");
+  assert.equal(row.vetoed, true);
+  assert.equal(row.vetoNote, fill(T.nicheVetoedBy, { name: "Carla", date: formatDayMonth(AT) }));
+});
+
+test("withVeto lifting a territory's veto removes its row, and it competes again", () => {
+  const data = input({ vetoes: [{ name: "us-consumer-finance", vetoed_by: "beto@example.com", vetoed_at: AT }, { name: "accounting-automation", vetoed_by: "ana@example.com", vetoed_at: AT }] });
+  const next = withVeto(data, { name: "us-consumer-finance", vetoed: false, by: "carla@example.com", at: AT });
+  assert.deepEqual(next.vetoes.map((v) => v.name), ["accounting-automation"]);
+  assert.equal(data.vetoes.length, 2, "the input is left as it was");
+  assert.equal(rowOf(nicheBoard(next), "us-consumer-finance").state, "competing");
+});
+
+test("withVeto on an already vetoed territory keeps the first veto, as the base does", () => {
+  const first = { name: "us-consumer-finance", vetoed_by: "beto@example.com", vetoed_at: "2030-02-01T00:00:00Z" };
+  const next = withVeto(input({ vetoes: [first] }), { name: "us-consumer-finance", vetoed: true, by: "carla@example.com", at: AT });
+  assert.deepEqual(next.vetoes, [first]);
+});
+
+test("withVeto on a proposed niche sets its own state, by and when; lifting it makes it active again", () => {
+  const data = input();
+  const vetoed = withVeto(data, { name: "claims-of-health-insurance", vetoed: true, by: "ana@example.com", at: AT });
+  assert.deepEqual(vetoed.vetoes, [], "a proposed niche never goes to the territories' vetoes");
+  const niche = vetoed.niches.find((n) => n.name === "claims-of-health-insurance");
+  assert.equal(niche.state, "vetoed");
+  assert.equal(niche.state_by, "ana@example.com");
+  assert.equal(niche.state_changed_at, AT);
+  assert.equal(data.niches[0].state, "active", "the input is left as it was");
+  assert.equal(rowOf(nicheBoard(vetoed), "claims-of-health-insurance").state, "vetoed");
+  const lifted = withVeto(vetoed, { name: "claims-of-health-insurance", vetoed: false, by: "beto@example.com", at: AT });
+  assert.equal(lifted.niches.find((n) => n.name === "claims-of-health-insurance").state, "active");
+  assert.equal(rowOf(nicheBoard(lifted), "claims-of-health-insurance").state, "competing");
+});
+
+test("withVeto lifting a veto never touches a niche that is not vetoed (a retired one stays retired)", () => {
+  const next = withVeto(input(), { name: "clinic-billing", vetoed: false, by: "ana@example.com", at: AT });
+  assert.deepEqual(next.niches.find((n) => n.name === "clinic-billing"), NICHES[1]);
+});
+
+test("withVeto on the niche that ran turns the week vetoed", () => {
+  const board = nicheBoard(withVeto(input(), { name: "developer-tools", vetoed: true, by: "ana@example.com", at: AT }));
+  assert.equal(board.week.row.vetoed, true);
+  assert.equal(board.week.vetoNext, T.nicheVetoNextVetoed);
+});
+
+test("withVeto keeps every other list as it was, and reads missing lists as empty", () => {
+  const data = input();
+  const next = withVeto(data, { name: "us-consumer-finance", vetoed: true, by: "ana@example.com", at: AT });
+  for (const key of ["traces", "pains", "marks", "people"]) assert.equal(next[key], data[key], key);
+  assert.deepEqual(withVeto({}, { name: "x-y", vetoed: true, by: "ana@example.com", at: AT }).vetoes,
+    [{ name: "x-y", vetoed_by: "ana@example.com", vetoed_at: AT }]);
+});
+
+test("the tab's counts in words: paid runs, pains and the rivals' column", () => {
+  assert.equal(paidRunsText(0), "sin corridas aún");
+  assert.equal(paidRunsText(1), "1 corrida pagada");
+  assert.equal(paidRunsText(2), "2 corridas pagadas");
+  assert.equal(paidRunsText(0, { long: true }), "Sin corridas pagadas en este nicho");
+  assert.equal(paidRunsText(1, { long: true }), "1 corrida pagada en este nicho");
+  assert.equal(paidRunsText(1200, { long: true }), "1200 corridas pagadas en este nicho".replace("1200", new Intl.NumberFormat("es").format(1200)));
+  assert.deepEqual(painsText({ weighty: 3, watching: 12 }), {
+    short: "3 con peso · 12 en obs.", full: "3 con peso para trabajar · 12 en observación", none: null,
+  });
+  assert.equal(painsText({ weighty: 0, watching: 0 }).none, "Sin dolores aún");
+  assert.equal(painsText({ weighty: 0, watching: 0 }, { retired: true }).none, "Sin dolores");
+  assert.equal(versusLabel(4), "Frente a los otros 4");
+  assert.equal(versusLabel(1), "Frente al otro");
+  assert.equal(versusLabel(0), "Frente a los otros");
 });

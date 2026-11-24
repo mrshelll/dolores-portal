@@ -218,3 +218,59 @@ function noteOf(rank, reason) {
   const side = complaints !== null && spending !== null && spending < complaints ? T.nicheSideSpending : T.nicheSideComplaints;
   return fill(T.nicheNoteJudge, { value: formatNumber(score), side });
 }
+
+// ---- the veto, mirrored after the base took it ------------------------------------------------------------------
+
+// The data loadNiches gave with one veto set or lifted as set_niche_veto does in the base, so the tab redraws without
+// reading everything again: a name in `niches` is a proposed niche and changes its own state, by and when (lifting
+// only a vetoed one); any other name is a territory, with its row in `vetoes` added (the first veto stays) or removed.
+// A new object; the lists it does not touch are the same ones, and the input is left as it was.
+export function withVeto(data, { name, vetoed, by, at }) {
+  const niches = list(data && data.niches);
+  const vetoes = list(data && data.vetoes);
+  if (niches.some((n) => isObject(n) && n.name === name)) {
+    return {
+      ...data,
+      niches: niches.map((n) => {
+        if (!isObject(n) || n.name !== name || (!vetoed && n.state !== "vetoed")) return n;
+        return { ...n, state: vetoed ? "vetoed" : "active", state_by: by, state_changed_at: at };
+      }),
+      vetoes,
+    };
+  }
+  const kept = vetoes.filter((v) => !isObject(v) || v.name !== name);
+  if (!vetoed) return { ...data, niches, vetoes: kept };
+  if (kept.length < vetoes.length) return { ...data, niches, vetoes };
+  return { ...data, niches, vetoes: [...vetoes, { name, vetoed_by: by, vetoed_at: at }] };
+}
+
+// ---- the tab's counts in words ------------------------------------------------------------------------------------
+
+// A niche's paid runs: «2 corridas pagadas» in its row, «2 corridas pagadas en este nicho» (`long`) in the week's block.
+export function paidRunsText(count, { long = false } = {}) {
+  const n = number(count) ?? 0;
+  if (n < 1) return long ? T.nichePaidRunsNoneLong : T.nichePaidRunsNone;
+  if (n === 1) return long ? T.nichePaidRunsOneLong : T.nichePaidRunsOne;
+  return fill(long ? T.nichePaidRunsManyLong : T.nichePaidRunsMany, { count: formatNumber(n) });
+}
+
+// A niche's pains: the table's short line, the whole one for a screen reader and the week's block, and, with none, the
+// sentence that says so instead («Sin dolores aún», or «Sin dolores» for a retired niche, which will have none).
+export function painsText(pains, { retired = false } = {}) {
+  const weighty = number(pains && pains.weighty) ?? 0;
+  const watching = number(pains && pains.watching) ?? 0;
+  const params = { weighty: formatNumber(weighty), watching: formatNumber(watching) };
+  return {
+    short: fill(T.nichePainsShort, params),
+    full: fill(T.nichePainsFull, params),
+    none: weighty || watching ? null : retired ? T.nichePainsNoneRetired : T.nichePainsNone,
+  };
+}
+
+// The week's analysis column: the niche against how many others.
+export function versusLabel(rivals) {
+  const n = number(rivals) ?? 0;
+  if (n < 1) return T.nicheVersusNone;
+  if (n === 1) return T.nicheVersusOne;
+  return fill(T.nicheVersus, { n: formatNumber(n) });
+}

@@ -315,8 +315,8 @@ test("a send error says what kind it is: refused text, a pain gone, or the share
   assert.equal(sendErrorKind(null), "other");
 });
 
-test("a 42501 from set_mark, add_comment or delete_comment is «no access», like week_summary's", () => {
-  for (const source of ["set_mark", "add_comment", "delete_comment", "week_summary"]) {
+test("a 42501 from set_mark, add_comment, delete_comment or set_niche_veto is «no access», like week_summary's", () => {
+  for (const source of ["set_mark", "add_comment", "delete_comment", "set_niche_veto", "week_summary"]) {
     assert.equal(classifyError({ code: "42501", source, status: 403 }), "no-access", source);
     assert.equal(sendErrorKind({ code: "42501", source, status: 403 }), "no-access", source);
   }

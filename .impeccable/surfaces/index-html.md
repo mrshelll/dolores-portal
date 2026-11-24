@@ -8,7 +8,7 @@ related_targets: []
 # index.html — tomoshi, the lab results report for deciding
 
 ## Scope
-The whole page (one `index.html`, hash routes): Esta semana `#/`, Catálogo `#/catalogo`, Corridas `#/corridas`,
+The whole page (one `index.html`, hash routes): Esta semana `#/`, Catálogo `#/catalogo`, Nichos `#/nichos`, Corridas `#/corridas`,
 el dolor `#/dolor/<id>`, plus sign-in and «sin permiso». Visitor mode: Operate. Build path: code-led.
 
 ## Brief
@@ -52,3 +52,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   3); the page must not drift from them.
 - Per-country counting: a pain can show 3+ testimonies in total and still be «en observación»; the range must read
   the same counts the run judged.
+
+## Extension: Nichos `#/nichos` (2026-11-24, approved by Miguel)
+- Job: see which niche ran this week and why, and veto any niche (Miguel's or proposed) for the whole team; one click,
+  undone with the same button, like the marks. Inherits the lab report world; no DESIGN.md change.
+- Composition: the approved sketch `.impeccable/mocks/nichos/sketch.html` (shots in `.impeccable/mocks/nichos/shots/`).
+  «ESTA SEMANA»: the chosen niche as a result block: why it was chosen in words, «Sondeo del <fecha>» analysis table
+  (quejas reales, gasto real, ruido) whose range column is «Frente a los otros N»: the value's marker on a band with a
+  tick per rival niche, flagged «CON SEÑAL» / «SIN SEÑAL»; beside it «Sus dolores» and «Vetar este nicho». Then
+  «CANDIDATOS»: one table, every niche with its state in words (Corrió esta semana / Compite / Descansa / Vetado /
+  Retirado), origin (Tuyo / Propuesto por dolores), the proposal's why, quejas, gasto, ruido, its pains, and Vetar /
+  Quitar veto with who vetoed it. From 900 px down each row is a stacked block with the button full width.
+- The masthead's niche becomes a link to `#/nichos`.
