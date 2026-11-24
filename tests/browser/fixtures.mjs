@@ -379,9 +379,10 @@ function runsData({ traces = [fullRunTrace(), failedRunTrace(), incompleteRunTra
 // Nichos: the newest trace carries the chooser's fields (dolores/scripts/lib/trace.mjs: `choice`, `probe`, `why`,
 // `territories`), every niche invented. Four territories: the one that ran this week, one competing, one vetoed by Ana
 // in territory_vetoes (its stale ranking entry still listed, the veto wins) and one resting; two proposed niches, one
-// active with its label and summary, one retired. Pains on two territories; an older paid run on the week's niche and
-// one from before the chooser (no `choice`). With `counts` the week was counted without the judge (Review Focus 4); with
-// `vetoedCurrent` Beto vetoed the week's niche after it ran (Review Focus 1); with `empty` no trace has a choice yet
+// active with its label and summary, one retired. Pains on two territories, one of the week's niche kept only by Ana's
+// «Nos interesa»; an older paid run on the week's niche and one from before the chooser (no `choice`). With `counts`
+// the week was counted without the judge (Review Focus 4); with `vetoedCurrent` Beto vetoed the week's niche after it
+// ran (Review Focus 1); with `failed` this week's run failed after choosing; with `empty` no trace has a choice yet
 // (Review Focus 2). The slugs are only ids: the page must never show one (NICHE_IDS).
 export const NICHE_WEEK = "Huertos compartidos";
 export const NICHE_COMPETING = "Clases de música a domicilio";
@@ -398,13 +399,14 @@ const NICHE_ANA_VETOED_AT = `${daysAgo(5)}T12:00:00Z`;
 const NICHE_BETO_VETOED_AT = `${daysAgo(1)}T12:00:00Z`;
 const NICHE_WHY = "Huertos compartidos trajo esta semana a la vez más quejas y más gasto que los otros nichos.";
 
-function nicheTrace({ counts = false } = {}) {
+function nicheTrace({ counts = false, status = "complete" } = {}) {
   const source = counts ? "counts" : "judge";
   const entry = (name, score, complaints, spending, extra = {}) => ({
     name, score, complaints, spending, source, resting: false, resting_until: null, advanced_pains: null, ...extra,
   });
   return {
     ...runTrace(RUN_ID, today()),
+    status,
     niche: { id: "shared-gardens", name: NICHE_WEEK },
     why: NICHE_WHY,
     territories: NICHE_TERRITORIES,
@@ -428,16 +430,20 @@ function nicheTrace({ counts = false } = {}) {
   };
 }
 
-function nichesData({ counts = false, vetoedCurrent = false, empty: noChoice = false } = {}) {
+function nichesData({ counts = false, vetoedCurrent = false, failed = false, empty: noChoice = false } = {}) {
   // A trace from before the chooser: no `choice` at all.
   const older = { ...runTrace(OLD_RUN_ID, daysAgo(7)), niche: { id: "shared-gardens", name: NICHE_WEEK } };
-  const traces = noChoice ? [{ ...runTrace(RUN_ID, today()), choice: null }, older] : [nicheTrace({ counts }), older];
+  const traces = noChoice
+    ? [{ ...runTrace(RUN_ID, today()), choice: null }, older]
+    : [nicheTrace({ counts, status: failed ? "failed" : "complete" }), older];
   const pain = (id, territory, status) => ({ id, territory, status, team_discard: null });
   return {
-    people: PEOPLE, summary: summary(), traces, cards: [], comments: [], marks: [],
+    people: PEOPLE, summary: summary(failed ? "failed" : "complete"), traces, cards: [], comments: [],
+    marks: [{ pain_id: "dol-0503", author: "ana@example.com", mark: "interested", created_at: `${daysAgo(2)}T10:00:00Z` }],
     pains: [
       pain("dol-0500", "shared-gardens", "alive"), pain("dol-0501", "shared-gardens", "watching"),
-      pain("dol-0502", "shared-gardens", "watching"), pain("dol-0510", "music-lessons", "watching"),
+      pain("dol-0502", "shared-gardens", "watching"), pain("dol-0503", "shared-gardens", "dead"),
+      pain("dol-0510", "music-lessons", "watching"),
     ],
     niches: [
       { name: "bakery-orders", label: "Pedidos de panaderías de barrio", summary: NICHE_PROPOSED_SUMMARY, state: "active",
@@ -538,25 +544,44 @@ export function scenarios() {
     { name: "run-failed", hash: `#/corridas/${OLD_RUN_ID}`, data: runsData(), ready: ".run-line", expectedTitle: runTitleOn(daysAgo(7)) },
     { name: "run-missing", hash: "#/corridas/2020-01-01-1", data: runsData(), ready: "[data-rol=avisos] .notice--info", expectedTitle: T.runTitle },
     // Nichos: the week's niche and why, then every candidate in each state, the proposed one with its summary, and the
-    // vetoed one with who and «Quitar veto». No slug anywhere.
+    // vetoed one with who and «Quitar veto». The niche that ran this week is green «Corrió esta semana» in its block and
+    // its row; its pain kept by «Nos interesa» is its own item in the block and a third figure in the row. No slug.
     { name: "niches", hash: "#/nichos", data: nichesData(), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
       mustRead: [T.nicheWhyLabel, T.nicheSignalIn, T.nicheStateResting, T.nicheStateVetoed, T.nicheStateRetired, T.nicheUnveto,
-        NICHE_PROPOSED_SUMMARY, fill(T.nicheVetoedBy, { name: "Ana", date: formatDayMonth(NICHE_ANA_VETOED_AT) })],
-      mustNotRead: [...NICHE_IDS, T.nicheNoiseUnmeasured] },
-    // Review Focus 1: the week's niche was vetoed after it ran. The week block says «Vetado» with who and when, that the
-    // next Monday runs another, and offers «Quitar veto»; its row in the table agrees.
+        NICHE_PROPOSED_SUMMARY, fill(T.nicheVetoedBy, { name: "Ana", date: formatDayMonth(NICHE_ANA_VETOED_AT) }), T.nicheOriginMine,
+        fill(T.nichePainsShort, { weighty: 1, watching: 2 }), T.nichePainsInterestedOne],
+      mustNotRead: [...NICHE_IDS, T.nicheNoiseUnmeasured],
+      // :text-is does not match a text split by a <b> (the bold numbers), so the counts are found with :has-text.
+      mustShow: [`.niche-week .station-state[data-lamp=green]:has-text("${T.nicheStateCurrent}")`,
+        `${weekRow} .niche-state[data-lamp=green]:text-is("${T.nicheStateCurrent}")`,
+        `.niche-side-list li:has-text("${T.nichePainsInterestedOne}")`,
+        `${weekRow} .niche-cell-pains .niche-pains-line:has-text("${T.nichePainsInterestedOne}")`] },
+    // Review Focus 1: the week's niche was vetoed after it ran. The week block says «Vetado · corrió esta semana» with who
+    // and when, that the next Monday runs another, and offers «Quitar veto»; its row in the table agrees and keeps the
+    // week's numbers (finish review 1).
     { name: "niches-vetoed-current", hash: "#/nichos", data: nichesData({ vetoedCurrent: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
       mustRead: [T.nicheVetoNextVetoed, fill(T.nicheVetoedBy, { name: "Beto", date: formatDayMonth(NICHE_BETO_VETOED_AT) }), T.nicheUnveto],
       mustNotRead: [T.nicheVetoWeek, T.nicheNoVeto, T.nicheVetoNext, ...NICHE_IDS],
-      mustShow: [".niche-week .station-state[data-lamp=red]", `${weekRow} .niche-state[data-lamp=red]`,
+      mustShow: [`.niche-week .station-state[data-lamp=red]:has-text("${T.nicheStateVetoedThisWeek}")`,
+        `${weekRow} .niche-state[data-lamp=red]:text-is("${T.nicheStateVetoedThisWeek}")`,
+        `${weekRow} td.niche-num[data-label="${T.nicheColComplaints}"]:text-is("41")`,
+        `${weekRow} td.niche-num[data-label="${T.nicheColSpending}"]:text-is("38")`,
+        `${weekRow} td.niche-num[data-label="${T.nicheNoise}"]:text-is("${fill(T.nicheNoisePercent, { n: 28 })}")`,
         `${weekRow} .niche-who:text-is("${fill(T.nicheVetoedBy, { name: "Beto", date: formatDayMonth(NICHE_BETO_VETOED_AT) })}")`,
         `${weekRow} .niche-veto:text-is("${T.nicheUnveto}")`] },
+    // This week's run failed after choosing: the block and the row say so in red, never «Corrió».
+    { name: "niches-failed-run", hash: "#/nichos", data: nichesData({ failed: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
+      mustRead: [fill(T.nicheStateFailed, { date: formatDayMonth(today()) })],
+      mustNotRead: [T.nicheStateCurrent, ...NICHE_IDS],
+      mustShow: [".niche-week .station-state[data-lamp=red]", `${weekRow} .niche-state[data-lamp=red]`] },
     // Review Focus 4: the week was counted, not judged: «Ruido» reads «sin medir» and the note says why.
     { name: "niches-counts", hash: "#/nichos", data: nichesData({ counts: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
       mustRead: [T.nicheNoiseUnmeasured, T.nicheNoteCounts], mustNotRead: [NICHE_JUDGE_NOTE, ...NICHE_IDS] },
     // Review Focus 2: no trace has a choice yet: the empty sentence and the way to load again, nothing else.
+    // Finish review 4: nothing changes until Monday's run, so the reload is a secondary action.
     { name: "niches-empty", hash: "#/nichos", data: nichesData({ empty: true }), ready: "[data-rol=vacio] .week-sentence", expectedTitle: T.nichesTitle,
-      mustRead: [T.nichesEmpty, T.reload], mustNotRead: [T.nicheWhyLabel, T.nicheVeto, T.nichesError, ...NICHE_IDS] },
+      mustRead: [T.nichesEmpty, T.reload], mustNotRead: [T.nicheWhyLabel, T.nicheVeto, T.nichesError, ...NICHE_IDS],
+      mustShow: [`[data-rol=vacio] button.button--secondary:text-is("${T.reload}")`] },
     { name: "niches-error", hash: "#/nichos", data: nichesData(), ready: "[data-rol=avisos] .notice--error", expectedTitle: T.nichesTitle,
       mustRead: [T.nichesError], mustNotRead: NICHE_IDS,
       fail: { niches: { status: 500, body: { code: "XX000", message: "fixture failure", details: null, hint: null }, sticky: true } } },

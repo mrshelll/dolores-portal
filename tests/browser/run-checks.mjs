@@ -569,7 +569,7 @@ async function behaviours(browser, base) {
   }
 
   // The top bar's niche is a link to Nichos (the bar shows from 768 px, so at 1440 × 900): from Corridas it opens
-  // #/nichos, whose week block names the same niche.
+  // #/nichos, whose week block names the same niche; there, and only there, the link is the current page.
   {
     const wide = { width: 1440, height: 900, scheme: "light" };
     const from = { ...scenario("niches"), hash: "#/corridas", ready: ".run-list", expectedTitle: T.runsTitle };
@@ -577,13 +577,18 @@ async function behaviours(browser, base) {
     const link = page.locator(".masthead-meta a.meta-link");
     await link.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
     const linkText = await link.textContent().catch(() => null);
+    const currentBefore = await link.getAttribute("aria-current").catch(() => "unread");
     await link.click().catch(() => {});
     const opened = await page.waitForFunction((title) => document.querySelector("h1") && document.querySelector("h1").textContent === title
       && document.querySelector(".niche-week .station-title"), T.nichesTitle, { timeout: 10000 })
-      .then(() => page.evaluate(() => ({ hash: location.hash, week: document.querySelector(".niche-week .station-title").textContent })), () => null);
-    check("the top bar's niche opens #/nichos, on the same niche",
-      linkText === NICHE_WEEK && opened && opened.hash === "#/nichos" && opened.week === NICHE_WEEK && clean(log, problems),
-      `link «${linkText}»; ${JSON.stringify(opened)}; ${why(log, problems)}`);
+      .then(() => page.evaluate(() => ({
+        hash: location.hash, week: document.querySelector(".niche-week .station-title").textContent,
+        current: document.querySelector(".masthead-meta a.meta-link")?.getAttribute("aria-current") ?? null,
+      })), () => null);
+    check("the top bar's niche opens #/nichos, on the same niche, and there it is the current page",
+      linkText === NICHE_WEEK && currentBefore === null && opened && opened.hash === "#/nichos" && opened.week === NICHE_WEEK
+        && opened.current === "page" && clean(log, problems),
+      `link «${linkText}», aria-current before «${currentBefore}»; ${JSON.stringify(opened)}; ${why(log, problems)}`);
     await context.close();
   }
   return results;
