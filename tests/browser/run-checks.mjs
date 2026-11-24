@@ -1008,9 +1008,9 @@ async function behaviours(browser, base) {
 
   // Signing in, «sin permiso» and the page that could not load share one panel: no masthead, a 400 px panel centred on
   // the ground (the panel grey, a 1 px hairline, 8 px corners) with «tomoshi» at its top as plain text, then the title,
-  // its line and the body in that order. On a phone the panel is the page: no edge. The code is one field over eight
-  // boxes the eye reads, hidden from a screen reader; what is typed shows in the boxes, and the next box to fill carries
-  // the focus ring.
+  // its line and the body in that order. On a phone the panel is the page: no edge. The code is one plain field: what is
+  // typed shows in it, in ink and tabular figures, its 8 digits fit it at 320 px too, and a code the page refuses draws
+  // its edge red, as every field's.
   const PANEL_GREY = "rgb(250, 250, 250)";
   const GROUND = "rgb(255, 255, 255)";
   const readPanel = (page) => page.evaluate(() => {
@@ -1050,30 +1050,36 @@ async function behaviours(browser, base) {
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
   }
-  {
-    const wide = { width: 1440, height: 900, scheme: "light" };
-    const { context, page, log, problems } = await openScreen(browser, base, scenario("sign-in-code"), wide);
+  for (const [viewport, ink, fail] of [
+    [{ width: 1440, height: 900, scheme: "light" }, "rgb(10, 10, 10)", "rgb(220, 38, 38)"],
+    [{ width: 320, height: 640, scheme: "dark" }, "rgb(237, 237, 237)", "rgb(248, 113, 113)"],
+  ]) {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("sign-in-code"), viewport);
     await page.type("#code", "1234");
-    const seen = await page.evaluate(() => {
+    const typed = await page.evaluate(() => {
       const field = document.querySelector("#code");
-      const boxes = [...document.querySelectorAll(".code-box")];
-      const row = boxes[0] && boxes[0].parentElement;
-      const fr = field.getBoundingClientRect();
-      const rr = row ? row.getBoundingClientRect() : null;
+      const style = getComputedStyle(field);
+      const r = field.getBoundingClientRect();
+      const panel = document.querySelector(".auth-panel").getBoundingClientRect();
       return {
-        inputs: document.querySelectorAll("form input").length,
-        boxes: boxes.map((b) => b.textContent),
-        hidden: row ? row.getAttribute("aria-hidden") : null,
-        covers: Boolean(rr) && Math.abs(fr.left - rr.left) <= 1 && Math.abs(fr.right - rr.right) <= 1 && fr.height >= 44,
-        focused: document.activeElement === field,
-        ring: boxes.map((b) => getComputedStyle(b).outlineStyle),
+        inputs: document.querySelectorAll("form input").length, boxes: document.querySelectorAll(".code-box, .code-boxes").length,
+        value: field.value, color: style.color, numeric: style.fontVariantNumeric, focused: document.activeElement === field,
+        width: Math.round(r.width), height: Math.round(r.height), inside: r.right <= panel.right,
       };
     });
-    const ring = ["none", "none", "none", "none", "solid", "none", "none", "none"];
-    check("sign-in's code: one field over eight boxes hidden from a screen reader; the digits show in them and the next box has the ring",
-      seen.inputs === 1 && seen.boxes.join("|") === "1|2|3|4||||" && seen.hidden === "true" && seen.covers && seen.focused
-        && seen.ring.join() === ring.join() && clean(log, problems),
-      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await page.press("#code", "Enter");
+    await page.waitForSelector("#code-error:not([hidden])", { timeout: 5000 }).catch(() => {});
+    const refused = await page.evaluate(() => {
+      const field = document.querySelector("#code");
+      const fits = (() => { const kept = field.value; field.value = "88888888"; const ok = field.scrollWidth <= field.clientWidth; field.value = kept; return ok; })();
+      return { invalid: field.getAttribute("aria-invalid"), edge: getComputedStyle(field).borderTopColor, error: document.querySelector("#code-error").textContent, fits };
+    });
+    check(`sign-in's code at ${viewport.width} ${viewport.scheme}: one plain field, its digits in ink and tabular figures, its 8 digits fit, a refused code draws its edge red`,
+      typed.inputs === 1 && typed.boxes === 0 && typed.value === "1234" && typed.color === ink && typed.numeric === "tabular-nums"
+        && typed.focused && typed.width >= 44 && typed.height >= 44 && typed.inside
+        && refused.invalid === "true" && refused.edge === fail && refused.error === fill(T.codeIncomplete, { length: 8 }) && refused.fits
+        && clean(log, problems),
+      `${JSON.stringify({ typed, refused })}; ${why(log, problems)}`);
     await context.close();
   }
   {

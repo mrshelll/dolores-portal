@@ -152,9 +152,9 @@ What runs:
   drawn and hidden from a screen reader, «Con señal» in words) and «Vetar este nicho», under plain headings, and a
   competing niche's dot is grey. Signing in (both steps), «sin permiso» and the page that could not load (its module
   refused, the page's clock run 10 seconds at once) share one 400 px panel centred on the ground, «tomoshi» at its top
-  as plain text and no masthead; on a 390 px phone the panel is the page, with no edge; the code is one field over
-  eight boxes hidden from a screen reader, which show what is typed and ring the next one. At 320 px the four tabs fit
-  their row. «Comentar» on a line of its own (at 390 px, beside «Quitar «Nos interesa»») starts at the row's start, on
+  as plain text and no masthead; on a 390 px phone the panel is the page, with no edge; the code is one plain field
+  (at 1440 px light and 320 px dark) whose digits show in ink and tabular figures, whose 8 digits fit it, and whose
+  edge turns red when the page refuses an incomplete code. At 320 px the four tabs fit their row. «Comentar» on a line of its own (at 390 px, beside «Quitar «Nos interesa»») starts at the row's start, on
   the home and on a pain's page, and beside «Descartar» keeps 20 px. Each behaviour also fails on a request the fake
   does not know.
 

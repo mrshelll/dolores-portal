@@ -1661,20 +1661,6 @@ function showCodeStep(pending, { notice = null } = {}) {
     id: "code", name: "code", type: "text", inputmode: "numeric", autocomplete: "one-time-code",
     pattern: "[0-9]*", class: "code-input", required: true, "aria-describedby": "code-error",
   });
-  // One field over the code's boxes: the field takes the typing, the paste and the phone's autofill as before, its own
-  // text unseen; the boxes show its digits, the next one to fill marked (it carries the focus ring). Hidden from a
-  // screen reader, which reads the field.
-  const boxes = Array.from({ length: EMAIL_OTP_LENGTH }, () => h("span", { class: "code-box" }));
-  function showDigits() {
-    const digits = input.value;
-    boxes.forEach((box, i) => {
-      box.textContent = digits[i] || "";
-      box.toggleAttribute("data-next", i === Math.min(digits.length, EMAIL_OTP_LENGTH - 1));
-    });
-  }
-  showDigits();
-  // A click lands the caret after the last digit, where the marked box says the next one goes.
-  input.addEventListener("click", () => input.setSelectionRange(input.value.length, input.value.length));
   const error = fieldError("code-error");
   const button = h("button", { type: "submit", class: "button button--primary", "data-rol": "accion-principal" }, T.verify);
   const resendStatus = h("p", { class: "hint" }); // changes every second: not a live region
@@ -1729,7 +1715,6 @@ function showCodeStep(pending, { notice = null } = {}) {
   input.addEventListener("input", () => {
     const digits = input.value.replace(/\D/g, "").slice(0, EMAIL_OTP_LENGTH);
     if (digits !== input.value) input.value = digits;
-    showDigits();
     if (!error.hidden) setFieldError(input, error, "");
     if (digits.length === EMAIL_OTP_LENGTH) verify();
   });
@@ -1767,8 +1752,7 @@ function showCodeStep(pending, { notice = null } = {}) {
   });
 
   const form = h("form", { class: "form", "data-medida": "formulario", novalidate: true, onsubmit: verify },
-    h("div", { class: "field" }, h("label", { for: "code" }, t("codeLabel", { length: EMAIL_OTP_LENGTH })),
-      h("div", { class: "code-field" }, input, h("div", { class: "code-boxes", "aria-hidden": "true" }, boxes)), error),
+    h("div", { class: "field" }, h("label", { for: "code" }, t("codeLabel", { length: EMAIL_OTP_LENGTH })), input, error),
     button);
   signInBody(body, form, h("div", { class: "secondary-actions" }, resendStatus, resendButton, otherEmail, live));
   input.focus();

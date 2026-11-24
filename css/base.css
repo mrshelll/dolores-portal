@@ -371,43 +371,16 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
   border-radius: 50%;
   background: var(--fail);
 }
-/* The sign-in's code: one field over its boxes (js/app.js, showCodeStep). The field spans the boxes, its own text and
-   caret unseen (still 16 px); the boxes show its digits, four and four a step apart. While the field has the focus, the
-   next box to fill carries the focus ring; an invalid code draws every box's edge red, 2 px as a field's. */
-.code-field { position: relative; max-width: 25rem; }
+/* The sign-in's code: one plain field, its digits large, spaced and in tabular figures, as wide as the 8 digits and its
+   padding (never wider than the form). Its focus ring and its invalid edge are every field's. */
 .code-input {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  height: 100%;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: transparent;
-  caret-color: transparent;
-}
-.code-input:focus-visible, .code-input[aria-invalid="true"], .code-input[aria-invalid="true"]:focus-visible { outline: none; }
-.code-input::selection { background: transparent; }
-.code-boxes { display: flex; gap: 6px; }
-.code-box {
-  display: grid;
-  place-items: center;
-  flex: 1 1 0;
-  min-width: 0;
-  max-width: var(--target);
-  height: 48px;
-  border: 1px solid var(--edge);
-  border-radius: var(--radius-control);
-  background: var(--ground);
-  color: var(--ink);
-  font-size: 22px;
+  max-width: calc(8 * (1ch + 0.3em) + 2 * var(--space-3) + 2px);
+  font-size: 24px;
   font-weight: 600;
-  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  line-height: 30px;
+  letter-spacing: 0.3em;
 }
-.code-box:nth-child(5) { margin-left: 6px; }
-.code-field:has(> .code-input[aria-invalid="true"]) .code-box { border-color: var(--fail); outline: 1px solid var(--fail); outline-offset: -2px; }
-.code-field:has(> .code-input:focus) .code-box[data-next] { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 /* ---- buttons and actions ----------------------------------------------------------------- */
 
