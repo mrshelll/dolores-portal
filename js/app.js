@@ -9,7 +9,7 @@
 
 import { supabase } from "./supabase-client.js";
 import { EMAIL_OTP_LENGTH } from "../config.js";
-import { h, replaceChildren } from "./dom.js";
+import { h, icon, replaceChildren } from "./dom.js";
 import { T, fill, formatNumber } from "./text.js";
 import { classifyAuthError, isEmailInvalid, isNetworkError, retryAfterSeconds } from "./auth-errors.js";
 import { accessState } from "./access.js";
@@ -25,7 +25,7 @@ import {
   markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
 import { renderLine, lamp } from "./line.js";
-import { checkCells } from "./checks.js";
+import { checkStack, checkCells } from "./checks.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
 
@@ -333,7 +333,6 @@ function ensureWeek() {
 const NOTICE_TONE = { failed: "warning", incomplete: "warning", "ingest-only": "info", none: "info" };
 
 const lower = (value) => String(value ?? "").trim().toLowerCase();
-const pad = (n) => String(n).padStart(2, "0");
 
 // The home and the catalog keep the frame route() drew while checking access (same title), so the screen does not
 // flash. While the pains load the body is busy and says so; it never says «no hay» before the answer (EST-02). A load
@@ -389,9 +388,9 @@ function showLoadError(layout, error, email, otherText) {
     h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.retry));
 }
 
-// «Para decidir» (decideList) as numbered results, with the run's line beside them from 1024 px and as a folded strip
-// under the title below. Over the results, the board (the summary strip) counts the whole catalog by state, each count
-// a way into it.
+// «Para decidir» (decideList) as a list of rows, its sentence beside the heading, with the run's line beside them from
+// 1024 px and as a folded strip under the title below. Under the list, one line counts the whole catalog by state and
+// opens it.
 function renderHome(layout, home, email) {
   const me = lower(email);
   const { latest } = state.week;
@@ -411,6 +410,7 @@ function renderHome(layout, home, email) {
       renderLine(latest.trace, { title: heading.title, note: heading.note, idPrefix: "linea" })));
   }
   const lead = h("p", { class: "page-lead", hidden: !items.length });
+  layout.head.classList.add("home-head");
   layout.head.append(lead,
     renderLine(latest.trace, { compact: true, title: heading.title, note: heading.note, idPrefix: "franja",
       week: weekMeta(home.summary, latest) }));
@@ -422,7 +422,8 @@ function renderHome(layout, home, email) {
       h("p", { class: "week-sentence" }, emptySentence(home.summary, notice)),
       h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
   } else {
-    const counts = board(sections);
+    // With nothing to decide, «Ver el catálogo» is the screen's own button: the line only counts.
+    const counts = catalogLine(sections, { link: items.length > 0 });
     const refresh = () => {
       lead.textContent = decideLead(items, home.marks, me);
       counts.refresh(catalogSections(home));
@@ -433,8 +434,8 @@ function renderHome(layout, home, email) {
         h("p", {}, T.decideEmpty),
         h("a", { class: "button button--primary", "data-rol": "accion-principal", href: "#/catalogo" }, T.seeCatalog)));
     }
-    blocks.push(counts.element);
     if (items.length) blocks.push(stationList(items, { home, email, me, latest, view, onChange: refresh }));
+    blocks.push(counts.element);
     refresh();
   }
   layout.body.removeAttribute("aria-busy");
@@ -442,59 +443,72 @@ function renderHome(layout, home, email) {
   replaceChildren(layout.body, blocks);
 }
 
-// The whole catalog by state: four counts, each a link to Catálogo. `refresh` recounts after a mark.
-const BOARD = [["weighty", "boardWeighty"], ["interested", "boardInterested"], ["watching", "boardWatching"], ["discarded", "boardDiscarded"]];
-function board(sections) {
-  const figures = new Map(BOARD.map(([key]) => [key, h("strong", { class: "board-count" })]));
-  const element = h("section", { class: "board", "aria-label": T.boardLabel },
-    h("ul", { role: "list" }, BOARD.map(([key, label]) => h("li", {},
-      h("a", { class: "board-cell", href: "#/catalogo" }, lamp(painLamp(key)), figures.get(key), h("span", { class: "board-label" }, T[label]))))));
-  const refresh = (next) => BOARD.forEach(([key]) => { figures.get(key).textContent = formatNumber(next[key].length); });
+// The whole catalog by state in one line under the list («En el catálogo: 1 con peso para trabajar · 55 en observación ·
+// 1 descartado por el equipo»; a state with none is left out), then «Abrir el catálogo» unless `link` is false.
+// `refresh` recounts after a mark.
+const CATALOG_LINE = [
+  ["weighty", "catalogLineWeighty", "catalogLineWeighty"],
+  ["interested", "catalogLineInterestedOne", "catalogLineInterested"],
+  ["watching", "catalogLineWatching", "catalogLineWatching"],
+  ["discarded", "catalogLineDiscardedOne", "catalogLineDiscarded"],
+];
+function catalogLine(sections, { link = true } = {}) {
+  const counts = h("span", { class: "catalog-line-counts" });
+  const element = h("p", { class: "catalog-line" }, counts,
+    link ? h("a", { class: "catalog-line-link", href: "#/catalogo" }, T.openCatalog) : null);
+  const refresh = (next) => {
+    const parts = CATALOG_LINE.map(([key, one, many]) => [next[key].length, one, many]).filter(([n]) => n > 0)
+      .map(([n, one, many]) => `${formatNumber(n)} ${T[n === 1 ? one : many]}`);
+    counts.textContent = parts.length ? t("catalogLine", { counts: parts.join(" · ") }) : "";
+    counts.hidden = !parts.length;
+  };
   refresh(sections);
   return { element, refresh };
 }
 
-// «Resultados»: the results in decideList's order, numbered 01, 02…, one result per row.
+// «Para decidir»'s rows in decideList's order, in one bordered list.
 function stationList(items, ctx) {
   const pains = new Map(ctx.home.pains.filter((p) => p && p.id).map((p) => [p.id, p]));
-  return h("div", { class: "results" },
-    h("p", { class: "section-label results-label", id: "resultados" }, T.resultsLabel),
-    h("ol", { class: "stations", role: "list", "aria-labelledby": "resultados" },
-      items.map((item, index) => station(item, index, { ...ctx, pain: pains.get(item.id) }))));
+  return h("ol", { class: "stations", role: "list" },
+    items.map((item, index) => station(item, index, { ...ctx, pain: pains.get(item.id) })));
 }
 
-// One result, as the lab report's block. Its head: the number, the title as the link to the pain, its tags and its
-// state flag at the right (a dot with the state in words, on a chip). Its body, in two columns that stack in a narrow
-// block: at the left the duel's line (for the winner) and its box cells (checkCells: the counts the run judged it by
-// against the run's own thresholds), or, without a gate, a line that says there is no analysis and why it is there
-// in a facts line; at the right «Quién lo
-// sufre», the trend and topic, the team's marks and «Nos interesa», «Descartar» and «Comentar». The duel's winner and
-// the pains with weight are full results; the rest are compact (`station--compact`): one head row with the facts line
-// in it, then the marks and the actions. Each button says what pressing it does, and names its pain for a screen reader
-// (aria-describedby). A mark changes the result in place: a discarded pain stays until the next load, its dot off, so it
-// can be undone with the same button.
+// The icons of a row: the chevron that opens it (it turns down when open, css/base.css) and the speech bubble of
+// «Comentar». Hidden from a screen reader: the button's and the link's words carry them.
+const chevron = () => icon("station-chevron", { paths: ["m9 6 6 6-6 6"] });
+const speech = () => icon("station-speech", { paths: ["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"] });
+
+// One pain of «Para decidir» as a row. Closed: the chevron that opens it; the title as the link to the pain, its tags
+// and who suffers it; its checks (checkStack: each count against the run's own threshold, a ✓ or ✗ beside its words)
+// or, without a gate, why it is there in a facts line; its state (a dot and its words) and the team's marks. Open, under
+// it: the duel's line (for the winner); the box cells (checkCells) or, without a gate, a line that says there is no
+// analysis and the facts line; then «Nos interesa», «Descartar» and «Comentar», and at the right the way to its
+// testimonies and attacks. The first row starts open, the rest closed; a row opens and closes by its chevron or a click
+// on its title area, never leaving the page, and opening one never closes another. Each button says what pressing it
+// does and names its pain for a screen reader (aria-describedby). A mark changes the row in place: a discarded pain
+// stays until the next load, its dot off, so it can be undone with the same button.
 function station(item, index, ctx) {
   const { home, me, pain } = ctx;
   const viewId = state.viewId;
   const titleId = `estacion-${index + 1}`;
+  const openId = `${titleId}-detalle`;
   const href = `#/dolor/${encodeURIComponent(item.id)}`;
-  const light = lamp(item.lamp, { size: "small" });
+  const light = lamp(item.lamp);
   const stateText = h("span", { class: "station-state-text" });
   const stateFlag = h("p", { class: "station-state" }, light, stateText);
   const tags = stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" })
     .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
-  const meta = item.full ? stationMeta(item) : [];
-  const checks = item.full ? checkCells(item.gate) : null;
-  const facts = checks ? [] : stationFactLines(item.facts);
-  const factsLine = facts.length
-    ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null;
+  const facts = stationFactLines(item.facts);
+  const factsLine = () => (facts.length
+    ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null);
+  const cells = checkCells(item.gate);
   const reason = item.facts && item.facts.duelReason;
   const marksLine = h("p", { class: "station-marks" });
   const interested = h("button", { type: "button", class: "button button--primary", "aria-describedby": titleId });
   const discard = h("button", { type: "button", class: "button button--secondary", "aria-describedby": titleId });
   const note = h("p", { class: "station-note", role: "status" });
   const comment = h("a", { class: "button button--quiet", href, "aria-describedby": titleId,
-    onclick: () => { state.focusComment = item.id; } }, T.commentAction);
+    onclick: () => { state.focusComment = item.id; } }, speech(), T.commentAction);
 
   const mine = () => {
     const own = home.marks.find((m) => m && m.pain_id === item.id && lower(m.author) === me);
@@ -545,33 +559,45 @@ function station(item, index, ctx) {
   discard.addEventListener("click", () => press("discarded"));
   refresh();
 
-  // The left column: the duel's line, said as what it is, then the analysis; when there is none, a line that says so
-  // where the cells would be, and why it is there.
-  const main = [
+  // Open or closed: the chevron says it (aria-expanded) and the region shows or hides.
+  let open = index === 0;
+  const toggle = h("button", { type: "button", class: "station-toggle", "aria-label": T.stationDetail, "aria-describedby": titleId,
+    "aria-expanded": String(open), "aria-controls": openId }, chevron());
+  const region = h("div", { class: "station-open", id: openId, hidden: !open },
     reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-    checks,
-    item.full && !checks ? h("p", { class: "analysis-none" }, T.analysisNone) : null,
-    item.full && !checks ? factsLine : null,
-  ].filter(Boolean);
-  return h("li", { class: item.full ? "station" : "station station--compact", "aria-labelledby": titleId },
-    h("div", { class: "station-head" },
+    cells || [h("p", { class: "analysis-none" }, T.analysisNone), factsLine()],
+    h("div", { class: "station-foot" },
+      h("div", { class: "station-actions" }, interested, discard, comment),
+      h("a", { class: "station-evidence", href, "aria-describedby": titleId }, T.stationEvidence),
+      note));
+  const row = h("li", { class: open ? "station is-open" : "station", "aria-labelledby": titleId });
+  function setOpen(next) {
+    open = next;
+    toggle.setAttribute("aria-expanded", String(open));
+    region.hidden = !open;
+    row.classList.toggle("is-open", open);
+  }
+  toggle.addEventListener("click", () => setOpen(!open));
+  // A click anywhere on the row's own line opens or closes it too, unless it lands on a link or a button, or ends a
+  // selection of its text: the chevron is the keyboard's way.
+  const onRowClick = (event) => {
+    if (event.target.closest("a, button")) return;
+    if (String(window.getSelection ? window.getSelection() : "").trim()) return;
+    setOpen(!open);
+  };
+
+  row.append(
+    h("div", { class: "station-row", onclick: onRowClick },
+      toggle,
       h("div", { class: "station-name" },
-        h("span", { class: "station-number", "aria-hidden": "true" }, pad(index + 1)),
-        h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title))),
-      tags.length ? h("p", { class: "station-tags" }, tags) : null,
-      item.full ? null : factsLine,
-      stateFlag),
-    h("div", { class: main.length ? "station-body" : "station-body station-body--single" },
-      main.length ? h("div", { class: "station-main" }, main) : null,
-      h("div", { class: "station-side" },
-        item.full && item.who
-          ? h("p", { class: "station-who" }, h("span", { class: "section-label" }, T.whoLabel), h("span", { class: "visually-hidden" }, ": "), item.who)
-          : null,
-        meta.length ? h("p", { class: "station-meta" }, meta.join(" · ")) : null,
-        h("div", { class: "station-foot" },
-          marksLine,
-          h("div", { class: "station-actions" }, interested, discard, comment),
-          note))));
+        h("div", { class: "station-heading" },
+          h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title)),
+          tags),
+        item.who ? h("p", { class: "station-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null),
+      checkStack(item.gate) || factsLine(),
+      h("div", { class: "station-status" }, stateFlag, marksLine)),
+    region);
+  return row;
 }
 
 // ---- Catálogo: every pain by state --------------------------------------------------------

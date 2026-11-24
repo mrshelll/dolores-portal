@@ -260,7 +260,8 @@ function homeData(status = "complete", { oldTrace = false, longTitle = false, ga
     traces: [runTrace(RUN_ID, oldTrace ? daysAgo(7) : today())],
     pains: [
       { ...PAIN_0027, history: seen(before), ...(gates ? { gate: GATE_IN_RANGE } : {}) },
-      { ...PAIN_0002, history: seen(before, week) },
+      // A pain stored before the gate existed: its row shows its facts line, never a check.
+      { ...PAIN_0002, history: seen(before, week), gate: null },
       ...watching.pains,
       { id: "dol-0030", territory: "document-data-extraction", status: "manually-discarded", team_discard: { previous_status: "watching" } },
     ],
@@ -488,7 +489,7 @@ export function scenarios() {
     // The pain with weight reads in range, the winner out of range on its types of source (counted within one country),
     // and the compact ones without a gate keep their facts line.
     { name: "home", hash: "#/", data: homeData(), ready: HOME_LIST, expectedTitle: T.homeTitle,
-      mustRead: [T.lineTitle, WINNER_REASON, T.resultsLabel.toLocaleUpperCase("es"), T.analysisIn, T.analysisOut, T.analysisPerCountry,
+      mustRead: [T.lineTitle, WINNER_REASON, T.analysisIn, T.analysisOut, T.analysisPerCountry,
         fill(T.factTestimoniesMany, { count: 4 })],
       mustNotRead: [T.analysisNone] },
     // Review Focus 2: the week's run left no trace; the line is the one before, by its date, drawn in its final state.

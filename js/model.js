@@ -682,10 +682,12 @@ export function runDuration(trace) {
 
 const costOf = (trace) => (trace && trace.cost && typeof trace.cost === "object" ? trace.cost : {});
 
-// The line under the line's title: «4 de febrero», «duró 26 min», «1,50 USD». What the trace does not say is left out.
-export function runFacts(trace) {
+// The line under the line's title: «4 de febrero», «10 pasos» (with `steps`, how many the line has), «duró 26 min»,
+// «1,50 USD». What the trace does not say is left out.
+export function runFacts(trace, { steps = 0 } = {}) {
   if (!isTrace(trace)) return [];
-  return [formatDayMonth(trace.date), runDuration(trace), usd(costOf(trace).total_usd)].filter(Boolean);
+  const stepsText = Number.isInteger(steps) && steps > 0 ? (steps === 1 ? T.lineStepsOne : fill(T.lineSteps, { count: formatNumber(steps) })) : null;
+  return [formatDayMonth(trace.date), stepsText, runDuration(trace), usd(costOf(trace).total_usd)].filter(Boolean);
 }
 
 // The cost by model, then the cards, as the line's foot.

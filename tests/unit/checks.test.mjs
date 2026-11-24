@@ -26,6 +26,9 @@ function withFakeDocument(run) {
   try { return run(); } finally { globalThis.document = saved.document; globalThis.Node = saved.Node; }
 }
 const textOf = (el) => (el.nodeType === 3 ? el.textContent : el.children.map(textOf).join(""));
+// What the eye reads: the text outside the visually hidden spans (a screen reader hears those too).
+const shownOf = (el) => (el.nodeType === 3 ? el.textContent
+  : (el.attributes.class || "").split(" ").includes("visually-hidden") ? "" : el.children.map(shownOf).join(""));
 const all = (el, test) => (el.nodeType !== 1 ? [] : [...(test(el) ? [el] : []), ...el.children.flatMap((c) => all(c, test))]);
 const byTag = (el, tag) => all(el, (n) => n.tagName === tag);
 const hasClass = (name) => (n) => (n.attributes.class || "").split(" ").includes(name);
@@ -55,13 +58,25 @@ test("checkStack: one check per count, its result as data and its words as text"
   assert.equal(items.length, 3);
   assert.ok(items.every(hasClass("check")));
   assert.deepEqual(items.map((li) => li.attributes["data-result"]), ["pass", "fail", "pass"]);
-  assert.deepEqual(items.map(textOf), ["4 testimonios", "1 tipo de fuente · falta 1", "4 de 5 ataques"]);
+  assert.deepEqual(items.map(shownOf), ["4 testimonios", "1 tipo de fuente · falta 1", "4 de 5 ataques"]);
+});
+
+// The ✓ and ✗ differ for the eye; a screen reader hears the result in words after each check, and nothing after one
+// with no result (its own words say it has none).
+test("checkStack: a passing check says «dentro del rango» and a failing one «fuera del rango», for a screen reader only", () => {
+  const items = byTag(stack(gateWith({ survivals: null, verdicts: 3 })), "LI");
+  const said = items.map((li) => byClass(li, "visually-hidden").map(textOf));
+  assert.deepEqual(said, [[`, ${T.checkSaidPass}`], [`, ${T.checkSaidFail}`], []]);
+  assert.equal(T.checkSaidPass, "dentro del rango");
+  assert.equal(T.checkSaidFail, "fuera del rango");
+  assert.deepEqual(items.map(textOf), [
+    "4 testimonios, dentro del rango", "1 tipo de fuente · falta 1, fuera del rango", "Sin resultado completo (3 de 5 respondieron)"]);
 });
 
 test("checkStack: each check's circle is an SVG hidden from a screen reader, its mark by the result", () => {
   const items = byTag(stack(gateWith({ survivals: null, verdicts: 3 })), "LI");
   assert.deepEqual(items.map((li) => li.attributes["data-result"]), ["pass", "fail", "none"]);
-  assert.equal(textOf(items[2]), "Sin resultado completo (3 de 5 respondieron)");
+  assert.equal(shownOf(items[2]), "Sin resultado completo (3 de 5 respondieron)");
   const icons = items.map((li) => byTag(li, "SVG"));
   for (const list of icons) {
     assert.equal(list.length, 1);
@@ -78,7 +93,7 @@ test("checkStack: a missing statement is a fourth check, failed", () => {
   const items = byTag(stack(gateWith({ has_statement: false })), "LI");
   assert.equal(items.length, 4);
   assert.equal(items[3].attributes["data-result"], "fail");
-  assert.equal(textOf(items[3]), "Falta cómo lo cuenta quien lo sufre");
+  assert.equal(shownOf(items[3]), "Falta cómo lo cuenta quien lo sufre");
 });
 
 test("checkCells: one cell per count with its label, value, verdict and minimum", () => {
@@ -121,6 +136,39 @@ test("checkCells: a threshold as high as the row still draws its rule, at the en
   const [, , attacks] = byClass(cells(gate), "check-cell");
   const [row] = byClass(attacks, "box-row");
   assert.deepEqual(row.children.map((n) => n.attributes.class), ["box box--filled", "box", "box", "box-rule"]);
+});
+
+// A row never draws more than ten boxes: past ten, the boxes stand for tenths of the row, the filled ones round(at / max
+// × 10) and the rule after round(min / max × 10); the figure and the words keep the exact count. The drawing never
+// contradicts the verdict: a count in range reaches the rule, one out of range stops before it.
+const boxesOf = (row) => row.children.map((n) => n.attributes.class);
+const drawn = (gate, index) => {
+  const [row] = byClass(byClass(cells(gate), "check-cell")[index], "box-row");
+  return boxesOf(row);
+};
+test("checkCells: a row past ten draws ten boxes, filled and ruled by tenths; the figure keeps the count", () => {
+  // Testimonies 25 against «Mínimo 3»: the row spans 25, ten boxes, all filled, the rule after the first (3 / 25 × 10).
+  const gate = gateWith({ testimonies: 25 });
+  const boxes = drawn(gate, 0);
+  assert.ok(boxes.filter((c) => c.startsWith("box ") || c === "box").length <= 10);
+  assert.deepEqual(boxes, ["box box--filled", "box-rule", ...Array(9).fill("box box--filled")]);
+  const [testimonies] = byClass(cells(gate), "check-cell");
+  assert.equal(textOf(byClass(testimonies, "check-figure")[0]), "25");
+  // 7 of a row of 14 against «Mínimo 7» (testimonies 7, threshold 7, row 14): half filled, the rule after the fifth.
+  assert.deepEqual(drawn(gateWith({ testimonies: 7, thresholds: { ...GATE.thresholds, testimonies: 7 } }), 0),
+    [...Array(5).fill("box box--filled"), "box-rule", ...Array(5).fill("box")]);
+});
+
+test("checkCells: past ten, a count out of range stops before the rule even when its tenth rounds up to it", () => {
+  // 9 against «Mínimo 10» spans 20: 4.5 tenths would round to the rule's 5; it draws 4.
+  const boxes = drawn(gateWith({ testimonies: 9, thresholds: { ...GATE.thresholds, testimonies: 10 } }), 0);
+  assert.deepEqual(boxes, [...Array(4).fill("box box--filled"), "box", "box-rule", ...Array(5).fill("box")]);
+});
+
+test("checkCells: past ten, a threshold under a twentieth of the row puts the rule before the first box", () => {
+  // 200 against «Mínimo 3»: 3 / 200 × 10 rounds to 0.
+  const boxes = drawn(gateWith({ testimonies: 200 }), 0);
+  assert.deepEqual(boxes, ["box-rule", ...Array(10).fill("box box--filled")]);
 });
 
 test("checkCells: attacks with no complete result have no boxes and no verdict; the statement has no boxes", () => {

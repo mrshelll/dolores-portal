@@ -84,12 +84,18 @@ export const T = Object.freeze({
   leadOrderWeighty: "Primero, los que tienen peso para trabajar.",
   decideEmpty: "No hay nada para decidir ahora. Los demás dolores están en el catálogo.",
   seeCatalog: "Ver el catálogo",
-  resultsLabel: "Resultados",
-  boardLabel: "El catálogo completo",
-  boardWeighty: "con peso para trabajar",
-  boardInterested: "marcados «Nos interesa»",
-  boardWatching: "en observación",
-  boardDiscarded: "descartados por el equipo",
+  // Under the list, the whole catalog by state in one line, each count before its words (a state with none is left out).
+  catalogLine: "En el catálogo: {counts}",
+  catalogLineWeighty: "con peso para trabajar",
+  catalogLineInterestedOne: "marcado «Nos interesa»",
+  catalogLineInterested: "marcados «Nos interesa»",
+  catalogLineWatching: "en observación",
+  catalogLineDiscardedOne: "descartado por el equipo",
+  catalogLineDiscarded: "descartados por el equipo",
+  openCatalog: "Abrir el catálogo",
+  // A row's chevron (its open or closed state is the button's own) and, open, the way to its evidence.
+  stationDetail: "Detalle",
+  stationEvidence: "Ver los testimonios y los ataques",
   whoLabel: "Quién lo sufre",
   tagWinner: "Ganó el duelo",
   tagWinnerDated: "Ganó el duelo del {date}",
@@ -129,6 +135,9 @@ export const T = Object.freeze({
   checkMissingOne: "falta 1",
   checkMissing: "faltan {n}",
   checkStatement: "Falta cómo lo cuenta quien lo sufre",
+  // A stacked check's result, for a screen reader only: the ✓ and ✗ say it to the eye.
+  checkSaidPass: "dentro del rango",
+  checkSaidFail: "fuera del rango",
   // Where the checks would be, on a full result or a pain's page, when the pain has no gate (stored before it existed).
   analysisNone: "Sin análisis guardado para este dolor",
   duelReasonLabel: "En el duelo:",
@@ -148,6 +157,13 @@ export const T = Object.freeze({
   lineStripCutsOne: "1 etapa con recorte",
   lineStripCuts: "{count} etapas con recorte",
   lineStripClean: "Sin recortes",
+  // The line as a step list: how many steps, how many had a cut, and its two column heads.
+  lineStepsOne: "1 paso",
+  lineSteps: "{count} pasos",
+  lineCutsOne: "Hubo recorte en 1 paso",
+  lineCuts: "Hubo recorte en {count} pasos",
+  lineColStep: "Paso",
+  lineColLeft: "Quedan",
   durationMinutes: "duró {minutes} min",
   durationHours: "duró {hours} h {minutes} min",
   durationShort: "duró menos de un minuto",
@@ -166,17 +182,8 @@ export const T = Object.freeze({
   sourceUnknown: "sin dato",
   sourceOf: "de {available}",
   otherCuts: "Otros recortes",
-  // The line as the lab report's processed sample: the table's columns, and in words for a screen reader what the table
-  // abbreviates («N°», «Cant.») or leaves as a dash.
-  lineColNumber: "N°",
-  lineColNumberFull: "Número",
-  lineColStage: "Etapa",
-  lineColCount: "Cant.",
-  lineColCountFull: "Cantidad",
-  lineColCap: "Tope",
+  // Corridas' column of each run's state; a source's name, said as one for a screen reader.
   lineColFlag: "Indicador",
-  lineNoCap: "sin tope",
-  lineNoCount: "sin dato",
   sourceRowLabel: "Fuente:",
   // The cuts the page cannot explain, said once on the home's line, as a link to the run's page.
   cutOtherLinkOne: "Hubo un recorte más; míralo en su corrida",

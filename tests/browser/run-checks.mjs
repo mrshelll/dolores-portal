@@ -370,6 +370,8 @@ async function behaviours(browser, base) {
       for (let i = 0; i < 50 && (await note.textContent()) !== text; i += 1) await page.waitForTimeout(100);
       return note.textContent();
     };
+    // Its row starts closed (the first one is the duel's winner): its chevron opens it, then the actions show.
+    await station.locator(".station-toggle").click({ timeout: 5000 }).catch(() => {});
     await station.locator(".station-actions .button--primary").click();
     const removed = { note: await noteBecomes(T.markRemoved), marks: mine(), count: await tabCount(page) };
     await station.locator(".station-actions .button--primary").click();
@@ -379,6 +381,52 @@ async function behaviours(browser, base) {
         && saved.note === T.markSavedInterested && saved.marks.join() === "interested" && saved.count === String(HOME_WAITING)
         && log.calls.filter((c) => c === "POST /rest/v1/rpc/set_mark").length === 2 && clean(log, problems),
       `${JSON.stringify({ waiting: HOME_WAITING, removed, saved })}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // «Para decidir» as rows (Review Focus 4): the first starts open, the rest closed, each chevron a button that says
+  // whether its row is open and which region it opens. A closed row shows its checks and hides its actions. Its chevron,
+  // or a click on its title area (here, who suffers it), opens it without leaving the page, and the rows already open
+  // stay open; the title is still the link to the pain. A pain without a gate (dol-0002) shows its facts line instead of
+  // the checks.
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), wide);
+    const rows = () => page.evaluate(() => [...document.querySelectorAll("li.station")].map((li) => {
+      const toggle = li.querySelector("button.station-toggle");
+      const region = toggle && document.getElementById(toggle.getAttribute("aria-controls") || "");
+      const shown = (sel) => { const el = li.querySelector(sel); return Boolean(el && el.checkVisibility()); };
+      return {
+        href: li.querySelector(".station-title a")?.getAttribute("href") ?? null,
+        expanded: toggle ? toggle.getAttribute("aria-expanded") : null,
+        region: Boolean(region && li.contains(region) && region.classList.contains("station-open")),
+        open: Boolean(region && region.checkVisibility()),
+        stack: shown(".check-stack"), actions: shown(".station-actions"), facts: shown(".station-facts"),
+      };
+    }));
+    const before = await rows();
+    const at = (list, id) => list.find((row) => row.href === `#/dolor/${id}`) || {};
+    const closed = before.slice(1).filter((row) => !row.open);
+    const third = page.locator("li.station").nth(2);
+    const fourth = page.locator("li.station").nth(3);
+    await third.locator(".station-toggle").click({ timeout: 5000 }).catch(() => {});
+    await fourth.locator(".station-who").click({ timeout: 5000 }).catch(() => {});
+    const after = await rows();
+    const hash = await page.evaluate(() => location.hash);
+    check("Esta semana's rows: the first open, the rest closed; a closed row shows its checks, not its actions",
+      before.length >= 4 && before.every((row) => row.region && /^#\/dolor\/dol-\d+$/.test(row.href))
+        && before[0].expanded === "true" && before[0].open && before[0].actions
+        && before.slice(1).every((row) => row.expanded === "false" && !row.open) && closed.length === before.length - 1
+        && at(before, "dol-0027").stack && !at(before, "dol-0027").actions && clean(log, problems),
+      `${JSON.stringify(before)}; ${why(log, problems)}`);
+    check("Esta semana's rows: the chevron or the title area opens a row in place, and the open ones stay open",
+      hash === "#/" && after[0].open && after[0].expanded === "true"
+        && [2, 3].every((i) => after[i] && after[i].open && after[i].expanded === "true" && after[i].actions)
+        && after.filter((row) => row.open).length === 3 && clean(log, problems),
+      `hash ${hash}; ${JSON.stringify(after)}; ${why(log, problems)}`);
+    check("Esta semana's rows: a pain without a gate shows its facts line and no checks",
+      at(before, "dol-0002").facts === true && at(before, "dol-0002").stack === false && clean(log, problems),
+      `${JSON.stringify(at(before, "dol-0002"))}; ${why(log, problems)}`);
     await context.close();
   }
 

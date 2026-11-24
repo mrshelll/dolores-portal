@@ -99,15 +99,16 @@ test("every label the shell, the home and the line use exists", () => {
   const keys = [
     "tabsLabel", "tabWeek", "tabCatalog", "tabRuns", "brandLampGreen", "brandLampAmber", "brandLampRed",
     "metaWeek", "metaNiche", "metaCost", "homeTitle", "leadNoPending", "leadPendingOne", "leadPendingMany",
-    "leadOrderWinnerWeighty", "leadOrderWinner", "leadOrderWeighty", "decideEmpty", "seeCatalog", "boardLabel",
-    "boardWeighty", "boardInterested", "boardWatching", "boardDiscarded", "whoLabel", "tagWinner", "tagWinnerDated",
+    "leadOrderWinnerWeighty", "leadOrderWinner", "leadOrderWeighty", "decideEmpty", "seeCatalog", "catalogLine",
+    "catalogLineWeighty", "catalogLineInterestedOne", "catalogLineInterested", "catalogLineWatching", "catalogLineDiscardedOne",
+    "catalogLineDiscarded", "openCatalog", "stationDetail", "stationEvidence", "whoLabel", "tagWinner", "tagWinnerDated",
     "tagFresh", "noMarksYet", "commentAction", "stationInterested", "markSavedInterested", "markRemoved",
     "lineLabel", "lineTitle", "lineTitleOld", "lineTitleOldUndated", "lineNoTrace", "lineOlderNote",
     "lineNoRun", "lineStripCutsOne", "lineStripCuts", "lineStripClean", "durationMinutes", "durationHours", "durationShort",
     "costUsd", "costCards", "costLabel", "stageOk", "stageCut", "stageNoData", "stageCap", "sourcesLabel", "sourceOk",
     "sourceTruncated", "sourceEmpty", "sourceFailed", "sourceUnknown", "sourceOf", "otherCuts",
-    "lineColNumber", "lineColNumberFull", "lineColStage", "lineColCount", "lineColCountFull", "lineColCap", "lineColFlag",
-    "lineNoCap", "lineNoCount", "sourceRowLabel", "catalogTitle",
+    "lineStepsOne", "lineSteps", "lineCutsOne", "lineCuts", "lineColStep", "lineColLeft", "lineColFlag",
+    "sourceRowLabel", "catalogTitle",
     "catalogLoading", "runsTitle", "runsLead", "runsLoading", "runsError", "runsEmpty", "runMissing", "statusOut",
     "runTitleDated", "runTitleUndated", "runStateComplete", "runStateIncomplete", "runStateIngestOnly", "runStateFailed",
     "runStateUnknown", "costTotal", "cutsOtherMany", "duelLine", "techTitle", "techLead",
@@ -116,6 +117,11 @@ test("every label the shell, the home and the line use exists", () => {
   ];
   for (const key of keys) assert.equal(typeof T[key], "string", `T.${key} is missing`);
   assert.match(T.lineTitleOld, /\{date\}/);
+  assert.equal(fill(T.catalogLine, { counts: "1 con peso para trabajar" }), "En el catálogo: 1 con peso para trabajar");
+  assert.equal(T.openCatalog, "Abrir el catálogo");
+  assert.equal(T.stationEvidence, "Ver los testimonios y los ataques");
+  assert.equal(fill(T.lineCuts, { count: 3 }), "Hubo recorte en 3 pasos");
+  assert.equal([T.lineColStep, T.lineColLeft].join(), "Paso,Quedan");
   assert.equal(T.tabWeek, "Esta semana");
   assert.equal(T.tabCatalog, "Catálogo");
   assert.equal(T.tabRuns, "Corridas");

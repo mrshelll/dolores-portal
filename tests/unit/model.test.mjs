@@ -855,6 +855,17 @@ test("runFacts: the day, how long it took when both times exist, and the cost", 
   assert.deepEqual(runFacts(null), []);
 });
 
+// The step list's head: how many steps the line has, after the day («4 de febrero · 10 pasos · duró 26 min · 1,50 USD»).
+test("runFacts: with `steps`, how many steps the line has, after the day; none with no steps", () => {
+  const run = trace("2030-02-04-1", "2030-02-04", { started_at: "2030-02-04T09:00:00Z", finished_at: "2030-02-04T09:26:20Z" });
+  assert.deepEqual(runFacts(run, { steps: 10 }),
+    ["4 de febrero", "10 pasos", fill(T.durationMinutes, { minutes: 26 }), fill(T.costUsd, { amount: "1,50" })]);
+  assert.deepEqual(runFacts(run, { steps: 1 }).slice(0, 2), ["4 de febrero", "1 paso"]);
+  assert.deepEqual(runFacts(run, { steps: 0 }), runFacts(run));
+  const undated = trace("2030-02-04-1", null, { cost: null });
+  assert.deepEqual(runFacts(undated, { steps: 3 }), ["3 pasos"]);
+});
+
 test("costRows: each model, then the cards, in USD; nothing that is not a number", () => {
   const run = trace("2030-02-04-1", "2030-02-04", {
     cost: { total_usd: 2, by_model: [{ model: "Modelo A", usd: 1.2 }, { model: "", usd: 1 }, { model: "Modelo B", usd: "x" }, null], cards_usd: 0.3 },
