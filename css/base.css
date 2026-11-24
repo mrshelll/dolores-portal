@@ -1238,8 +1238,11 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
   .niche-table .niche-cell-state { grid-column: 1 / -1; grid-row: 1; }
   .niche-table .niche-cell-name { grid-column: 1 / -1; grid-row: 2; }
   .niche-table td.niche-num { font-size: 16px; text-align: left; white-space: normal; }
+  /* The column's name for the eye only: the empty alternative text keeps a screen reader from saying it on top of
+     the column header it already announces (a browser without alternative text keeps the first line). */
   .niche-table td.niche-num::before {
     content: attr(data-label);
+    content: attr(data-label) / "";
     display: block;
     color: var(--muted);
     font-size: var(--text-xs);

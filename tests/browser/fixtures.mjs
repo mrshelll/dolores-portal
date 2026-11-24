@@ -4,7 +4,7 @@
 // loads. The data has the base's shapes (a full card, a version-1 line card and its version-2 rewrite), but every text
 // in it is invented: this repository is public and carries no catalog data.
 
-import { T, fill, formatDate } from "../../js/text.js";
+import { T, fill, formatDate, formatDayMonth } from "../../js/text.js";
 
 export const SUPABASE_ORIGIN = "https://hphrlkvkefztxvlamrmh.supabase.co";
 export const STORAGE_KEY = "sb-hphrlkvkefztxvlamrmh-auth-token";
@@ -376,6 +376,82 @@ function runsData({ traces = [fullRunTrace(), failedRunTrace(), incompleteRunTra
   };
 }
 
+// Nichos: the newest trace carries the chooser's fields (dolores/scripts/lib/trace.mjs: `choice`, `probe`, `why`,
+// `territories`), every niche invented. Four territories: the one that ran this week, one competing, one vetoed by Ana
+// in territory_vetoes (its stale ranking entry still listed, the veto wins) and one resting; two proposed niches, one
+// active with its label and summary, one retired. Pains on two territories; an older paid run on the week's niche and
+// one from before the chooser (no `choice`). With `counts` the week was counted without the judge (Review Focus 4); with
+// `vetoedCurrent` Beto vetoed the week's niche after it ran (Review Focus 1); with `empty` no trace has a choice yet
+// (Review Focus 2). The slugs are only ids: the page must never show one (NICHE_IDS).
+export const NICHE_WEEK = "Huertos compartidos";
+export const NICHE_COMPETING = "Clases de música a domicilio";
+export const NICHE_COMPETING_ID = "music-lessons";
+const NICHE_PROPOSED_SUMMARY = "Panaderías pequeñas que toman encargos por mensajes y pierden pedidos entre una conversación y otra.";
+const NICHE_TERRITORIES = [
+  { id: "shared-gardens", name: NICHE_WEEK },
+  { id: NICHE_COMPETING_ID, name: NICHE_COMPETING },
+  { id: "boat-rentals", name: "Alquiler de barcas de recreo" },
+  { id: "pet-sitting", name: "Cuidado de mascotas en vacaciones" },
+];
+const NICHE_IDS = [...NICHE_TERRITORIES.map((t) => t.id), "bakery-orders", "tailor-shops"];
+const NICHE_ANA_VETOED_AT = `${daysAgo(5)}T12:00:00Z`;
+const NICHE_BETO_VETOED_AT = `${daysAgo(1)}T12:00:00Z`;
+const NICHE_WHY = "Huertos compartidos trajo esta semana a la vez más quejas y más gasto que los otros nichos.";
+
+function nicheTrace({ counts = false } = {}) {
+  const source = counts ? "counts" : "judge";
+  const entry = (name, score, complaints, spending, extra = {}) => ({
+    name, score, complaints, spending, source, resting: false, resting_until: null, advanced_pains: null, ...extra,
+  });
+  return {
+    ...runTrace(RUN_ID, today()),
+    niche: { id: "shared-gardens", name: NICHE_WEEK },
+    why: NICHE_WHY,
+    territories: NICHE_TERRITORIES,
+    choice: {
+      territory: "shared-gardens", reason: "first", stalled: false,
+      ranking: [
+        entry("shared-gardens", 38, 41, 38, { advanced_pains: 2 }),
+        entry("music-lessons", 22, 30, 22),
+        entry("bakery-orders", 12, 18, 12),
+        entry("boat-rentals", 9, 15, 9),
+        entry("pet-sitting", 4, 9, 4, { resting: true, resting_until: daysAgo(-14) }),
+      ],
+    },
+    probe: [
+      { name: "shared-gardens", noise_share: counts ? null : 0.28, source },
+      { name: "music-lessons", noise_share: counts ? null : 0.35, source },
+      { name: "bakery-orders", noise_share: counts ? null : 0.41, source },
+      { name: "boat-rentals", noise_share: counts ? null : 0.5, source },
+      { name: "pet-sitting", noise_share: counts ? null : 0.2, source },
+    ],
+  };
+}
+
+function nichesData({ counts = false, vetoedCurrent = false, empty: noChoice = false } = {}) {
+  // A trace from before the chooser: no `choice` at all.
+  const older = { ...runTrace(OLD_RUN_ID, daysAgo(7)), niche: { id: "shared-gardens", name: NICHE_WEEK } };
+  const traces = noChoice ? [{ ...runTrace(RUN_ID, today()), choice: null }, older] : [nicheTrace({ counts }), older];
+  const pain = (id, territory, status) => ({ id, territory, status, team_discard: null });
+  return {
+    people: PEOPLE, summary: summary(), traces, cards: [], comments: [], marks: [],
+    pains: [
+      pain("dol-0500", "shared-gardens", "alive"), pain("dol-0501", "shared-gardens", "watching"),
+      pain("dol-0502", "shared-gardens", "watching"), pain("dol-0510", "music-lessons", "watching"),
+    ],
+    niches: [
+      { name: "bakery-orders", label: "Pedidos de panaderías de barrio", summary: NICHE_PROPOSED_SUMMARY, state: "active",
+        state_by: null, state_changed_at: null, proposed_at: `${daysAgo(10)}T08:00:00Z` },
+      { name: "tailor-shops", label: "Arreglos en talleres de costura", summary: "Talleres que apuntan los arreglos en papel y no saben cuándo avisar al cliente.",
+        state: "retired", state_by: null, state_changed_at: `${daysAgo(20)}T08:00:00Z`, proposed_at: `${daysAgo(120)}T08:00:00Z` },
+    ],
+    vetoes: [
+      { name: "boat-rentals", vetoed_by: "ana@example.com", vetoed_at: NICHE_ANA_VETOED_AT },
+      ...(vetoedCurrent ? [{ name: "shared-gardens", vetoed_by: "beto@example.com", vetoed_at: NICHE_BETO_VETOED_AT }] : []),
+    ],
+  };
+}
+
 // ---- scenarios ----------------------------------------------------------------------------------
 
 // Each scenario: the hash it opens, whether a session is injected, a pending sign-in (the code screen), the data, the
@@ -392,6 +468,8 @@ const ANALYSIS = [T.analysisCaption.toLocaleUpperCase("es"), T.analysisIn, T.ana
 const CATALOG_LIST = ".pain-list";
 const MORE_BUTTON = `button.link-button:text-is("${T.showMore.replace("{count}", "20")}")`;
 const runTitleOn = (day) => fill(T.runTitleDated, { date: formatDate(day) });
+const NICHE_TABLE = ".niche-table";
+const NICHE_JUDGE_NOTE = T.nicheNoteJudge.split("{")[0];
 export function scenarios() {
   const oldLine = fill(T.lineTitleOld, { date: formatDate(daysAgo(7)) });
   return [
@@ -458,6 +536,27 @@ export function scenarios() {
       open: ["details.run-tech > summary"], mustShow: [".run-tech-body"], mustRead: [T.techLead, "RAW-ORIGINAL", "RAW-REASON second", "RAW-NOTE"] },
     { name: "run-failed", hash: `#/corridas/${OLD_RUN_ID}`, data: runsData(), ready: ".run-line", expectedTitle: runTitleOn(daysAgo(7)) },
     { name: "run-missing", hash: "#/corridas/2020-01-01-1", data: runsData(), ready: "[data-rol=avisos] .notice--info", expectedTitle: T.runTitle },
+    // Nichos: the week's niche and why, then every candidate in each state, the proposed one with its summary, and the
+    // vetoed one with who and «Quitar veto». No slug anywhere.
+    { name: "niches", hash: "#/nichos", data: nichesData(), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
+      mustRead: [T.nicheWhyLabel, T.nicheSignalIn, T.nicheStateResting, T.nicheStateVetoed, T.nicheStateRetired, T.nicheUnveto,
+        NICHE_PROPOSED_SUMMARY, fill(T.nicheVetoedBy, { name: "Ana", date: formatDayMonth(NICHE_ANA_VETOED_AT) })],
+      mustNotRead: [...NICHE_IDS, T.nicheNoiseUnmeasured] },
+    // Review Focus 1: the week's niche was vetoed after it ran. The week block says «Vetado» with who and when, that the
+    // next Monday runs another, and offers «Quitar veto»; its row in the table agrees.
+    { name: "niches-vetoed-current", hash: "#/nichos", data: nichesData({ vetoedCurrent: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
+      mustRead: [T.nicheVetoNextVetoed, fill(T.nicheVetoedBy, { name: "Beto", date: formatDayMonth(NICHE_BETO_VETOED_AT) }), T.nicheUnveto],
+      mustNotRead: [T.nicheVetoWeek, T.nicheNoVeto, T.nicheVetoNext, ...NICHE_IDS],
+      mustShow: [".niche-week .station-state[data-lamp=red]", `.niche-table tr:has(.niche-name:text-is("${NICHE_WEEK}")) .niche-state[data-lamp=red]`] },
+    // Review Focus 4: the week was counted, not judged: «Ruido» reads «sin medir» and the note says why.
+    { name: "niches-counts", hash: "#/nichos", data: nichesData({ counts: true }), ready: NICHE_TABLE, expectedTitle: T.nichesTitle,
+      mustRead: [T.nicheNoiseUnmeasured, T.nicheNoteCounts], mustNotRead: [NICHE_JUDGE_NOTE, ...NICHE_IDS] },
+    // Review Focus 2: no trace has a choice yet: the empty sentence and the way to load again, nothing else.
+    { name: "niches-empty", hash: "#/nichos", data: nichesData({ empty: true }), ready: "[data-rol=vacio] .week-sentence", expectedTitle: T.nichesTitle,
+      mustRead: [T.nichesEmpty, T.reload], mustNotRead: [T.nicheWhyLabel, T.nicheVeto, T.nichesError, ...NICHE_IDS] },
+    { name: "niches-error", hash: "#/nichos", data: nichesData(), ready: "[data-rol=avisos] .notice--error", expectedTitle: T.nichesTitle,
+      mustRead: [T.nichesError], mustNotRead: NICHE_IDS,
+      fail: { niches: { status: 500, body: { code: "XX000", message: "fixture failure", details: null, hint: null }, sticky: true } } },
   ];
 }
 
@@ -504,9 +603,10 @@ const project = (rows, select) => (select === TITLES_SELECT
 // Installs the fake on a page. `state` is { data, fail } and may change while the page runs (a behaviour check sets
 // `state.fail.add_comment` before pressing «Publicar»). A failure is { status, body, sticky }: without `sticky` it
 // answers once. Returns what the page asked that the fake does not know (`unknown`) and the URLs it failed on purpose
-// (`failedUrls`, so the runner can tell the browser's «Failed to load resource» for them from a real error).
+// (`failedUrls`, so the runner can tell the browser's «Failed to load resource» for them from a real error), and every
+// function called with what it was sent (`rpcs`, so a behaviour can check a veto's `p_vetoed`).
 export async function installFakeSupabase(page, state) {
-  const log = { unknown: [], failedUrls: new Set(), calls: [] };
+  const log = { unknown: [], failedUrls: new Set(), calls: [], rpcs: [] };
   const data = state.data;
   const takeFailure = (name) => {
     const failure = state.fail && state.fail[name];
@@ -541,12 +641,15 @@ export async function installFakeSupabase(page, state) {
     if (path === "/auth/v1/logout" && method === "POST") return route.fulfill({ status: 204, headers: CORS });
 
     // Tables.
-    const table = /^\/rest\/v1\/(people|pains|pain_cards|marks|comments)$/.exec(path);
+    const table = /^\/rest\/v1\/(people|pains|pain_cards|marks|comments|niches|territory_vetoes)$/.exec(path);
     if (table && method === "GET") {
       const name = table[1];
       const failure = takeFailure(name);
       if (failure) { log.failedUrls.add(url.href); return json(failure.status, failure.body); }
-      const rows = { people: data.people, pains: data.pains, pain_cards: data.cards, marks: data.marks, comments: data.comments }[name];
+      const rows = {
+        people: data.people, pains: data.pains, pain_cards: data.cards, marks: data.marks, comments: data.comments,
+        niches: data.niches ?? [], territory_vetoes: data.vetoes ?? [],
+      }[name];
       return json(200, project(filtered(rows, url.searchParams), url.searchParams.get("select")));
     }
 
@@ -554,6 +657,7 @@ export async function installFakeSupabase(page, state) {
     const rpc = /^\/rest\/v1\/rpc\/([a-z_]+)$/.exec(path);
     if (rpc && method === "POST") {
       const name = rpc[1];
+      log.rpcs.push({ name, payload });
       const failure = takeFailure(name);
       if (failure) { log.failedUrls.add(url.href); return json(failure.status, failure.body); }
       if (name === "week_summary") return json(200, data.summary);
@@ -580,6 +684,28 @@ export async function installFakeSupabase(page, state) {
           log.failedUrls.add(url.href);
           return json(400, { code: "P0002", message: "comment not found", details: null, hint: null });
         }
+        return json(200, null);
+      }
+      // As the base's set_niche_veto: a proposed niche (a name in `niches`) changes its own state, by and when, lifting
+      // only a vetoed one; any other slug is a territory, its row in territory_vetoes added (the first one kept) or
+      // removed; anything else is not a slug (P0002). So a reload reads what the veto left.
+      if (name === "set_niche_veto") {
+        const slug = String(payload.p_name ?? "");
+        const at = new Date().toISOString();
+        data.niches = data.niches ?? [];
+        data.vetoes = data.vetoes ?? [];
+        const niche = data.niches.find((n) => n.name === slug);
+        if (niche) {
+          if (payload.p_vetoed) Object.assign(niche, { state: "vetoed", state_by: ME, state_changed_at: at });
+          else if (niche.state === "vetoed") Object.assign(niche, { state: "active", state_by: ME, state_changed_at: at });
+          return json(200, null);
+        }
+        if (!/^[a-z0-9]+(-[a-z0-9]+)*$/.test(slug) || slug.length > 60) {
+          log.failedUrls.add(url.href);
+          return json(400, { code: "P0002", message: `set_niche_veto: unknown niche ${slug}`, details: null, hint: null });
+        }
+        if (!payload.p_vetoed) data.vetoes = data.vetoes.filter((v) => v.name !== slug);
+        else if (!data.vetoes.some((v) => v.name === slug)) data.vetoes.push({ name: slug, vetoed_by: ME, vetoed_at: at });
         return json(200, null);
       }
     }

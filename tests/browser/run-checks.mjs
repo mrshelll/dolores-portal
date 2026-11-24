@@ -16,8 +16,11 @@ import { mkdirSync, existsSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { startStaticServer } from "./static-server.mjs";
-import { scenarios, installFakeSupabase, prepareStorage, ME, CODE, MARKUP_COMMENT, LONG_WORDS_TITLE, RUN_ID } from "./fixtures.mjs";
-import { T } from "../../js/text.js";
+import {
+  scenarios, installFakeSupabase, prepareStorage, ME, CODE, MARKUP_COMMENT, LONG_WORDS_TITLE, RUN_ID,
+  NICHE_WEEK, NICHE_COMPETING, NICHE_COMPETING_ID,
+} from "./fixtures.mjs";
+import { T, fill } from "../../js/text.js";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const USAGE = "usage: node tests/browser/run-checks.mjs --factory <software-factory repo> --out <dir> [--url <base>]";
@@ -34,7 +37,7 @@ const SETTLE_MS = 250; // the folds' 200 ms chevron turn, the last transition on
 const EXCEPTIONS = [
   "MAR-14 holds a pain's screens (detail-v2, detail-v3, detail-no-gate, detail-long-title, detail-line) to 180 px, not 160: at 320 × 640 their h1 ends at 180 px, under the two-row masthead band (88 px, the brand and the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180 exactly, so any growth fails.",
   "MAR-14 skips detail-line-v1 (see its NOTE): a version-1 card has no title, so its h1 is what_hurts. Transitional: the next run rewrites every card with a title.",
-  "Console errors: the browser's own «Failed to load resource» line for a request the fake failed on purpose (home-error's read, the behaviours' 401 and 400) is expected and not counted. Every other console error fails.",
+  "Console errors: the browser's own «Failed to load resource» line for a request the fake failed on purpose (home-error's and niches-error's reads, the behaviours' 400, 401, 403 and 500) is expected and not counted. Every other console error fails.",
   "Targets: a link inside a sentence (other words in the same block) is not held to 44 × 44, as WCAG 2.5.8 allows: its height is the line's. Every other link, button, field and fold is.",
   "axe: a moderate or minor violation is printed as a count and does not fail, as in the factory's measure-pieces.mjs; serious and critical fail.",
 ];
@@ -458,6 +461,129 @@ async function behaviours(browser, base) {
     check("320 px, a long title: the line is a strip, the title wraps whole, no sideways scroll",
       seen.strip && !seen.panel && !seen.ellipsis && !seen.clipped && seen.lines >= 2 && !seen.scroll && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Nichos: a niche's row as a person sees it (its state, who vetoed it, its button and its note), found by its name
+  // since a veto moves it; and the vetoes sent to the base.
+  const nicheRow = (page, name) => page.evaluate((wanted) => {
+    const row = [...document.querySelectorAll(".niche-table tbody tr")].find((tr) => tr.querySelector(".niche-name").textContent === wanted);
+    if (!row) return null;
+    const button = row.querySelector(".niche-veto");
+    const text = (sel) => (row.querySelector(sel) ? row.querySelector(sel).textContent : null);
+    return {
+      state: text(".niche-state"), who: text(".niche-who"), button: button && button.textContent, note: text(".niche-veto-status"),
+      focused: !!button && document.activeElement === button,
+      disabled: [...document.querySelectorAll(".niche-veto")].filter((b) => b.getAttribute("aria-disabled") === "true").length,
+    };
+  }, name);
+  const nicheRowBecomes = async (page, name, done) => {
+    let seen = null;
+    for (let i = 0; i < 50; i += 1) {
+      seen = await nicheRow(page, name);
+      if (seen && done(seen)) return seen;
+      await page.waitForTimeout(100);
+    }
+    return seen;
+  };
+  const vetoesSent = (log) => log.rpcs.filter((r) => r.name === "set_niche_veto").map((r) => r.payload);
+  const sent = (payload, vetoed) => payload && payload.p_name === NICHE_COMPETING_ID && payload.p_vetoed === vetoed;
+  const vetoButton = (page) => page.locator(`.niche-table tr:has(.niche-name:text-is("${NICHE_COMPETING}")) .niche-veto`);
+
+  // A competing niche is vetoed with one click: the base gets `p_vetoed: true`, the row turns «Vetado» by Carla with
+  // «Quitar veto», the focus stays on its button; a reload reads the same from the base. The same button lifts it: the
+  // base gets `false` and the row competes again.
+  {
+    const { context, page, state, log, problems } = await openScreen(browser, base, scenario("niches"), PHONE);
+    const before = await nicheRow(page, NICHE_COMPETING);
+    await vetoButton(page).click();
+    const vetoed = await nicheRowBecomes(page, NICHE_COMPETING, (s) => s.state === T.nicheStateVetoed && s.note);
+    const inBase = state.data.vetoes.filter((v) => v.name === NICHE_COMPETING_ID).map((v) => v.vetoed_by);
+    check("Nichos: vetoing a competing niche sends true and the row turns «Vetado» by Carla, with «Quitar veto»",
+      before && before.state === T.nicheStateCompeting && before.button === T.nicheVeto
+        && vetoed && vetoed.state === T.nicheStateVetoed && vetoed.who && vetoed.who.startsWith("Lo vetó Carla") && vetoed.button === T.nicheUnveto
+        && vetoed.focused && vetoed.disabled === 0 && vetoed.note === fill(T.nicheVetoDone, { name: NICHE_COMPETING })
+        && vetoesSent(log).length === 1 && sent(vetoesSent(log)[0], true) && inBase.join() === ME && clean(log, problems),
+      `${JSON.stringify({ before, vetoed, sent: vetoesSent(log), inBase })}; ${why(log, problems)}`);
+
+    await page.reload();
+    await page.waitForSelector(".niche-table", { state: "visible", timeout: READY_TIMEOUT_MS }).catch(() => {});
+    const reloaded = await nicheRow(page, NICHE_COMPETING);
+    check("Nichos: after a reload the vetoed niche still reads «Vetado» by Carla",
+      reloaded && reloaded.state === T.nicheStateVetoed && reloaded.who && reloaded.who.startsWith("Lo vetó Carla")
+        && reloaded.button === T.nicheUnveto && clean(log, problems),
+      `${JSON.stringify(reloaded)}; ${why(log, problems)}`);
+
+    await vetoButton(page).click();
+    const lifted = await nicheRowBecomes(page, NICHE_COMPETING, (s) => s.state === T.nicheStateCompeting && s.note);
+    const left = state.data.vetoes.filter((v) => v.name === NICHE_COMPETING_ID).length;
+    check("Nichos: pressing «Quitar veto» sends false and the row competes again",
+      lifted && lifted.state === T.nicheStateCompeting && lifted.who === null && lifted.button === T.nicheVeto && lifted.focused
+        && lifted.note === fill(T.nicheVetoUndone, { name: NICHE_COMPETING })
+        && vetoesSent(log).length === 2 && sent(vetoesSent(log)[1], false) && left === 0 && clean(log, problems),
+      `${JSON.stringify({ lifted, sent: vetoesSent(log), left })}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Review Focus 5: the session expires while vetoing (401, PGRST303): the page asks to sign in again with «Tu sesión
+  // terminó», and the base keeps no veto.
+  {
+    const { context, page, state, log, problems } = await openScreen(browser, base, scenario("niches"), PHONE);
+    state.fail.set_niche_veto = { status: 401, body: { code: "PGRST303", message: "JWT expired", details: null, hint: null } };
+    await vetoButton(page).click();
+    const ended = await page.waitForSelector(`text=${T.sessionExpired}`, { timeout: 5000 }).then(() => true, () => false);
+    const seen = await page.evaluate(() => ({ email: !!document.querySelector("#email"), hash: location.hash }));
+    check("Nichos: a session that ends while vetoing says «Tu sesión terminó»",
+      ended && seen.email && vetoesSent(log).length === 1 && !state.data.vetoes.some((v) => v.name === NICHE_COMPETING_ID) && clean(log, problems),
+      `notice shown: ${ended}; ${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Review Focus 5: someone the base refuses (42501) sees «sin permiso».
+  {
+    const { context, page, state, log, problems } = await openScreen(browser, base, scenario("niches"), PHONE);
+    state.fail.set_niche_veto = { status: 403, body: { code: "42501", message: "not a member", details: null, hint: null } };
+    await vetoButton(page).click();
+    const refused = await page.waitForFunction((title) => document.querySelector("h1") && document.querySelector("h1").textContent === title,
+      T.noAccessTitle, { timeout: 5000 }).then(() => true, () => false);
+    check("Nichos: a veto the base refuses as «not a member» shows «sin permiso»",
+      refused && !state.data.vetoes.some((v) => v.name === NICHE_COMPETING_ID) && clean(log, problems),
+      `no-access shown: ${refused}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Review Focus 5: a base error while vetoing is said in words beside the button, every veto button works again, and
+  // pressing it again vetoes.
+  {
+    const { context, page, state, log, problems } = await openScreen(browser, base, scenario("niches"), PHONE);
+    state.fail.set_niche_veto = { status: 500, body: { code: "XX000", message: "fixture failure", details: null, hint: null } };
+    await vetoButton(page).click();
+    const failed = await nicheRowBecomes(page, NICHE_COMPETING, (s) => s.note === T.nicheVetoError);
+    await vetoButton(page).click();
+    const again = await nicheRowBecomes(page, NICHE_COMPETING, (s) => s.state === T.nicheStateVetoed);
+    check("Nichos: a base error while vetoing is said beside the button, and the button works again",
+      failed && failed.note === T.nicheVetoError && failed.state === T.nicheStateCompeting && failed.button === T.nicheVeto && failed.disabled === 0
+        && again && again.state === T.nicheStateVetoed && vetoesSent(log).length === 2 && sent(vetoesSent(log)[1], true) && clean(log, problems),
+      `${JSON.stringify({ failed, again, sent: vetoesSent(log) })}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // The top bar's niche is a link to Nichos (the bar shows from 768 px, so at 1440 × 900): from Corridas it opens
+  // #/nichos, whose week block names the same niche.
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const from = { ...scenario("niches"), hash: "#/corridas", ready: ".run-list", expectedTitle: T.runsTitle };
+    const { context, page, log, problems } = await openScreen(browser, base, from, wide);
+    const link = page.locator(".masthead-meta a.meta-link");
+    await link.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+    const linkText = await link.textContent().catch(() => null);
+    await link.click().catch(() => {});
+    const opened = await page.waitForFunction((title) => document.querySelector("h1") && document.querySelector("h1").textContent === title
+      && document.querySelector(".niche-week .station-title"), T.nichesTitle, { timeout: 10000 })
+      .then(() => page.evaluate(() => ({ hash: location.hash, week: document.querySelector(".niche-week .station-title").textContent })), () => null);
+    check("the top bar's niche opens #/nichos, on the same niche",
+      linkText === NICHE_WEEK && opened && opened.hash === "#/nichos" && opened.week === NICHE_WEEK && clean(log, problems),
+      `link «${linkText}»; ${JSON.stringify(opened)}; ${why(log, problems)}`);
     await context.close();
   }
   return results;

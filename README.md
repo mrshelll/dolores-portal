@@ -88,9 +88,11 @@ fetches each once and serves it from memory to every screen. Every request to th
 fake (`tests/browser/fixtures.mjs`, through `page.route`), also with `--url`: no screen ever touches the real base,
 and a signed-in screen gets a session injected into `localStorage` under supabase-js's own key. The data has the base's
 shapes (run traces, a version-3 card, a version-2 card, a version-1 line card and its version-2 rewrite, 55 rows under
-watch), but every text in it is invented and the people are fictional (Ana, Beto and Carla, at example.com): this
+watch, a trace with the niche chooser's fields, proposed niches and territory vetoes), but every text in it is invented and the people are fictional (Ana, Beto and Carla, at example.com): this
 repository is public, and quotes, comments and marks are only for the people on the list. No catalog text, source
-address, real name or real email may ever be copied into it.
+address, real name, real email or real niche may ever be copied into it. The fake also answers `set_niche_veto` as
+the base does (a proposed niche changes its own state, any other name gets or loses its row in `territory_vetoes`), so
+a reload reads what a veto left.
 
 What runs:
 
@@ -106,7 +108,12 @@ What runs:
     existed: «Sin análisis guardado para este dolor» where the table would be), `detail-long-title`, `detail-line`,
     `detail-line-v1`, `detail-missing`;
   - Corridas: `runs`, `runs-empty`, `run-detail` (the unmapped cuts counted in one line), `run-detail-technical`
-    (the same run with «Detalle técnico» open), `run-failed`, `run-missing`.
+    (the same run with «Detalle técnico» open), `run-failed`, `run-missing`;
+  - Nichos: `niches` (the week's niche and why, then every candidate: competing, new this month, resting, vetoed
+    with who and «Quitar veto», retired, a proposed niche with its summary; never a niche's id), `niches-vetoed-current`
+    (the week's niche vetoed after it ran: «Vetado» with who and when, in its block and its row), `niches-counts` (a
+    week counted without review: «Ruido» reads «sin medir»), `niches-empty` (no trace has a choice yet: the empty
+    sentence and «Volver a cargar», nothing else), `niches-error`.
 
   Each scenario waits for a selector and an `<h1>` that only its own screen has, so it never measures another screen
   (an error in its place, say), and lets the fonts load and the last transition end before measuring. A screen fails on any
@@ -125,7 +132,12 @@ What runs:
   run's page; the top bar says the same week, niche and cost on the home and on a pain opened first. And
   Review Focus 5: at
   320 px with the long title the line is the folded strip, the title wraps whole with no ellipsis and no sideways
-  scroll. Each behaviour also fails on a request the fake does not know.
+  scroll. In Nichos: vetoing a competing niche sends `set_niche_veto` with `p_vetoed: true`, its row turns «Vetado»
+  with «Lo vetó Carla …» and «Quitar veto» (the focus stays on it), a reload reads the same from the fake, and the
+  same button sends `false` and the row competes again; a session that ends while vetoing (401, `PGRST303`) says «Tu
+  sesión terminó»; a veto the base refuses (42501) shows «sin permiso»; a base error is said in words beside the
+  button, which works again. At 1440 × 900 (the top bar's week data shows from 768 px), the top bar's niche opens
+  `#/nichos` on the same niche. Each behaviour also fails on a request the fake does not know.
 
 Exceptions, each printed at the end of every run (no check is removed):
 
@@ -136,8 +148,8 @@ Exceptions, each printed at the end of every run (no check is removed):
 - **MAR-14 skips `detail-line-v1`.** A version-1 card has no `line.title`, so its h1 is `what_hurts`, a full sentence of
   several lines. This is transitional: the next run rewrites every card with a title. The screen is still measured
   and screenshotted; only the h1 height is not held to 160 px (the runner prints a `NOTE` saying so).
-- **Console errors from failures the fake makes on purpose.** When the fake answers with an error (the failed read of
-  `home-error`, the 400 and 401 of the behaviours), Chrome logs its own «Failed to load resource» line. That line is not
+- **Console errors from failures the fake makes on purpose.** When the fake answers with an error (the failed reads of
+  `home-error` and `niches-error`, the 400, 401, 403 and 500 of the behaviours), Chrome logs its own «Failed to load resource» line. That line is not
   counted for exactly those URLs; every other console error fails the screen.
 - **A link inside a sentence** (other words in the same block) is not held to 44 × 44, as WCAG 2.5.8 allows: its
   height is the line's. Every other target is.
