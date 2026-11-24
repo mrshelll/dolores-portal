@@ -80,6 +80,9 @@ test("runRow: what the trace does not say is left out, never invented", () => {
   // A niche with no name goes by its topic's plain name when the page knows it, never by its id.
   assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: null } })).facts[0], "Preparar documentos para la IA");
   assert.ok(!runRow(trace("x", "2030-01-28", { niche: { id: "nicho-raro", name: " " } })).facts.includes("nicho-raro"));
+  // A name that is only the id humanized (dolores' nicheName) is no name: the topic's, or nothing at all.
+  assert.ok(!runRow(trace("x", "2030-01-28", { niche: { id: "new-latam-territory", name: "New latam territory" } })).facts.includes("New latam territory"));
+  assert.equal(runRow(trace("x", "2030-01-28", { niche: { id: "documents-for-ai", name: "Documents for ai" } })).facts[0], "Preparar documentos para la IA");
   assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 0 })).facts.at(-1), T.newPainsNone);
   assert.equal(runRow(trace("x", "2030-01-28", { new_pains: 1 })).facts.at(-1), T.newPainsOne);
   assert.equal(runRow(null), null);

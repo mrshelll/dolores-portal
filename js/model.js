@@ -298,8 +298,23 @@ const count = (value) => (typeof value === "number" && Number.isFinite(value) ? 
 // date, never as this week's (Review Focus 2).
 export function latestTrace(traces, summary) {
   const [trace = null] = traceList(traces);
-  const isThisWeek = Boolean(trace && summary && typeof summary === "object" && summary.run_id === trace.run_id);
-  return { trace, isThisWeek };
+  return { trace, isThisWeek: isThisWeeksRun(trace, summary) };
+}
+
+// The home's this-week rule: a trace is this week's run when week_summary speaks of that same run. Nichos reads it too.
+export function isThisWeeksRun(trace, summary) {
+  return Boolean(isTrace(trace) && summary && typeof summary === "object" && summary.run_id === trace.run_id);
+}
+
+// A niche's own name, or null when it has none: empty, its id, or its id the way dolores' nicheName writes an id it
+// has no name for (dolores/scripts/lib/i18n.mjs: the hyphens as spaces, a capital first letter). The page never shows
+// a slug, not even dressed up as a name.
+export function ownNicheName(value, id) {
+  const name = text(value);
+  if (!name || typeof id !== "string" || id === "") return name;
+  const words = id.split("-").filter(Boolean).join(" ");
+  const humanized = words === "" ? id : words[0].toUpperCase() + words.slice(1);
+  return name === id || name === humanized ? null : name;
 }
 
 // The lamp beside the brand: how the latest run went. Green complete, red failed, amber anything else: incomplete,
@@ -637,7 +652,7 @@ export function costRows(trace) {
 export function weekMeta(summary, latest) {
   if (!summary || typeof summary !== "object") return [];
   const trace = latest && latest.isThisWeek ? latest.trace : null;
-  const niche = (trace && trace.niche && text(trace.niche.name))
+  const niche = (trace && trace.niche && ownNicheName(trace.niche.name, trace.niche.id))
     ?? (typeof summary.territory === "string" && TOPICS.has(summary.territory) ? topicName(summary.territory) : null);
   return [
     { label: T.metaWeek, value: formatDayMonth(typeof summary.date === "string" ? summary.date.slice(0, 10) : null) },

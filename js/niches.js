@@ -1,13 +1,13 @@
 // Nichos' logic, without the DOM or the network: the board the tab draws, from the newest trace with a choice
 // (dolores/scripts/lib/trace.mjs, buildTrace: `choice`, `probe`, `why`, `territories`), the proposed niches, the
-// vetoes, the pains, the marks and the people (js/api.js, loadNiches). Pure, so tests/unit/niches.test.mjs runs it in
-// Node.
+// vetoes, the pains, the marks and the people (js/api.js, loadNiches), and the week's summary (week_summary), which
+// says whether that trace is this week's run. Pure, so tests/unit/niches.test.mjs runs it in Node.
 //
 // Old traces lack `why` and `territories`, and their ranking entries lack `resting_until` and `advanced_pains`: each is
 // read as possibly missing. A niche's id (its slug) is only ever `row.id`, for the veto: never in a string.
 
 import { T, TOPICS, fill, topicName, formatDayMonth, formatNumber } from "./text.js";
-import { sectionOf, nameMap, nameOf } from "./model.js";
+import { sectionOf, nameMap, nameOf, isThisWeeksRun, ownNicheName } from "./model.js";
 
 const text = (value) => (typeof value === "string" && value.trim() ? value.trim() : null);
 const isObject = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -20,11 +20,6 @@ const ISO_DAY = /^\d{4}-\d{2}-\d{2}/;
 const dayOf = (value) => (typeof value === "string" && ISO_DAY.test(value) ? value.slice(0, 10) : null);
 // A date as «4 de marzo», or null when there is none to say.
 const dayMonth = (value) => formatDayMonth(typeof value === "string" ? value : null) || null;
-// A name that is the slug itself is no name: the page never shows a slug.
-const nameOr = (value, id) => {
-  const name = text(value);
-  return name && name !== id ? name : null;
-};
 
 // Each item by its `key`, the first one of each kept; items without a string key are dropped.
 function byKey(items, key) {
@@ -65,17 +60,33 @@ function vetoNoteOf(veto, niche, names) {
   return date ? fill(T.nicheVetoedBy, { name, date }) : fill(T.nicheVetoedByUndated, { name });
 }
 
-// The state, the first that applies: vetoed, retired, the niche that ran, resting, else competing.
-function stateOf({ id, niche, veto, rank, current, traceDay, names }) {
+// How the run of the niche that ran went, in words: its own (`plain`) and once vetoed since (`vetoed`). Green
+// «Corrió esta semana» only for this week's complete or incomplete run (the home's rule, isThisWeeksRun); one of an
+// older week by its day; red when the run did not finish (failed, only gathered, a status the page does not know).
+function ranOf(trace, summary) {
+  const date = dayMonth(dayOf(trace.date));
+  if (!PAID.has(trace.status)) {
+    return { lamp: "red", plain: date ? fill(T.nicheStateFailed, { date }) : T.nicheStateFailedUndated, vetoed: T.nicheStateVetoedFailed };
+  }
+  if (isThisWeeksRun(trace, summary)) return { lamp: "green", plain: T.nicheStateCurrent, vetoed: T.nicheStateVetoedThisWeek };
+  return date
+    ? { lamp: "green", plain: fill(T.nicheRanOn, { date }), vetoed: fill(T.nicheStateVetoedRanOn, { date }) }
+    : { lamp: "green", plain: T.nicheStateRanUndated, vetoed: T.nicheStateVetoedRanUndated };
+}
+
+// The state, the first that applies: vetoed, retired, the niche that ran, resting, else competing. The niche that ran,
+// vetoed since, is vetoed and still says how its run went.
+function stateOf({ id, niche, veto, rank, current, ran, traceDay, names }) {
   if (veto || (niche && niche.state === "vetoed")) {
-    return { state: "vetoed", lamp: "red", stateText: T.nicheStateVetoed, stateNote: null, vetoNote: vetoNoteOf(veto, niche, names) };
+    const stateText = id === current ? ran.vetoed : T.nicheStateVetoed;
+    return { state: "vetoed", lamp: "red", stateText, stateNote: null, vetoNote: vetoNoteOf(veto, niche, names) };
   }
   if (niche && niche.state === "retired") {
     const date = dayMonth(niche.state_changed_at);
     const stateNote = date ? fill(T.nicheRetiredOn, { date }) : T.nicheRetiredUndated;
     return { state: "retired", lamp: "off", stateText: T.nicheStateRetired, stateNote, vetoNote: null };
   }
-  if (id === current) return { state: "current", lamp: "green", stateText: T.nicheStateCurrent, stateNote: null, vetoNote: null };
+  if (id === current) return { state: "current", lamp: ran.lamp, stateText: ran.plain, stateNote: null, vetoNote: null };
   if (rank && rank.resting === true) {
     const date = dayMonth(rank.resting_until);
     const stateNote = date ? fill(T.nicheRestingUntil, { date }) : T.nicheRestingUndated;
@@ -87,7 +98,7 @@ function stateOf({ id, niche, veto, rank, current, traceDay, names }) {
 
 const ORDER = ["current", "competing", "resting", "vetoed", "retired"];
 
-export function nicheBoard({ traces = [], niches = [], vetoes = [], pains = [], marks = [], people = [] } = {}) {
+export function nicheBoard({ traces = [], niches = [], vetoes = [], pains = [], marks = [], people = [], summary = null } = {}) {
   const trace = chosen(traces);
   if (!trace) return { week: null, rows: [], empty: true };
 
@@ -98,7 +109,8 @@ export function nicheBoard({ traces = [], niches = [], vetoes = [], pains = [], 
   const probes = byKey(trace.probe, "name");
   const vetoed = byKey(vetoes, "name");
   const names = nameMap(people);
-  const ranOf = isObject(trace.niche) && trace.niche.id === current ? trace.niche : null;
+  const ran = ranOf(trace, summary);
+  const ranNiche = isObject(trace.niche) && trace.niche.id === current ? trace.niche : null;
 
   // Every territory, then every proposed niche whose name no territory has (a territory wins, as in dolores). A trace
   // that could not name the territories still shows the ranking's and the one that ran, as the user's own.
@@ -109,27 +121,28 @@ export function nicheBoard({ traces = [], niches = [], vetoes = [], pains = [], 
   const proposed = byKey(niches, "name");
   for (const id of proposed.keys()) if (!sources.has(id)) sources.set(id, { origin: "proposed", niche: proposed.get(id) });
   for (const id of [...ranking.keys(), current]) {
-    if (!sources.has(id)) sources.set(id, { origin: "mine", name: ranOf && ranOf.id === id ? ranOf.name : null });
+    if (!sources.has(id)) sources.set(id, { origin: "mine", name: ranNiche && ranNiche.id === id ? ranNiche.name : null });
   }
 
   const allMarks = list(marks);
   const rows = [...sources].map(([id, source]) => {
     const niche = source.origin === "proposed" ? source.niche : null;
     const rank = ranking.get(id) ?? null;
-    const status = stateOf({ id, niche, veto: vetoed.get(id), rank, current, traceDay, names });
-    const quiet = status.state === "vetoed" || status.state === "retired";
+    const status = stateOf({ id, niche, veto: vetoed.get(id), rank, current, ran, traceDay, names });
+    // A vetoed or retired niche shows no numbers, except the niche that ran: its numbers are the week's.
+    const quiet = (status.state === "vetoed" && id !== current) || status.state === "retired";
     const proposedOn = niche ? dayMonth(niche.proposed_at) : null;
-    const own = { weighty: 0, watching: 0 };
+    const own = { weighty: 0, watching: 0, interested: 0 };
     for (const pain of list(pains)) {
       if (!isObject(pain) || pain.territory !== id) continue;
       const section = sectionOf(pain, allMarks);
-      if (section === "weighty" || section === "watching") own[section] += 1;
+      if (Object.hasOwn(own, section ?? "")) own[section] += 1;
     }
     return {
       id,
       name: niche
-        ? nameOr(niche.label, id) ?? T.nicheProposedUnnamed
-        : nameOr(source.name, id) ?? (TOPICS.has(id) ? topicName(id) : T.nicheUnnamed),
+        ? ownNicheName(niche.label, id) ?? T.nicheProposedUnnamed
+        : ownNicheName(source.name, id) ?? (TOPICS.has(id) ? topicName(id) : T.nicheUnnamed),
       origin: source.origin,
       originText: !niche ? T.nicheOriginMine : proposedOn ? fill(T.nicheOriginProposed, { date: proposedOn }) : T.nicheOriginProposedUndated,
       why: niche ? text(niche.summary) : null,
@@ -156,10 +169,14 @@ export function nicheBoard({ traces = [], niches = [], vetoes = [], pains = [], 
 }
 
 // One side of the week's analysis: the niche's value, its place among the week's ranking, every rival's value over the
-// week's highest (0-100) and whether it has a signal at all (above 0).
+// week's highest (0-100) and whether it has a signal at all (above 0). Its rivals are only the entries measured the
+// same way as its own (`source`: judged or counted), since a counted number is not on a judged one's scale; with no
+// entry of its own, every other entry.
 function measure(label, key, rank, ranking) {
   const own = rank ? number(rank[key]) : null;
-  const rivals = [...ranking.values()].filter((e) => e !== rank).map((e) => number(e[key])).filter((v) => v !== null);
+  const rivals = [...ranking.values()]
+    .filter((e) => e !== rank && (!rank || e.source === rank.source))
+    .map((e) => number(e[key])).filter((v) => v !== null);
   const all = own === null ? rivals : [...rivals, own];
   const max = Math.max(0, ...all);
   const at = (v) => (max > 0 ? Math.round((v / max) * 100) : 0);
@@ -254,16 +271,24 @@ export function paidRunsText(count, { long = false } = {}) {
   return fill(long ? T.nichePaidRunsManyLong : T.nichePaidRunsMany, { count: formatNumber(n) });
 }
 
-// A niche's pains: the table's short line, the whole one for a screen reader and the week's block, and, with none, the
-// sentence that says so instead («Sin dolores aún», or «Sin dolores» for a retired niche, which will have none).
+// A niche's pains: the table's short lines, the whole sentence for a screen reader, the week block's list items, and,
+// with none, the sentence that says so instead («Sin dolores aún», or «Sin dolores» for a retired niche, which will have
+// none). The pains marked «Nos interesa» are a third figure only when there are some, on a line (an item) of their own
+// so the table's column stays narrow.
 export function painsText(pains, { retired = false } = {}) {
   const weighty = number(pains && pains.weighty) ?? 0;
   const watching = number(pains && pains.watching) ?? 0;
+  const interested = number(pains && pains.interested) ?? 0;
   const params = { weighty: formatNumber(weighty), watching: formatNumber(watching) };
+  const full = fill(T.nichePainsFull, params);
+  const marked = interested < 1 ? null
+    : interested === 1 ? T.nichePainsInterestedOne : fill(T.nichePainsInterestedMany, { count: formatNumber(interested) });
+  const lines = (first) => (marked ? [first, marked] : [first]);
   return {
-    short: fill(T.nichePainsShort, params),
-    full: fill(T.nichePainsFull, params),
-    none: weighty || watching ? null : retired ? T.nichePainsNoneRetired : T.nichePainsNone,
+    short: lines(fill(T.nichePainsShort, params)),
+    full: marked ? `${full} · ${marked}` : full,
+    week: lines(full),
+    none: weighty || watching || interested ? null : retired ? T.nichePainsNoneRetired : T.nichePainsNone,
   };
 }
 

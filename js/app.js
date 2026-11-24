@@ -95,7 +95,7 @@ function masthead({ brandLink, actions, tab }) {
 }
 
 // The brand lamp and the week's data from the session's week (state.week); until it is known the lamp stays off. The
-// week's niche is a link to Nichos, its words unchanged.
+// week's niche is a link to Nichos, its words unchanged, marked as the current page on Nichos.
 function refreshMasthead() {
   const parts = state.masthead;
   if (!parts) return;
@@ -113,7 +113,9 @@ function refreshMasthead() {
   }
   const rows = week ? weekMeta(week.summary, week.latest) : [];
   replaceChildren(parts.meta, rows.map((row) => h("span", { class: "meta-item" }, `${row.label} `,
-    row.label === T.metaNiche ? h("a", { class: "meta-link", href: "#/nichos" }, h("b", {}, row.value)) : h("b", {}, row.value))));
+    row.label === T.metaNiche
+      ? h("a", { class: "meta-link", href: "#/nichos", "aria-current": parseRoute(location.hash).name === "niches" ? "page" : null }, h("b", {}, row.value))
+      : h("b", {}, row.value))));
   parts.meta.hidden = !rows.length;
 }
 
@@ -612,8 +614,10 @@ function painList(items, row) {
 // ---- Nichos: the week's niche and why, every candidate, and the veto -----------------------
 
 // Nichos keeps the frame route() drew (same title), so the screen does not flash. It reads the traces, the proposed
-// niches, the vetoes and the pains at once (loadNiches) and draws the board (nicheBoard): no sounding yet says so and
-// offers to load again, the way out last (EST-01, MAR-06).
+// niches, the vetoes and the pains at once (loadNiches), with the session's week (ensureWeek: its summary says whether
+// the niche's run is this week's; a week that failed to load reads as an older one), and draws the board (nicheBoard):
+// no sounding yet says so and offers to load again, a secondary action since nothing changes until Monday's run, the
+// way out last (EST-01, MAR-06).
 async function showNiches(layout, email) {
   state.view = "niches";
   const viewId = state.viewId;
@@ -621,8 +625,10 @@ async function showNiches(layout, email) {
   replaceChildren(layout.body, h("p", { class: "loading", role: "status" }, T.nichesLoading));
   layout.heading.focus({ preventScroll: true });
   let data;
-  try { data = await loadNiches(supabase); }
-  catch (error) {
+  try {
+    const [niches, week] = await Promise.all([loadNiches(supabase), ensureWeek()]);
+    data = { ...niches, summary: week ? week.summary : null };
+  } catch (error) {
     if (viewId !== state.viewId) return;
     return showLoadError(layout, error, email, T.nichesError);
   }
@@ -632,7 +638,7 @@ async function showNiches(layout, email) {
   if (nicheBoard(data).empty) {
     replaceChildren(layout.body, h("div", { class: "stack", "data-rol": "vacio" },
       h("p", { class: "week-sentence" }, T.nichesEmpty),
-      h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal", onclick: route }, T.reload)));
+      h("button", { type: "button", class: "button button--secondary", onclick: route }, T.reload)));
     return;
   }
   layout.head.append(h("p", { class: "page-lead" }, T.nichesLead));
@@ -700,13 +706,13 @@ function vetoControl(row, place, ctx, layout, nameId) {
 }
 
 // «ESTA SEMANA»: the niche that ran as the report's result block. Its head: the name, where it came from and its state
-// on a chip («Corrió el <día>», or «Vetado»). Its body: why it was chosen, then the week's sounding as an analysis
+// on a chip, the same words and lamp as its row («Corrió esta semana», «Corrió el <día>», «Se eligió el <día>; la
+// corrida falló», or «Vetado · …»). Its body: why it was chosen, then the week's sounding as an analysis
 // table, each side against the other niches (the versus bar: a tick per rival and the niche's marker, hidden from a
 // screen reader, its place in words beside it); at the right its pains, the veto and what a veto does now.
 function nicheWeek(week, ctx, layout) {
   const { row } = week;
   const nameId = "nicho-semana";
-  const stateText = row.state === "current" && week.date ? fill(T.nicheRanOn, { date: week.date }) : row.stateText;
   const pains = painsText(row.pains, { retired: row.state === "retired" });
   const control = row.canVeto ? vetoControl(row, "week", ctx, layout, nameId) : null;
   return h("section", { class: "results niche-week-section", "aria-labelledby": "esta-semana" },
@@ -716,7 +722,7 @@ function nicheWeek(week, ctx, layout) {
         h("div", { class: "station-name" }, h("h2", { class: "station-title", id: nameId }, row.name)),
         h("p", { class: "station-tags" }, h("span", { class: "station-tag niche-origin-tag" }, row.originText)),
         h("p", { class: "station-state", "data-lamp": row.lamp },
-          lamp(row.lamp, { size: "small" }), h("span", { class: "station-state-text" }, stateText))),
+          lamp(row.lamp, { size: "small" }), h("span", { class: "station-state-text" }, row.stateText))),
       h("div", { class: "station-body" },
         h("div", { class: "station-main" },
           h("p", { class: "station-duel niche-why" }, h("span", { class: "station-duel-label" }, T.nicheWhyLabel), " ", week.why),
@@ -724,7 +730,7 @@ function nicheWeek(week, ctx, layout) {
         h("div", { class: "station-side" },
           h("p", { class: "section-label niche-side-label", id: "sus-dolores" }, T.nicheOwnPains),
           h("ul", { class: "niche-side-list", role: "list", "aria-labelledby": "sus-dolores" },
-            h("li", {}, pains.none ?? boldNumbers(pains.full)),
+            ...(pains.none ? [h("li", {}, pains.none)] : pains.week.map((line) => h("li", {}, boldNumbers(line)))),
             week.advanced ? h("li", {}, boldNumbers(week.advanced)) : null,
             h("li", {}, boldNumbers(paidRunsText(row.paidRuns, { long: true })))),
           h("div", { class: "station-foot" },
@@ -783,7 +789,9 @@ function nicheRow(row, index, ctx, layout) {
   const control = row.canVeto ? vetoControl(row, "row", ctx, layout, nameId) : null;
   const figure = (label, value, extra = null) => h("td", { role: "cell", class: "niche-num", "data-label": label }, value ?? noValue(), extra);
   const unmeasured = row.noise === T.nicheNoiseUnmeasured;
-  const classes = [row.state === "current" ? "niche-row--current" : null, QUIET_STATES.has(row.state) ? "niche-row--quiet" : null];
+  // The faint green of the niche that ran only when its run did run: a failed one keeps the plain row beside its red.
+  const ran = row.state === "current" && row.lamp === "green";
+  const classes = [ran ? "niche-row--current" : null, QUIET_STATES.has(row.state) ? "niche-row--quiet" : null];
   return h("tr", { role: "row", class: classes.filter(Boolean).join(" ") || null },
     h("td", { role: "cell", class: "niche-cell-state" },
       h("span", { class: "niche-state", "data-lamp": row.lamp }, lamp(row.lamp, { size: "small" }), row.stateText),
@@ -798,7 +806,8 @@ function nicheRow(row, index, ctx, layout) {
       ? figure(T.nicheNoise, [h("span", { "aria-hidden": "true" }, "—")], h("small", {}, row.noise))
       : figure(T.nicheNoise, row.noise),
     h("td", { role: "cell", class: "niche-cell-pains" }, pains.none
-      ?? [h("span", { "aria-hidden": "true" }, boldNumbers(pains.short)), h("span", { class: "visually-hidden" }, pains.full)]),
+      ?? [h("span", { "aria-hidden": "true" }, pains.short.map((line) => h("span", { class: "niche-pains-line" }, boldNumbers(line)))),
+        h("span", { class: "visually-hidden" }, pains.full)]),
     h("td", { role: "cell", class: "niche-cell-action" },
       control ? control.button : null,
       row.vetoNote ? h("span", { class: "niche-who" }, row.vetoNote) : null,

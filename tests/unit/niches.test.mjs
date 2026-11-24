@@ -60,7 +60,9 @@ const NICHES = [
   },
 ];
 
-const input = (extra = {}) => ({ traces: [trace()], niches: NICHES, vetoes: [], pains: [], marks: [], people: PEOPLE, ...extra });
+// The week's summary (week_summary) names this trace's run: it is this week's (the home's rule, model.js isThisWeeksRun).
+const SUMMARY = { run_id: "2030-02-04-1", date: "2030-02-04", status: "complete", territory: "developer-tools" };
+const input = (extra = {}) => ({ traces: [trace()], niches: NICHES, vetoes: [], pains: [], marks: [], people: PEOPLE, summary: SUMMARY, ...extra });
 const rowOf = (board, id) => board.rows.find((r) => r.id === id);
 
 // Every string anywhere in the board, with where it is, except the ids themselves.
@@ -110,7 +112,7 @@ test("rows: every territory (mine) and every proposed niche, each name once; a t
   assert.equal(proposed.why, "Vacantes que piden conciliar reclamos a mano.");
   assert.equal(proposed.originText, fill(T.nicheOriginProposed, { date: formatDayMonth("2030-01-20T10:00:00Z") }));
   assert.equal(fill(T.nicheOriginProposed, { date: "20 de enero" }), "Propuesto por tomoshi el 20 de enero");
-  assert.equal(T.nicheOriginMine, "Tuyo");
+  assert.equal(T.nicheOriginMine, "Elegido a mano");
 });
 
 test("names: the trace's name, else the topic's plain name, else a fallback; a niche's label, else its fallback", () => {
@@ -131,6 +133,32 @@ test("names: the trace's name, else the topic's plain name, else a fallback; a n
   assert.equal(rowOf(board, "clinic-billing").name, "Nicho propuesto sin nombre");
   assert.equal(T.nicheUnnamed, "Nicho sin nombre");
   assert.equal(T.nicheProposedUnnamed, "Nicho propuesto sin nombre");
+});
+
+test("names: a name that is only the id humanized (as dolores' nicheName writes it) counts as no name", () => {
+  const board = nicheBoard(input({
+    traces: [trace({
+      territories: [
+        ...trace().territories,
+        { id: "new-latam-territory", name: "New latam territory" },
+        { id: "accounting-ai", name: "  Accounting ai " },
+        { id: "-odd--slug-", name: "Odd slug" },
+      ],
+    })],
+    niches: [{ ...NICHES[0], name: "late-payments", label: "Late payments" }, NICHES[1]],
+  }));
+  assert.equal(rowOf(board, "new-latam-territory").name, "Nicho sin nombre");
+  assert.equal(rowOf(board, "accounting-ai").name, "Nicho sin nombre");
+  assert.equal(rowOf(board, "-odd--slug-").name, "Nicho sin nombre");
+  assert.equal(rowOf(board, "late-payments").name, "Nicho propuesto sin nombre");
+  // A topic the page knows goes by its plain name; a real name that only looks alike stays.
+  const topic = nicheBoard(input({ traces: [trace({ territories: [{ id: "developer-tools", name: "Developer tools" }, { id: "new-latam-territory", name: "New LatAm territory" }] })] }));
+  assert.equal(rowOf(topic, "developer-tools").name, topicName("developer-tools"));
+  assert.equal(rowOf(topic, "new-latam-territory").name, "New LatAm territory");
+  // The niche that ran, named only by its trace's `niche` (no territories), humanized: no name either.
+  const ran = trace({ territories: null, niche: { id: "new-latam-territory", name: "New latam territory" },
+    choice: { ...trace().choice, territory: "new-latam-territory" } });
+  assert.equal(nicheBoard(input({ traces: [ran] })).week.row.name, "Nicho sin nombre");
 });
 
 test("no string of the board contains any id, even with unnamed territories and unlabeled niches", () => {
@@ -192,6 +220,47 @@ test("state: current, competing, resting, retired, each with its lamp and words"
   assert.equal(retired.vetoed, false);
 });
 
+test("the niche that ran: «Corrió esta semana» only for this week's complete or incomplete run", () => {
+  for (const status of ["complete", "incomplete"]) {
+    const row = rowOf(nicheBoard(input({ traces: [trace({ status })] })), "developer-tools");
+    assert.equal(row.state, "current", status);
+    assert.equal(row.lamp, "green", status);
+    assert.equal(row.stateText, "Corrió esta semana", status);
+  }
+});
+
+test("the niche that ran in an older week (the summary speaks of another run, or of none): «Corrió el <día mes>», green", () => {
+  const later = { ...SUMMARY, run_id: "2030-02-11-1", date: "2030-02-11", status: "failed" };
+  for (const summary of [later, null, undefined, {}]) {
+    for (const status of ["complete", "incomplete"]) {
+      const board = nicheBoard(input({ summary, traces: [trace({ status })] }));
+      const row = rowOf(board, "developer-tools");
+      assert.equal(row.state, "current");
+      assert.equal(row.lamp, "green");
+      assert.equal(row.stateText, "Corrió el 4 de febrero", `${JSON.stringify(summary)} ${status}`);
+      assert.equal(board.week.row, row);
+    }
+  }
+  const undated = rowOf(nicheBoard(input({ summary: later, traces: [trace({ date: null })] })), "developer-tools");
+  assert.equal(undated.stateText, "Ya corrió");
+  assert.equal(fill(T.nicheRanOn, { date: "4 de febrero" }), "Corrió el 4 de febrero");
+});
+
+test("the niche chosen for a run that did not finish (failed, only gathered, unknown): «Se eligió el <día mes>; la corrida falló», red", () => {
+  for (const summary of [SUMMARY, null]) {
+    for (const status of ["failed", "ingest-only", undefined, "something-new"]) {
+      const board = nicheBoard(input({ summary, traces: [trace({ status })] }));
+      const row = rowOf(board, "developer-tools");
+      assert.equal(row.state, "current", String(status));
+      assert.equal(row.lamp, "red", String(status));
+      assert.equal(row.stateText, "Se eligió el 4 de febrero; la corrida falló", String(status));
+      assert.equal(row.paidRuns, 0);
+    }
+  }
+  assert.equal(rowOf(nicheBoard(input({ traces: [trace({ status: "failed", date: undefined })] })), "developer-tools").stateText,
+    "Se eligió; la corrida falló");
+});
+
 test("a resting niche from an old trace without resting_until says only that it stalled", () => {
   const ranking = trace().choice.ranking.map((e) => (e.name === "documents-for-ai" ? { ...e, resting_until: undefined } : e));
   const board = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking } })] }));
@@ -245,10 +314,45 @@ test("review focus 1: the niche that ran and is vetoed since is vetoed, and the 
   const board = nicheBoard(input({ vetoes: [{ name: "developer-tools", vetoed_by: "ana@example.com", vetoed_at: "2030-02-05T09:00:00Z" }] }));
   const row = rowOf(board, "developer-tools");
   assert.equal(row.state, "vetoed");
+  assert.equal(row.lamp, "red");
+  assert.equal(row.stateText, "Vetado · corrió esta semana");
+  assert.equal(row.vetoNote, "Lo vetó Ana el 5 de febrero");
   assert.equal(board.week.row, row);
   assert.equal(board.week.row.vetoed, true);
   assert.equal(board.week.vetoNext, "Vetado: el próximo lunes corre otro.");
   assert.equal(board.rows[0].id, "us-consumer-finance"); // no current row left: the competing ones lead
+});
+
+test("finish 1: the vetoed niche that ran keeps this week's numbers; any other vetoed niche shows none", () => {
+  const vetoes = [
+    { name: "developer-tools", vetoed_by: "ana@example.com", vetoed_at: "2030-02-05T09:00:00Z" },
+    { name: "us-consumer-finance", vetoed_by: "beto@example.com", vetoed_at: "2030-02-05T09:00:00Z" },
+  ];
+  const board = nicheBoard(input({ vetoes }));
+  const ran = rowOf(board, "developer-tools");
+  assert.equal(ran.complaints, 107);
+  assert.equal(ran.spending, 96);
+  assert.equal(ran.noise, "28 %");
+  const other = rowOf(board, "us-consumer-finance");
+  assert.equal(other.complaints, null);
+  assert.equal(other.spending, null);
+  assert.equal(other.noise, null);
+});
+
+test("finish 1: the vetoed niche that ran says how its run went, by the same rule as when it is not vetoed", () => {
+  const vetoes = [{ name: "developer-tools", vetoed_by: "ana@example.com", vetoed_at: "2030-02-05T09:00:00Z" }];
+  const later = { ...SUMMARY, run_id: "2030-02-11-1" };
+  const stateOf = (extra) => rowOf(nicheBoard(input({ vetoes, ...extra })), "developer-tools");
+  assert.equal(stateOf({}).stateText, "Vetado · corrió esta semana");
+  assert.equal(stateOf({ summary: later }).stateText, "Vetado · corrió el 4 de febrero");
+  assert.equal(stateOf({ summary: later, traces: [trace({ date: null })] }).stateText, "Vetado · ya corrió");
+  assert.equal(stateOf({ traces: [trace({ status: "failed" })] }).stateText, "Vetado · la corrida falló");
+  for (const extra of [{}, { summary: later }, { traces: [trace({ status: "failed" })] }]) {
+    const row = stateOf(extra);
+    assert.equal(row.state, "vetoed");
+    assert.equal(row.lamp, "red");
+    assert.equal(row.vetoed, true);
+  }
 });
 
 test("a veto on a name with no row is ignored", () => {
@@ -332,7 +436,7 @@ test("paidRuns: the traces of the niche that ran complete or incomplete", () => 
   assert.equal(rowOf(board, "us-consumer-finance").paidRuns, 0);
 });
 
-test("pains: each pain of the niche counted as weighty or watching by its section", () => {
+test("pains: each pain of the niche counted as weighty, watching or interested by its section", () => {
   const pains = [
     { id: "p1", territory: "developer-tools", status: "alive" },
     { id: "p2", territory: "developer-tools", status: "watching" },
@@ -340,12 +444,19 @@ test("pains: each pain of the niche counted as weighty or watching by its sectio
     { id: "p4", territory: "developer-tools", status: "watching" }, // discarded by a mark
     { id: "p5", territory: "developer-tools", status: "dead" },
     { id: "p6", territory: "us-consumer-finance", status: "alive" },
+    { id: "p7", territory: "developer-tools", status: "dead" }, // kept by an «interested» mark
+    { id: "p8", territory: "accounting-automation", status: "watching" }, // kept by an «interested» mark
   ];
-  const marks = [{ pain_id: "p4", author: "ana@example.com", mark: "discarded" }];
+  const marks = [
+    { pain_id: "p4", author: "ana@example.com", mark: "discarded" },
+    { pain_id: "p7", author: "beto@example.com", mark: "interested" },
+    { pain_id: "p8", author: "carla@example.com", mark: "interested" },
+  ];
   const board = nicheBoard(input({ pains, marks }));
-  assert.deepEqual(rowOf(board, "developer-tools").pains, { weighty: 1, watching: 2 });
-  assert.deepEqual(rowOf(board, "us-consumer-finance").pains, { weighty: 1, watching: 0 });
-  assert.deepEqual(rowOf(board, "accounting-automation").pains, { weighty: 0, watching: 0 });
+  assert.deepEqual(rowOf(board, "developer-tools").pains, { weighty: 1, watching: 2, interested: 1 });
+  assert.deepEqual(rowOf(board, "us-consumer-finance").pains, { weighty: 1, watching: 0, interested: 0 });
+  assert.deepEqual(rowOf(board, "accounting-automation").pains, { weighty: 0, watching: 0, interested: 1 });
+  assert.deepEqual(rowOf(board, "documents-for-ai").pains, { weighty: 0, watching: 0, interested: 0 });
 });
 
 // ---- the week -------------------------------------------------------------------------------------
@@ -375,13 +486,14 @@ test("week analysis: complaints and spending with rank, rivals' positions and fl
   const [complaints, spending, noise] = week.analysis;
   assert.equal(complaints.value, "107");
   assert.equal(complaints.rank, "el más alto");
-  assert.deepEqual(complaints.positions, [38, 27, 27, 0]); // 41, 29, 29, 0 over 107
+  // Only the rivals measured the same way (judge): documents-for-ai was counted, so it is out of the comparison.
+  assert.deepEqual(complaints.positions, [38, 27, 27]); // 41, 29, 29 over 107
   assert.equal(complaints.at, 100);
   assert.equal(complaints.flag, "in");
   assert.equal(complaints.flagText, "CON SEÑAL");
   assert.equal(spending.value, "96");
-  assert.equal(spending.rank, "3.º de 5"); // 447, 109 above
-  assert.deepEqual(spending.positions, [24, 12, 100, 1]); // 109, 52, 447, 4 over 447
+  assert.equal(spending.rank, "3.º de 4"); // 447, 109 above
+  assert.deepEqual(spending.positions, [24, 12, 100]); // 109, 52, 447 over 447
   assert.equal(spending.at, 21);
   assert.equal(spending.flag, "in");
   assert.equal(noise.label, "Ruido");
@@ -401,6 +513,35 @@ test("week analysis: a side at zero has no signal; a tie with the highest is the
   assert.equal(complaints.rank, "2.º de 2");
   assert.equal(spending.rank, "el más alto");
   assert.equal(week.note, "Gana el nicho con más en su lado más débil; aquí, 0 de quejas.");
+});
+
+test("a mixed week: a judged niche is set only against the judged ones; a counted rival's bigger numbers are not its rivals", () => {
+  const ranking = [
+    entry("developer-tools", 60, 50),
+    entry("us-consumer-finance", 40, 30),
+    entry("documents-for-ai", 300, 400, { source: "counts" }),
+  ];
+  const { week } = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking } })] }));
+  const [complaints, spending] = week.analysis;
+  assert.equal(complaints.rank, "el más alto");
+  assert.equal(spending.rank, "el más alto");
+  assert.deepEqual(complaints.positions, [67]); // 40 over 60: no tick for the counted 300
+  assert.deepEqual(spending.positions, [60]); // 30 over 50: no tick for the counted 400
+  assert.equal(complaints.at, 100);
+  assert.equal(versusLabel(Math.max(...week.analysis.map((a) => a.positions.length))), "Frente al otro");
+
+  // Alone among the judged: the highest, no rival tick, «Frente a los otros» with no count.
+  const alone = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking: [ranking[0], ranking[2]] } })] })).week;
+  assert.equal(alone.analysis[0].rank, "el más alto");
+  assert.deepEqual(alone.analysis[0].positions, []);
+  assert.deepEqual(alone.analysis[1].positions, []);
+  // A counted niche that ran is set only against the counted ones.
+  const counted = [entry("developer-tools", 5, 4, { source: "counts" }), entry("us-consumer-finance", 400, 300), entry("documents-for-ai", 10, 2, { source: "counts" })];
+  const c = nicheBoard(input({ traces: [trace({ choice: { ...trace().choice, ranking: counted } })] })).week;
+  assert.equal(c.analysis[0].rank, "2.º de 2");
+  assert.deepEqual(c.analysis[0].positions, [100]);
+  assert.equal(c.analysis[1].rank, "el más alto");
+  assert.deepEqual(c.analysis[1].positions, [50]);
 });
 
 test("review focus 4: a counts week reads «sin medir» and says the noise was not measured", () => {
@@ -543,10 +684,24 @@ test("the tab's counts in words: paid runs, pains and the rivals' column", () =>
   assert.equal(paidRunsText(1, { long: true }), "1 corrida pagada en este nicho");
   assert.equal(paidRunsText(1200, { long: true }), "1200 corridas pagadas en este nicho".replace("1200", new Intl.NumberFormat("es").format(1200)));
   assert.deepEqual(painsText({ weighty: 3, watching: 12 }), {
-    short: "3 con peso · 12 en obs.", full: "3 con peso para trabajar · 12 en observación", none: null,
+    short: ["3 con peso · 12 en obs."], full: "3 con peso para trabajar · 12 en observación",
+    week: ["3 con peso para trabajar · 12 en observación"], none: null,
   });
   assert.equal(painsText({ weighty: 0, watching: 0 }).none, "Sin dolores aún");
+  assert.equal(painsText({ weighty: 0, watching: 0, interested: 0 }).none, "Sin dolores aún");
   assert.equal(painsText({ weighty: 0, watching: 0 }, { retired: true }).none, "Sin dolores");
+  assert.equal(painsText(null).none, "Sin dolores aún");
+  // «Nos interesa» is a third figure, only when there is one.
+  assert.deepEqual(painsText({ weighty: 3, watching: 12, interested: 2 }), {
+    short: ["3 con peso · 12 en obs.", "2 marcados «Nos interesa»"],
+    full: "3 con peso para trabajar · 12 en observación · 2 marcados «Nos interesa»",
+    week: ["3 con peso para trabajar · 12 en observación", "2 marcados «Nos interesa»"], none: null,
+  });
+  assert.deepEqual(painsText({ weighty: 0, watching: 0, interested: 1 }), {
+    short: ["0 con peso · 0 en obs.", "1 marcado «Nos interesa»"],
+    full: "0 con peso para trabajar · 0 en observación · 1 marcado «Nos interesa»",
+    week: ["0 con peso para trabajar · 0 en observación", "1 marcado «Nos interesa»"], none: null,
+  });
   assert.equal(versusLabel(4), "Frente a los otros 4");
   assert.equal(versusLabel(1), "Frente al otro");
   assert.equal(versusLabel(0), "Frente a los otros");

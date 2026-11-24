@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   effectiveMark, buildSections, sectionOf, emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, PAGED_ABOVE, rowMeta,
   decideList, catalogSections, painLamp, hasNewEvidence, lineView, latestTrace, brandLamp,
-  stationMarks, stationMeta, decideLead, stationTags, lineHeading, runFacts, costRows, weekMeta, brandLampText, stageNotes,
+  stationMarks, stationMeta, decideLead, stationTags, lineHeading, runFacts, costRows, weekMeta, brandLampText, stageNotes, ownNicheName, isThisWeeksRun,
   sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows,
 } from "../../js/model.js";
 import { scenarios } from "../browser/fixtures.mjs";
@@ -521,7 +521,7 @@ test("loadHome lets a failed fetch through as a network error", async () => {
 // Invented people for these tests.
 const CREW = [{ email: "ana@example.com", name: "Ana" }, { email: "beto@example.com", name: "Beto" }, { email: "carla@example.com", name: "Carla" }];
 const trace = (runId, date, extra = {}) => ({
-  version: 1, run_id: runId, date, niche: { id: "nicho-ficticio", name: "Nicho ficticio" }, status: "complete",
+  version: 1, run_id: runId, date, niche: { id: "nicho-ficticio", name: "Huertos de barrio" }, status: "complete",
   started_at: null, finished_at: null, cost: { total_usd: 1.5, by_model: [{ model: "Sonnet", usd: 1.2 }], cards_usd: 0.3 },
   agents: { used: 40, cap: 100 }, sources: [], ingest: null, funnel: [], cuts: [], duels: [], ranking: [], duel_kind: null,
   new_pains: 0, cards: null, ...extra,
@@ -860,7 +860,7 @@ test("weekMeta: the week, the niche and the cost; the cost and the run's niche o
   const summary = { run_id: "2030-02-04-1", date: "2030-02-04", status: "complete", territory: "documents-for-ai" };
   assert.deepEqual(weekMeta(summary, latestTrace(RUNS, summary)), [
     { label: T.metaWeek, value: "4 de febrero" },
-    { label: T.metaNiche, value: "Nicho ficticio" },
+    { label: T.metaNiche, value: "Huertos de barrio" },
     { label: T.metaCost, value: fill(T.costUsd, { amount: "1,50" }) },
   ]);
   const failedWeek = { ...summary, run_id: "2030-02-11-1", date: "2030-02-11", status: "failed" };
@@ -870,6 +870,40 @@ test("weekMeta: the week, the niche and the cost; the cost and the run's niche o
   ]);
   assert.deepEqual(weekMeta({ ...failedWeek, territory: null, date: null }, latestTrace([], failedWeek)), []);
   assert.deepEqual(weekMeta(null, latestTrace(RUNS, null)), []);
+});
+
+test("weekMeta: a niche name that is only its id humanized (dolores' nicheName) is no name: the topic's, or nothing", () => {
+  const summary = { run_id: "2030-02-04-1", date: "2030-02-04", status: "complete", territory: "documents-for-ai" };
+  const named = (name, id = "new-latam-territory") => RUNS.map((r) => (r.run_id === "2030-02-04-1" ? { ...r, niche: { id, name } } : r));
+  const nicheOf = (traces, s = summary) => weekMeta(s, latestTrace(traces, s)).find((row) => row.label === T.metaNiche);
+  assert.equal(nicheOf(named("New latam territory")).value, "Preparar documentos para la IA");
+  assert.equal(nicheOf(named("new-latam-territory")).value, "Preparar documentos para la IA");
+  assert.equal(nicheOf(named("New latam territory"), { ...summary, territory: "new-latam-territory" }), undefined);
+  assert.equal(nicheOf(named("Territorio nuevo de LatAm")).value, "Territorio nuevo de LatAm");
+});
+
+test("ownNicheName: a niche's own name, never its id nor its id humanized as dolores does", () => {
+  assert.equal(ownNicheName("New latam territory", "new-latam-territory"), null);
+  assert.equal(ownNicheName(" New latam territory ", "new-latam-territory"), null);
+  assert.equal(ownNicheName("new-latam-territory", "new-latam-territory"), null);
+  assert.equal(ownNicheName("A b", "-a--b-"), null);
+  assert.equal(ownNicheName("X", "x"), null);
+  assert.equal(ownNicheName("New LatAm territory", "new-latam-territory"), "New LatAm territory");
+  assert.equal(ownNicheName("Huertos compartidos", "shared-gardens"), "Huertos compartidos");
+  assert.equal(ownNicheName("---", "---"), null);
+  assert.equal(ownNicheName("Algo", null), "Algo");
+  assert.equal(ownNicheName("  ", "x"), null);
+  assert.equal(ownNicheName(null, "x"), null);
+});
+
+test("isThisWeeksRun: the home's rule, a trace is this week's when week_summary speaks of its run", () => {
+  const summary = { run_id: "2030-02-04-1" };
+  assert.equal(isThisWeeksRun({ run_id: "2030-02-04-1" }, summary), true);
+  assert.equal(isThisWeeksRun({ run_id: "2030-01-28-1" }, summary), false);
+  assert.equal(isThisWeeksRun({ run_id: "2030-02-04-1" }, null), false);
+  assert.equal(isThisWeeksRun({}, {}), false);
+  assert.equal(isThisWeeksRun(null, summary), false);
+  assert.equal(latestTrace(RUNS, summary).isThisWeek, isThisWeeksRun(latestTrace(RUNS, summary).trace, summary));
 });
 
 test("brandLampText says the lamp's state in words", () => {

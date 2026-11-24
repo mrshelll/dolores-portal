@@ -6,7 +6,7 @@
 // runTechnical reads them, and the page shows them only inside the closed «Detalle técnico» (Review Focus 3).
 
 import { T, TOPICS, fill, topicName, formatDate, formatNumber, formatUsd } from "./text.js";
-import { lineView, runDuration, costRows } from "./model.js";
+import { lineView, runDuration, costRows, ownNicheName } from "./model.js";
 
 const text = (value) => (typeof value === "string" && value.trim() ? value.trim() : null);
 const isObject = (value) => Boolean(value && typeof value === "object" && !Array.isArray(value));
@@ -38,10 +38,11 @@ export function runTitle(trace) {
   return date ? fill(T.runTitleDated, { date }) : T.runTitleUndated;
 }
 
-// The niche by its name; without one, by its topic's plain name when the page knows it. Never by its id.
+// The niche by its name (not its id humanized, ownNicheName); without one, by its topic's plain name when the page knows
+// it. Never by its id.
 function nicheName(trace) {
   const niche = isObject(trace.niche) ? trace.niche : {};
-  return text(niche.name) ?? (typeof niche.id === "string" && TOPICS.has(niche.id) ? topicName(niche.id) : null);
+  return ownNicheName(niche.name, niche.id) ?? (typeof niche.id === "string" && TOPICS.has(niche.id) ? topicName(niche.id) : null);
 }
 
 function newPains(trace) {
