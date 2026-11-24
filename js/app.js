@@ -16,7 +16,7 @@ import { accessState } from "./access.js";
 import {
   emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, sectionOf, decideList, catalogSections,
   catalogView, latestTrace, brandLamp, brandLampText, brandLampShort, painLamp, lineView, lineHeading, weekMeta, decideLead,
-  stationMarks, stationMeta, stationTags, rowMarks, stationFactLines,
+  stationMarks, stationMeta, stationTags, rowMarks, stationFactLines, waitingCount,
 } from "./model.js";
 import { loadHome, loadWeek, loadPain, loadRuns, loadTitles, loadNiches, setMark, setNicheVeto, addComment, deleteComment } from "./api.js";
 import {
@@ -46,9 +46,10 @@ const state = {
   cleanup: null, // stops the current screen's timers
   signingOut: false,
   guard: null, // { blocks(), ask(proceed) } while a pain has a comment not yet published
-  week: null, // { summary, latest }, kept for the session: the brand lamp and the masthead's data on every screen
+  week: null, // { summary, latest }, kept for the session: the run's pill and the masthead's data on every screen
   weekLoad: null, // the read of `week` a pain or Corridas started (ensureWeek); dropped when the session ends
-  masthead: null, // { lamp, words, meta } of the masthead on screen, so a load can fill them in
+  masthead: null, // { pill, pillShort, pillLong, week, meta, count } of the masthead on screen, so a load can fill them in
+  waiting: null, // { items, marks, me }: «Para decidir» as last loaded, for «Esta semana»'s count (setWaiting)
   focusComment: null, // the pain whose comment field takes the focus when it opens («Comentar» on a station)
   titles: null, // each pain's title by its id, from the last home or Catálogo load; a pain adds its rivals' own (loadPain)
 };
@@ -72,55 +73,87 @@ const TABS = [
   ["week", "#/", "tabWeek"], ["catalog", "#/catalogo", "tabCatalog"], ["niches", "#/nichos", "tabNiches"], ["runs", "#/corridas", "tabRuns"],
 ];
 
-// The masthead (NAV-08): the brand, lowercase «tomoshi» with the lamp of how the latest run went at its left; after
-// signing in the tabs, the week's data and «Salir». The name links home on every screen with a session (NAV-09); on
-// the sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being
-// typed. The lamp is off and silent until a load says how the run went; then its state is accessible text, and it is
-// also written beside the name in two or three words at every width (hidden from a screen reader, which has the lamp's).
+// The masthead (NAV-08), two rows. The brand row: lowercase «tomoshi», the week after a thin slash, how the latest run
+// went as a pill (a dot and two or three words; the whole sentence for a screen reader and the pointer), then at the
+// right the week's niche and cost and «Salir». Under it the tabs, the current one underlined, «Esta semana» carrying how
+// many pains wait for your own mark. Below 768 px the brand row keeps the name, the pill and «Salir», and the week and
+// its data go under the tabs (css/base.css). The name links home on every screen with a session (NAV-09); on the
+// sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being typed.
+// The pill, the week and the count stay hidden until a load says what they are.
 function masthead({ brandLink, actions, tab }) {
-  const brandLight = h("span", { class: "lamp lamp--brand", "data-lamp": "off", "aria-hidden": "true" });
   const word = brandLink
     ? h("a", { class: "brand-word", href: "#/", "aria-label": T.brandHome, "aria-current": atHome() ? "page" : null }, T.brand)
     : h("span", { class: "brand-word" }, T.brand);
-  const words = h("span", { class: "brand-state", "aria-hidden": "true", hidden: true });
+  const pillShort = h("span", { class: "run-pill-short", "aria-hidden": "true" });
+  const pillLong = h("span", { class: "visually-hidden" });
+  const pill = h("p", { class: "run-pill", "data-lamp": "off", hidden: true },
+    h("span", { class: "run-pill-dot", "aria-hidden": "true" }), pillShort, pillLong);
+  const week = h("p", { class: "masthead-week", hidden: true });
   const meta = h("p", { class: "masthead-meta", hidden: true });
-  state.masthead = { lamp: brandLight, words, meta };
+  const count = h("span", { class: "tab-count", hidden: true });
+  state.masthead = { pill, pillShort, pillLong, week, meta, count };
   refreshMasthead();
   return h("header", { class: "masthead" },
-    h("div", { class: "brand", "data-rol": "marca-producto" }, brandLight, word, words),
-    brandLink ? h("nav", { class: "tabs", "aria-label": T.tabsLabel }, TABS.map(([key, href, label]) =>
-      h("a", { class: "tab", href, "aria-current": key === tab ? "page" : null }, T[label]))) : null,
+    word,
+    brandLink ? week : null,
+    pill,
     brandLink ? meta : null,
-    actions.length ? h("div", { class: "masthead-actions" }, actions) : null);
+    actions.length ? h("div", { class: "masthead-actions" }, actions) : null,
+    brandLink ? h("nav", { class: "tabs", "aria-label": T.tabsLabel }, TABS.map(([key, href, label]) =>
+      h("a", { class: "tab", href, "aria-current": key === tab ? "page" : null }, T[label], key === "week" ? [" ", count] : null))) : null);
 }
 
-// The brand lamp and the week's data from the session's week (state.week); until it is known the lamp stays off. The
-// week's niche is a link to Nichos, its words unchanged, marked as the current page on Nichos.
+// The pill, the week's data and «Esta semana»'s count from the session's week (state.week) and the last «Para decidir»
+// (state.waiting). The week's niche is a link to Nichos, its words unchanged, marked as the current page on Nichos.
 function refreshMasthead() {
   const parts = state.masthead;
   if (!parts) return;
-  const week = state.week;
+  const { week, waiting } = state;
   if (week) {
     const color = brandLamp(week.summary);
     const words = brandLampText(color);
-    parts.lamp.dataset.lamp = color;
-    parts.lamp.removeAttribute("aria-hidden");
-    parts.lamp.setAttribute("role", "img");
-    parts.lamp.setAttribute("aria-label", words);
-    parts.lamp.title = words;
-    parts.words.textContent = brandLampShort(week.summary);
-    parts.words.hidden = false;
+    parts.pill.dataset.lamp = color;
+    parts.pill.title = words;
+    parts.pillShort.textContent = brandLampShort(week.summary);
+    parts.pillLong.textContent = words;
+    parts.pill.hidden = false;
   }
   const rows = week ? weekMeta(week.summary, week.latest) : [];
-  replaceChildren(parts.meta, rows.map((row) => h("span", { class: "meta-item" }, `${row.label} `,
+  const weekRow = rows.find((row) => row.label === T.metaWeek);
+  const others = rows.filter((row) => row !== weekRow);
+  parts.week.textContent = weekRow ? `${weekRow.label} ${weekRow.value}` : "";
+  parts.week.hidden = !weekRow;
+  replaceChildren(parts.meta, others.map((row) => h("span", { class: "meta-item" }, `${row.label} `,
     row.label === T.metaNiche
       ? h("a", { class: "meta-link", href: "#/nichos", "aria-current": parseRoute(location.hash).name === "niches" ? "page" : null }, h("b", {}, row.value))
       : h("b", {}, row.value))));
-  parts.meta.hidden = !rows.length;
+  parts.meta.hidden = !others.length;
+  // The digit is for the eye; a screen reader hears it in words, after the tab's name.
+  const pending = waiting ? waitingCount(waiting.items, waiting.marks, waiting.me) : 0;
+  replaceChildren(parts.count, pending ? [
+    h("span", { "aria-hidden": "true" }, formatNumber(pending)),
+    h("span", { class: "visually-hidden" }, pending === 1 ? T.leadPendingOne : t("leadPendingMany", { count: formatNumber(pending) })),
+  ] : []);
+  parts.count.hidden = !pending;
+}
+
+// «Esta semana»'s count: the pains of «Para decidir» (decideList) as the last home or Catálogo load read them, with the
+// marks known since. Unknown (no count shown) until one of them loads in the session.
+function setWaiting(items, marks, me) {
+  state.waiting = { items, marks, me };
+  refreshMasthead();
+}
+
+// A mark from a pain's page counts at once, as one from the home does.
+function countOwnMark(painId, next) {
+  const waiting = state.waiting;
+  if (!waiting) return;
+  const marks = waiting.marks.filter((m) => !m || m.pain_id !== painId || lower(m.author) !== waiting.me);
+  setWaiting(waiting.items, next ? [...marks, { pain_id: painId, author: waiting.me, mark: next }] : marks, waiting.me);
 }
 
 // «Salir» leaves the screen too: with a comment not yet published it asks first (NAV-06).
-const signOutButton = () => h("button", { type: "button", class: "button button--quiet", onclick: () => leaveThen(signOut) },
+const signOutButton = () => h("button", { type: "button", class: "button button--secondary", onclick: () => leaveThen(signOut) },
   T.signOut);
 
 // One frame for every screen (marco.md): the masthead, then the shell: inside <main> the context («← Volver»,
@@ -367,6 +400,7 @@ function renderHome(layout, home, email) {
   const sections = catalogSections(home);
   const inCatalog = Object.values(sections).some((list) => list.length);
   const notice = showRunNotice(layout, home, { empty: !inCatalog });
+  setWaiting(items, home.marks, me);
 
   // The panel only when there are stations to draw; otherwise the strip under the title says why, at every width.
   if (view && view.stages.length) {
@@ -391,6 +425,7 @@ function renderHome(layout, home, email) {
     const refresh = () => {
       lead.textContent = decideLead(items, home.marks, me);
       counts.refresh(catalogSections(home));
+      setWaiting(items, home.marks, me);
     };
     if (!items.length) {
       blocks.push(h("div", { class: "stack decide-empty", "data-rol": "vacio" },
@@ -543,7 +578,8 @@ function station(item, index, ctx) {
 // Every pain by state (catalogView): one section per state with its count, in the board's order, each a list of dense
 // rows. A section with no pain says so; with no pain anywhere the screen says so once and offers to load again, the way
 // out last (LIS-05, EST-01, MAR-06). The run's notice stays: it says how old the list is.
-function renderCatalog(layout, home) {
+function renderCatalog(layout, home, email) {
+  setWaiting(decideList(home), home.marks, lower(email));
   const view = catalogView(home);
   const notice = showRunNotice(layout, home, { empty: view.empty });
   const blocks = view.empty
@@ -1239,6 +1275,7 @@ function renderPain(layout, id, email, data) {
     // The base keeps one mark per person; the page mirrors it without reading everything again.
     view.marks = view.marks.filter((m) => !m || String(m.author ?? "").trim().toLowerCase() !== email);
     if (next) view.marks.push({ pain_id: id, author: email, mark: next, created_at: new Date().toISOString() });
+    countOwnMark(id, next);
     refreshHeader();
     refreshMarks();
     if (next === "discarded") showNotice(layout.notices, { tone: "info", text: discardNote(data.pain, view.marks) });
@@ -1641,6 +1678,7 @@ async function signOut() {
   state.session = null;
   state.week = null;
   state.weekLoad = null;
+  state.waiting = null;
   state.titles = null;
   clearPendingSignIn();
   clearDrafts(); // whoever signs in next in this tab must not find this person's comments
@@ -1657,6 +1695,7 @@ async function sessionEnded() {
   state.session = null;
   state.week = null;
   state.weekLoad = null;
+  state.waiting = null;
   state.titles = null;
   state.viewId += 1;
   const viewId = state.viewId;

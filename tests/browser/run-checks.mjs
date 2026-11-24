@@ -20,7 +20,9 @@ import {
   scenarios, installFakeSupabase, prepareStorage, ME, CODE, MARKUP_COMMENT, LONG_WORDS_TITLE, RUN_ID,
   NICHE_WEEK, NICHE_COMPETING, NICHE_COMPETING_ID,
 } from "./fixtures.mjs";
-import { T, fill } from "../../js/text.js";
+import { T, fill, formatDayMonth } from "../../js/text.js";
+import { decideList, waitingCount } from "../../js/model.js";
+import { markButtonLabels } from "../../js/detail.js";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const USAGE = "usage: node tests/browser/run-checks.mjs --factory <software-factory repo> --out <dir> [--url <base>]";
@@ -270,6 +272,12 @@ async function behaviours(browser, base) {
   const draftKey = "dolores-portal.draft.dol-0027";
   const clean = (log, problems) => problems.length === 0 && log.unknown.length === 0;
   const why = (log, problems) => `${problems.join("; ")}; unknown requests: ${log.unknown.join(", ")}`;
+  // «Esta semana»'s count on the home's data (the lead's own count), and the digit its tab shows (null: no count shown).
+  const HOME_WAITING = (({ data }) => waitingCount(decideList(data), data.marks, ME))(scenario("home"));
+  const tabCount = (page) => page.evaluate(() => {
+    const badge = document.querySelector("nav.tabs .tab-count");
+    return badge && badge.checkVisibility() ? badge.querySelector("[aria-hidden=true]")?.textContent ?? null : null;
+  });
 
   // A comment with markup shows as literal text.
   {
@@ -352,7 +360,7 @@ async function behaviours(browser, base) {
   }
 
   // A mark from the home: the «Nos interesa» of the station Carla marked (dol-0027) is removed and set again, each time
-  // in the base and in words under the station.
+  // in the base, in words under the station, and in «Esta semana»'s count (one more waits for her mark, then one less).
   {
     const { context, page, state, log, problems } = await openScreen(browser, base, scenario("home"), PHONE);
     const station = page.locator('.station:has(a[href="#/dolor/dol-0027"])');
@@ -363,13 +371,100 @@ async function behaviours(browser, base) {
       return note.textContent();
     };
     await station.locator(".station-actions .button--primary").click();
-    const removed = { note: await noteBecomes(T.markRemoved), marks: mine() };
+    const removed = { note: await noteBecomes(T.markRemoved), marks: mine(), count: await tabCount(page) };
     await station.locator(".station-actions .button--primary").click();
-    const saved = { note: await noteBecomes(T.markSavedInterested), marks: mine() };
-    check("a mark from the home is saved and undone with the same button",
-      removed.note === T.markRemoved && removed.marks.length === 0 && saved.note === T.markSavedInterested
-        && saved.marks.join() === "interested" && log.calls.filter((c) => c === "POST /rest/v1/rpc/set_mark").length === 2 && clean(log, problems),
-      `${JSON.stringify({ removed, saved })}; ${why(log, problems)}`);
+    const saved = { note: await noteBecomes(T.markSavedInterested), marks: mine(), count: await tabCount(page) };
+    check("a mark from the home is saved and undone with the same button, and «Esta semana»'s count follows it",
+      removed.note === T.markRemoved && removed.marks.length === 0 && removed.count === String(HOME_WAITING + 1)
+        && saved.note === T.markSavedInterested && saved.marks.join() === "interested" && saved.count === String(HOME_WAITING)
+        && log.calls.filter((c) => c === "POST /rest/v1/rpc/set_mark").length === 2 && clean(log, problems),
+      `${JSON.stringify({ waiting: HOME_WAITING, removed, saved })}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // The shell at 1440 × 900 (the sketch's two rows): the brand row holds «tomoshi», the week, the run's state as a pill
+  // with its words (the long ones for a screen reader), the niche, the cost and «Salir» as a secondary button, all above
+  // the tabs; «Esta semana» is the one current tab, underlined 2 px, and carries the count of pains waiting for your own
+  // mark, a digit for the eye and its words for a screen reader.
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), wide);
+    const words = fill(T.leadPendingMany, { count: HOME_WAITING });
+    const named = await page.getByRole("link", { name: `${T.tabWeek} ${words}`, exact: true }).count();
+    const seen = await page.evaluate(() => {
+      const box = (sel) => { const el = document.querySelector(sel); return el && el.checkVisibility() ? el.getBoundingClientRect() : null; };
+      const tabs = document.querySelector("nav.tabs");
+      const current = [...document.querySelectorAll("nav.tabs a[aria-current]")];
+      const badge = document.querySelector("nav.tabs .tab-count");
+      const pill = document.querySelector(".masthead .run-pill");
+      const tabsTop = tabs ? tabs.getBoundingClientRect().top : 0;
+      const row1 = [".brand-word", ".masthead-week", ".run-pill", ".masthead-meta", ".masthead-actions .button"]
+        .map((sel) => [sel, box(sel)]).map(([sel, r]) => [sel, r && Math.round(r.bottom) <= Math.round(tabsTop)]);
+      return {
+        label: tabs && tabs.getAttribute("aria-label"),
+        current: current.map((a) => [a.firstChild && a.firstChild.textContent, a.getAttribute("aria-current")]),
+        digit: badge && badge.checkVisibility() ? badge.querySelector("[aria-hidden=true]")?.textContent ?? null : null,
+        underline: current[0] ? getComputedStyle(current[0], "::after").height : null,
+        week: document.querySelector(".masthead-week")?.textContent ?? null,
+        pill: pill && pill.checkVisibility() ? { lamp: pill.dataset.lamp, shown: pill.querySelector(".run-pill-short")?.textContent,
+          said: pill.querySelector(".visually-hidden")?.textContent } : null,
+        signOut: document.querySelector(".masthead-actions .button")?.className ?? null,
+        row1,
+      };
+    });
+    check("the shell at 1440: the brand row above the tabs, «Esta semana» current with its count in words",
+      seen.label === T.tabsLabel && seen.current.length === 1 && seen.current[0][0] === T.tabWeek && seen.current[0][1] === "page"
+        && seen.digit === String(HOME_WAITING) && named === 1 && seen.underline === "2px"
+        && seen.week === `${T.metaWeek} ${formatDayMonth(scenario("home").data.summary.date.slice(0, 10))}`
+        && seen.pill && seen.pill.lamp === "green" && seen.pill.shown === T.brandShortComplete && seen.pill.said === T.brandLampGreen
+        && /\bbutton--secondary\b/.test(seen.signOut) && seen.row1.every(([, above]) => above) && clean(log, problems),
+      `${JSON.stringify({ named, ...seen })}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Below 768 px the brand row keeps «tomoshi», the pill and «Salir»; the week and its data go under the tabs; the tabs
+  // scroll inside their own row if they must, never the page (the page's scroll is measured on every screen).
+  for (const phone of [{ width: 390, height: 844, scheme: "dark" }, PHONE]) {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), phone);
+    await page.waitForSelector(".masthead-meta:not([hidden])", { timeout: 10000 }).catch(() => {});
+    const seen = await page.evaluate(() => {
+      const rect = (sel) => { const el = document.querySelector(sel); return el && el.checkVisibility() ? el.getBoundingClientRect() : null; };
+      const tabs = rect("nav.tabs");
+      if (!tabs) return { tabs: false };
+      const above = (sel) => { const r = rect(sel); return Boolean(r) && Math.round(r.bottom) <= Math.round(tabs.top); };
+      const under = (sel) => { const r = rect(sel); return Boolean(r) && Math.round(r.top) >= Math.round(tabs.bottom); };
+      return {
+        above: [".brand-word", ".run-pill", ".masthead-actions .button"].map((sel) => [sel, above(sel)]),
+        under: [".masthead-week", ".masthead-meta"].map((sel) => [sel, under(sel)]),
+        overflow: getComputedStyle(document.querySelector("nav.tabs")).overflowX,
+      };
+    });
+    check(`the shell at ${phone.width}: brand, pill and «Salir» above the tabs, the week and its data under them`,
+      seen.above && seen.above.every(([, ok]) => ok) && seen.under.every(([, ok]) => ok) && seen.overflow === "auto" && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // A mark from a pain's page counts on «Esta semana»'s tab at once: the home loads the count, the pain undoes Carla's
+  // «Nos interesa», and one more waits for her mark.
+  {
+    const wide = { width: 1440, height: 900, scheme: "dark" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), wide);
+    const before = await tabCount(page);
+    await page.evaluate(() => { location.hash = "#/dolor/dol-0027"; });
+    // The home's station says the same words: the pain must be open, its h1 the pain's, before the button is pressed.
+    const opened = await page.waitForFunction((home) => location.hash === "#/dolor/dol-0027" && !document.querySelector(".station")
+      && document.querySelector("h1")?.textContent !== home && !document.querySelector("[aria-busy=true]"), T.homeTitle, { timeout: 10000 })
+      .then(() => true, () => false);
+    const undo = page.getByRole("button", { name: markButtonLabels("interested").interested, exact: true });
+    await undo.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
+    await undo.click().catch(() => {});
+    const redo = page.getByRole("button", { name: markButtonLabels(null).interested, exact: true });
+    await redo.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
+    const after = await tabCount(page);
+    check("a mark from a pain's page counts on «Esta semana»'s tab at once",
+      opened && before === String(HOME_WAITING) && after === String(HOME_WAITING + 1) && clean(log, problems),
+      `pain opened: ${opened}; before ${before}, after ${after}; ${why(log, problems)}`);
     await context.close();
   }
 
@@ -426,18 +521,20 @@ async function behaviours(browser, base) {
     await context.close();
   }
 
-  // Round 3: the top bar names the week's niche and cost the same way whether the home or a pain is opened first.
+  // Round 3: the top bar names the week, its niche and cost the same way whether the home or a pain is opened first.
   {
     const wide = { width: 1440, height: 900, scheme: "dark" };
     const bars = [];
     for (const name of ["home", "detail-v3"]) {
       const { context, page, log, problems } = await openScreen(browser, base, scenario(name), wide);
       await page.waitForSelector(".masthead-meta:not([hidden])", { timeout: 10000 }).catch(() => {});
-      bars.push({ name, text: await page.evaluate(() => document.querySelector(".masthead-meta").textContent), ok: clean(log, problems), why: why(log, problems) });
+      const text = await page.evaluate(() => [".masthead-week", ".masthead-meta"].map((sel) => document.querySelector(sel)?.textContent ?? "").join(" | "));
+      bars.push({ name, text, ok: clean(log, problems), why: why(log, problems) });
       await context.close();
     }
     check("the top bar says the same week, niche and cost on the home and on a pain opened first",
-      bars[0].text && bars[0].text === bars[1].text && /Costó/.test(bars[1].text) && bars.every((b) => b.ok), JSON.stringify(bars));
+      bars[0].text && bars[0].text === bars[1].text && bars[1].text.startsWith(T.metaWeek) && /Costó/.test(bars[1].text) && bars.every((b) => b.ok),
+      JSON.stringify(bars));
   }
 
   // Review Focus 5: 320 px with a long Spanish title and a dense line. The line is the strip under the title (the side
@@ -568,12 +665,14 @@ async function behaviours(browser, base) {
     await context.close();
   }
 
-  // The top bar's niche is a link to Nichos (the bar shows from 768 px, so at 1440 × 900): from Corridas it opens
-  // #/nichos, whose week block names the same niche; there, and only there, the link is the current page.
+  // The top bar's niche is a link to Nichos: from Corridas (its tab the current one) it opens #/nichos, whose week block
+  // names the same niche; there, and only there, the link is the current page, with the «Nichos» tab.
   {
     const wide = { width: 1440, height: 900, scheme: "light" };
     const from = { ...scenario("niches"), hash: "#/corridas", ready: ".run-list", expectedTitle: T.runsTitle };
     const { context, page, log, problems } = await openScreen(browser, base, from, wide);
+    const currentTabs = () => page.evaluate(() => [...document.querySelectorAll("nav.tabs a[aria-current=page]")].map((a) => a.firstChild?.textContent ?? ""));
+    const tabsBefore = await currentTabs();
     const link = page.locator(".masthead-meta a.meta-link");
     await link.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
     const linkText = await link.textContent().catch(() => null);
@@ -585,10 +684,20 @@ async function behaviours(browser, base) {
         hash: location.hash, week: document.querySelector(".niche-week .station-title").textContent,
         current: document.querySelector(".masthead-meta a.meta-link")?.getAttribute("aria-current") ?? null,
       })), () => null);
-    check("the top bar's niche opens #/nichos, on the same niche, and there it is the current page",
-      linkText === NICHE_WEEK && currentBefore === null && opened && opened.hash === "#/nichos" && opened.week === NICHE_WEEK
-        && opened.current === "page" && clean(log, problems),
-      `link «${linkText}», aria-current before «${currentBefore}»; ${JSON.stringify(opened)}; ${why(log, problems)}`);
+    const tabsAfter = await currentTabs();
+    check("the top bar's niche opens #/nichos, on the same niche, and there it is the current page, with its tab",
+      linkText === NICHE_WEEK && currentBefore === null && tabsBefore.join() === T.tabRuns && opened && opened.hash === "#/nichos"
+        && opened.week === NICHE_WEEK && opened.current === "page" && tabsAfter.join() === T.tabNiches && clean(log, problems),
+      `link «${linkText}», aria-current before «${currentBefore}», tabs ${JSON.stringify({ tabsBefore, tabsAfter })}; ${JSON.stringify(opened)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // A pain's page belongs to no tab: none is the current one.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), PHONE);
+    const current = await page.evaluate(() => document.querySelectorAll("nav.tabs a").length
+      ? document.querySelectorAll("nav.tabs a[aria-current]").length : null);
+    check("a pain's page marks no tab as the current one", current === 0 && clean(log, problems), `current tabs ${current}; ${why(log, problems)}`);
     await context.close();
   }
   return results;

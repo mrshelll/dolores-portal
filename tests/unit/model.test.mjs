@@ -4,7 +4,7 @@ import {
   effectiveMark, buildSections, sectionOf, emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, PAGED_ABOVE, rowMeta,
   decideList, catalogSections, painLamp, hasNewEvidence, lineView, latestTrace, brandLamp,
   stationMarks, stationMeta, decideLead, stationTags, lineHeading, runFacts, costRows, weekMeta, brandLampText, stageNotes, ownNicheName, isThisWeeksRun,
-  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows, checkRows,
+  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows, checkRows, waitingCount,
 } from "../../js/model.js";
 import { scenarios } from "../browser/fixtures.mjs";
 import { loadHome, loadWeek } from "../../js/api.js";
@@ -807,6 +807,17 @@ test("decideLead counts what waits for your own mark and says what goes first", 
     `${T.leadNoPending} ${T.leadOrderWinner}`);
   assert.equal(decideLead([items[2]], [], "ana@example.com"), T.leadPendingOne);
   assert.equal(decideLead([items[2]], null, null), T.leadPendingOne);
+});
+
+// «Esta semana»'s tab shows the same count as the lead's sentence: the pains that wait for your own mark.
+test("waitingCount: the pains of the list without your own mark, whatever others marked", () => {
+  const items = [{ id: "dol-9211" }, { id: "dol-9212" }, { id: "dol-9213" }];
+  const marks = [mark("dol-9212", "ANA@example.com", "interested"), mark("dol-9213", "beto@example.com", "discarded")];
+  assert.equal(waitingCount(items, marks, "ana@example.com"), 2);
+  assert.equal(waitingCount(items, [...marks, mark("dol-9211", "ana@example.com", "discarded")], "ana@example.com"), 1);
+  assert.equal(waitingCount(items, [mark("dol-9211", "ana@example.com", "maybe")], "ana@example.com"), 3);
+  assert.equal(waitingCount(items, null, null), 3);
+  assert.equal(waitingCount(null, marks, "ana@example.com"), 0);
 });
 
 test("stationTags: «Evidencia nueva» only when the line is this week's (Review Focus 2); the duel by its date otherwise", () => {

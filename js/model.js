@@ -621,13 +621,18 @@ export function checkRows(gate) {
 
 // ---- tomoshi: the shell, the stations and the line, in words --------------------------------------------------------
 
-// The sentence under «Para decidir»: how many wait for your own mark, and what goes first (decideList's order).
-export function decideLead(items, marks, email) {
-  const list = Array.isArray(items) ? items : [];
+// How many of «Para decidir» (decideList) wait for your own mark: the lead's sentence says it, «Esta semana»'s tab shows it.
+export function waitingCount(items, marks, email) {
   const me = lower(email);
   const mine = new Set((Array.isArray(marks) ? marks : [])
     .filter((m) => m && MARKS.has(m.mark) && me && lower(m.author) === me).map((m) => m.pain_id));
-  const pending = list.filter((item) => !mine.has(item.id)).length;
+  return (Array.isArray(items) ? items : []).filter((item) => !mine.has(item.id)).length;
+}
+
+// The sentence under «Para decidir»: how many wait for your own mark, and what goes first (decideList's order).
+export function decideLead(items, marks, email) {
+  const list = Array.isArray(items) ? items : [];
+  const pending = waitingCount(list, marks, email);
   const count = pending === 0 ? T.leadNoPending : pending === 1 ? T.leadPendingOne : fill(T.leadPendingMany, { count: formatNumber(pending) });
   const winner = Boolean(list[0] && list[0].winner);
   const weighty = list.some((item) => item.section === "weighty");
