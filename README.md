@@ -106,7 +106,7 @@ What runs:
     `catalog-empty`;
   - a pain: `detail-v2` and `detail-v3` (a version-3 card opened by direct link, its duel rivals named by title, by
     what hurts for a version-1 card, or as «otro dolor del catálogo»), `detail-no-gate` (a pain stored before the gate
-    existed: «Sin análisis guardado para este dolor» where the table would be), `detail-long-title`, `detail-line`,
+    existed: «Sin análisis guardado para este dolor» where the box cells would be), `detail-long-title`, `detail-line`,
     `detail-line-v1`, `detail-missing`;
   - Corridas: `runs`, `runs-empty`, `run-detail` (the unmapped cuts counted in one line), `run-detail-technical`
     (the same run with «Detalle técnico» open), `run-failed`, `run-missing`;
@@ -130,7 +130,12 @@ What runs:
   keeps it and «Salir sin publicar» goes on; a mark from the home is undone and saved again with the same button, in
   the base and in words; «Ver más» under a source puts the focus on the first quote added; at 390 × 844 the first
   station's «Nos interesa» shows without scrolling; the home's line says the cuts nobody mapped once, as a link to that
-  run's page; the top bar says the same week, niche and cost on the home and on a pain opened first. And
+  run's page; the top bar says the same week, niche and cost on the home and on a pain opened first; a pain's page
+  reads as the home's open row (the way back to «Esta semana», the state's pill, the box cells with no box around them
+  before the actions, the team's marks before plain sections, the comments last, each attack and duel a ✓ or ✗ beside
+  its words), its «Comentar» goes to the comment field and «Ver los testimonios y los ataques» to «Cómo llegamos»
+  without leaving the page, and the duel's winner opened from a link shows its tag, the duel's line and a grey dot,
+  with «Nos interesa» on a 390 × 844 phone's first screen. And
   Review Focus 5: at
   320 px with the long title the line is the folded strip, the title wraps whole with no ellipsis and no sideways
   scroll. In Nichos: vetoing a competing niche sends `set_niche_veto` with `p_vetoed: true`, its row turns «Vetado»
@@ -144,7 +149,7 @@ Exceptions, each printed at the end of every run (no check is removed):
 
 - **MAR-14 holds a pain's screens to 180 px.** At 320 × 640, `detail-v2`, `detail-v3`, `detail-no-gate`,
   `detail-long-title` and `detail-line` end their h1 at 180 px: under the two-row masthead band (88 px: the brand, then
-  the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180
+  the tabs), the way back to «Esta semana» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180
   exactly, so any growth fails.
 - **MAR-14 skips `detail-line-v1`.** A version-1 card has no `line.title`, so its h1 is `what_hurts`, a full sentence of
   several lines. This is transitional: the next run rewrites every card with a title. The screen is still measured

@@ -101,7 +101,7 @@ test("every label the shell, the home and the line use exists", () => {
     "metaWeek", "metaNiche", "metaCost", "homeTitle", "leadNoPending", "leadPendingOne", "leadPendingMany",
     "leadOrderWinnerWeighty", "leadOrderWinner", "leadOrderWeighty", "decideEmpty", "seeCatalog", "catalogLine",
     "catalogLineWeighty", "catalogLineInterestedOne", "catalogLineInterested", "catalogLineWatching", "catalogLineDiscardedOne",
-    "catalogLineDiscarded", "openCatalog", "stationDetail", "stationEvidence", "whoLabel", "tagWinner", "tagWinnerDated",
+    "catalogLineDiscarded", "openCatalog", "stationDetail", "stationEvidence", "whoLabel", "tagWinner", "tagWinnerDated", "backToWeek",
     "tagFresh", "noMarksYet", "commentAction", "stationInterested", "markSavedInterested", "markRemoved",
     "lineLabel", "lineTitle", "lineTitleOld", "lineTitleOldUndated", "lineNoTrace", "lineOlderNote",
     "lineNoRun", "lineStripCutsOne", "lineStripCuts", "lineStripClean", "durationMinutes", "durationHours", "durationShort",
@@ -160,7 +160,6 @@ test("no visible string calls a run «revisión»", () => {
 // The checks' copy is pinned word for word (the plan's brief), and the thresholds never live here: «Mínimo {n}» takes
 // the gate's own number. Singular and plural are two strings, chosen by the number.
 test("the checks' copy", () => {
-  assert.equal(T.analysisCaption, "Análisis");
   assert.equal(T.analysisTestimonies, "Testimonios");
   assert.equal(T.analysisTiers, "Tipos de fuente");
   assert.equal(T.analysisSurvivals, "Ataques resistidos");

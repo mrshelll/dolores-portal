@@ -382,6 +382,10 @@ function touchedBy(trace) {
   return { touched: (pain) => ids.has(pain.id) || isNew(pain), winner: ranking[0] ?? null };
 }
 
+// The pain that won the trace's duel (touchedBy's winner: the first of a survivors' duel's final order), or null. A
+// pain's page asks it of the week's trace to say what the pain's row says: its tag and the duel's line.
+export const duelWinner = (trace) => touchedBy(isTrace(trace) ? trace : null).winner;
+
 // «Para decidir»: every alive pain, the pains the latest traced run touched, and the ones marked «Nos interesa». A pain
 // leaves when the team discards it (sectionOf is discarded, or null: dead, discarded by hand) or, unless alive or
 // touched by the latest run, when it has gone quiet (quietTest), interested or not; it stays in Catálogo. First the

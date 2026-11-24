@@ -10,22 +10,22 @@
 import { supabase } from "./supabase-client.js";
 import { EMAIL_OTP_LENGTH } from "../config.js";
 import { h, icon, replaceChildren } from "./dom.js";
-import { T, fill, formatNumber } from "./text.js";
+import { T, fill, formatNumber, formatDate } from "./text.js";
 import { classifyAuthError, isEmailInvalid, isNetworkError, retryAfterSeconds } from "./auth-errors.js";
 import { accessState } from "./access.js";
 import {
   emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, sectionOf, decideList, catalogSections,
   catalogView, latestTrace, brandLamp, brandLampText, brandLampShort, painLamp, lineView, lineHeading, weekMeta, decideLead,
-  stationMarks, stationMeta, stationTags, rowMarks, stationFactLines, waitingCount,
+  stationMarks, stationMeta, stationTags, rowMarks, stationFacts, stationFactLines, waitingCount, duelWinner,
 } from "./model.js";
 import { loadHome, loadWeek, loadPain, loadRuns, loadTitles, loadNiches, setMark, setNicheVeto, addComment, deleteComment } from "./api.js";
 import {
   nextMark, keyData, validComment, cardTitle, painStatus, statusLabel, cardSections, isLineCard, markLines, commentItems,
   sendErrorKind, draftKey, draftValue, readDraft, isDraftKey, discardNote, markErrorText, commentErrorText, COMMENT_MAX,
-  markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
+  ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
 import { renderLine, lamp } from "./line.js";
-import { checkStack, checkCells } from "./checks.js";
+import { checkStack, checkCells, checkIcon } from "./checks.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
 import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
 
@@ -235,7 +235,8 @@ async function route() {
     title: T[screen.title],
     pageTitle: screen.pageTitle ? T[screen.pageTitle] : null,
     tab: screen.tab,
-    context: target.name === "pain" ? backLink() : target.name === "run" ? backLink("#/corridas", T.runsBack, T.runsBackLabel) : null,
+    context: target.name === "pain" ? backLink("#/", T.backToWeek, backChevron(), T.tabWeek)
+      : target.name === "run" ? backLink("#/corridas", T.runsBackLabel, T.runsBack) : null,
     actions: [signOutButton()],
   });
   layout.body.setAttribute("aria-busy", "true");
@@ -1028,11 +1029,12 @@ function renderRun(layout, trace, titles) {
       technical)));
 }
 
-// ---- a pain: its card, the team's marks and comments (the manual's «detalle» pattern) ------
+// ---- a pain: the home's open row at full width, its card, «Cómo llegamos» and the comments ------
 
-// «← Volver» on one line; its accessible name says where it goes (MAR-14). A pain goes back to the list, an opened run
-// to Corridas.
-const backLink = (href = "#/", text = T.back, label = T.backToList) => h("a", { class: "back-link", href, "aria-label": label }, text);
+// The way back, on one line above the title; its accessible name says where it goes (MAR-14). A pain goes back to
+// «Esta semana» after a drawn chevron, an opened run to Corridas.
+const backLink = (href, label, ...content) => h("a", { class: "back-link", href, "aria-label": label }, content);
+const backChevron = () => icon("back-chevron", { paths: ["m15 18-6-6 6-6"] });
 
 // The comment being written, kept in the tab under its pain and its author (Review Focus 3).
 function saveDraft(painId, email, body) {
@@ -1091,13 +1093,15 @@ function showPainMissing(layout) {
     h("a", { class: "button button--primary", "data-rol": "accion-principal", href: "#/" }, T.backToList));
 }
 
-// One key datum: its label (muted) and its value (DET-02). On a phone they share one line, «·» between them, and a
-// value that reads alone hides its label from the eye but not from a screen reader (DET-12).
+// One key datum: its label (muted) and its value, the data on one line divided by «·» (DET-02). On a phone a value that
+// reads alone hides its label from the eye but not from a screen reader (DET-12).
 function keyItem(item) {
   return h("li", { class: item.alone ? "key key--alone" : "key", "data-rol": "dato-clave" },
     h("span", { class: "key-label" }, item.label), " ", h("span", { class: "key-value" }, item.value));
 }
 
+// A quote of the card, drawn as «Cómo llegamos» draws its own: the words between guillemets, then its link and, when it
+// differs, the original under a fold.
 function quoteItem(quote) {
   return h("li", { class: "quote" },
     h("blockquote", {}, h("p", {}, quote.text)),
@@ -1105,29 +1109,39 @@ function quoteItem(quote) {
     quote.original ? h("details", { class: "fold original" }, h("summary", {}, T.originalText), h("p", {}, quote.original)) : null);
 }
 
-// A section of the card, as a section of the report: a hairline-bordered sheet, its h2 on the head band, then its
-// paragraphs, its quotes or its glossary (a <dl>, DET-08). Inside it nothing is boxed again (DET-09): its rows are
-// divided by hairlines.
+// A section of the card as a plain headed block under a hairline: its h2, then its paragraphs, its quotes or its
+// glossary (a <dl>, DET-08). Nothing in it is boxed (DET-09): its rows are divided by hairlines.
 function cardSection(section, ...extra) {
   const headingId = `${section.id}-titulo`;
-  return h("section", { class: "section detail-section sheet", id: section.id, "aria-labelledby": headingId },
-    h("div", { class: "sheet-head" }, h("h2", { id: headingId, tabindex: "-1" }, section.title)),
-    h("div", { class: "sheet-body" },
-      section.paragraphs.map((text) => h("p", {}, text)),
-      section.quotes && section.quotes.length ? h("ul", { class: "quotes", role: "list" }, section.quotes.map(quoteItem)) : null,
-      section.glossary && section.glossary.length
-        ? h("dl", { class: "glossary" }, section.glossary.map((g) => h("div", { class: "glossary-row" }, h("dt", {}, g.term), h("dd", {}, g.meaning))))
-        : null,
-      extra));
+  return h("section", { class: "detail-section", id: section.id, "aria-labelledby": headingId },
+    h("h2", { id: headingId, tabindex: "-1" }, section.title),
+    section.paragraphs.map((text) => h("p", { class: "detail-prose" }, text)),
+    section.quotes && section.quotes.length ? h("ul", { class: "quotes", role: "list" }, section.quotes.map(quoteItem)) : null,
+    section.glossary && section.glossary.length
+      ? h("dl", { class: "glossary" }, section.glossary.map((g) => h("div", { class: "glossary-row" }, h("dt", {}, g.term), h("dd", {}, g.meaning))))
+      : null,
+    extra);
 }
+
+// An in-page link: it scrolls to its section's heading and gives it the focus, without touching the address (the
+// router's).
+const jumpTo = (id) => (event) => {
+  event.preventDefault();
+  const target = document.getElementById(`${id}-titulo`);
+  if (!target) return;
+  target.scrollIntoView({ block: "start" });
+  target.focus({ preventScroll: true });
+};
 
 // ---- «Cómo llegamos a este dolor» ----
 
-// One row of the attacks or the duels: its lamp and its result in words, then what was asked (or whom it faced) and,
-// when the card has it, its plain line. No plain line, no empty box (Review Focus 4).
-function howRow(color, result, main, plain) {
+// One row of the attacks or the duels: its result in words after a ✓ (it held, it won) or a ✗ (checkIcon, hidden from
+// a screen reader), then what was asked (or whom it faced) and, when the card has it, its plain line. No plain line,
+// no empty box (Review Focus 4).
+function howRow(passed, result, main, plain) {
+  const outcome = passed ? "pass" : "fail";
   return h("li", { class: "how-row" },
-    h("p", { class: "how-result" }, lamp(color), h("span", {}, result)),
+    h("p", { class: "how-result", "data-result": outcome }, checkIcon(outcome), h("span", {}, result)),
     h("div", { class: "how-main" },
       h("p", { class: "how-question" }, main),
       plain ? h("p", { class: "how-plain" }, plain) : null));
@@ -1175,35 +1189,35 @@ function howBody(view) {
       h("div", { class: "how-sources" }, view.sources.map(howSource))) : null,
     view.attacks.length ? part("preguntas", T.howAttacksTitle,
       h("ul", { class: "how-rows", role: "list", "aria-labelledby": "como-preguntas" },
-        view.attacks.map((a) => howRow(a.held ? "green" : "red", a.result, a.question, a.plain)))) : null,
+        view.attacks.map((a) => howRow(a.held, a.result, a.question, a.plain)))) : null,
     view.duels.length ? part("duelos", view.duels.length === 1 ? T.howDuelTitle : T.howDuelsTitle,
       h("ul", { class: "how-rows", role: "list", "aria-labelledby": "como-duelos" },
-        view.duels.map((d) => howRow(d.won ? "green" : "amber", d.result,
+        view.duels.map((d) => howRow(d.won, d.result,
           d.known ? t("duelAgainst", { title: d.againstTitle }) : T.duelAgainstOther, d.plain)))) : null,
   ];
 }
 
-// The index of the sections (DET-04): folded at the top on a phone, sticky beside the sections from 672 px (the
-// frame's side panel, `lateral`). The CSS
-// shows one of the two, so a screen reader meets only one. Its links scroll to their section without touching the
-// address, which is the router's.
+// The index of the sections (DET-04): folded above the sections on a phone and a tablet, a column beside them from
+// 1024 px. The CSS shows one of the two, so a screen reader meets only one. Its links scroll to their section without
+// touching the address, which is the router's.
 function sectionIndex(sections) {
   const links = () => h("ul", { role: "list" }, sections.map((section) => h("li", {},
-    h("a", { href: `#${section.id}`, onclick: (event) => {
-      event.preventDefault();
-      const target = document.getElementById(`${section.id}-titulo`);
-      if (!target) return;
-      target.scrollIntoView({ block: "start" });
-      target.focus({ preventScroll: true });
-    } }, section.title))));
+    h("a", { href: `#${section.id}`, onclick: jumpTo(section.id) }, section.title))));
   return [
     h("details", { class: "fold detail-index detail-index--fold" },
       h("summary", {}, T.indexLabel), h("nav", { "aria-label": T.indexLabel }, links())),
-    h("nav", { class: "detail-index detail-index--wide sheet", "data-rol": "lateral", "aria-label": T.indexLabel },
-      h("p", { class: "sheet-head section-label", "aria-hidden": "true" }, T.indexLabel), links()),
+    h("nav", { class: "detail-index detail-index--wide", "data-rol": "lateral", "aria-label": T.indexLabel },
+      h("p", { class: "detail-index-label", "aria-hidden": "true" }, T.indexLabel), links()),
   ];
 }
 
+// A pain's page is its row on «Esta semana», opened, at the page's width. The head is the row's own line: the title,
+// its tags and its state (a pill: its dot and its words), who suffers it and the key data. Then the open part: the
+// duel's line (for the winner), the box cells (checkCells: the counts the run judged it by against the run's own
+// thresholds; a pain stored before the gate existed has none, claims nothing and says so in one line), «Nos interesa»,
+// «Descartar» and «Comentar» with the way to its testimonies and attacks, and the team's marks. Then the card's
+// sections, «Cómo llegamos» and, last, the comments, beside their index. A line card says first that it only has
+// this summary (EST-06).
 function renderPain(layout, id, email, data) {
   const viewId = state.viewId;
   const view = { marks: [...data.marks], comments: [...data.comments] };
@@ -1211,37 +1225,61 @@ function renderPain(layout, id, email, data) {
   layout.heading.textContent = title;
   setTitle(title);
 
-  // ---- the header (DET-01, DET-12): the status tag, the key data, then the marks as its actions (MAR-06) ----
-  const tag = h("span", {});
+  // ---- the head (DET-01, DET-12) ----
+  const tags = h("p", { class: "detail-tags", hidden: true });
+  const statusText = h("span", {});
   const statusLamp = lamp("off");
-  const statusRow = h("p", { class: "detail-status", "data-lamp": "off" }, statusLamp, tag);
-  const interested = h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal" },
-    T.markInterestedAction);
-  const discard = h("button", { type: "button", class: "button button--secondary" }, T.markDiscardAction);
-  const ownLine = h("p", { class: "own-mark" });
+  const statusRow = h("p", { class: "detail-status", "data-lamp": "off" }, statusLamp, statusText);
+  const who = typeof data.card.line.who === "string" ? data.card.line.who.trim() : "";
   layout.head.classList.add("detail-head");
-  layout.head.append(statusRow,
+  layout.head.append(...[
+    h("div", { class: "detail-meta" }, tags, statusRow),
+    who ? h("p", { class: "detail-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), who) : null,
     h("ul", { class: "key-data", role: "list" }, keyData(data.pain, data.card).map(keyItem)),
-    h("div", { class: "actions detail-actions" }, interested, discard),
-    ownLine);
-  // A line card's notice depends on the marks too (lineNoticeText): it is refreshed with the header.
+  ].filter(Boolean)); // Element.append writes a null as the text «null»
+
+  // What the week's run says of this pain, as its row says it: «Ganó el duelo» and the duel's line, for the winner of
+  // the survivors' duel. A pain opened from a link can come before the week: they show when it arrives.
+  const duelLine = h("p", { class: "detail-duel", hidden: true });
+  function showWeek(week) {
+    const latest = week && week.latest;
+    if (!latest || !latest.trace || duelWinner(latest.trace) !== id) return;
+    replaceChildren(tags, stationTags({ winner: true }, { isThisWeek: latest.isThisWeek, dateLabel: formatDate(latest.trace.date) })
+      .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text)));
+    tags.hidden = false;
+    const reason = stationFacts(data.pain, data.card, { winner: true }).duelReason;
+    if (!reason) return;
+    replaceChildren(duelLine, h("span", { class: "detail-duel-label" }, T.duelReasonLabel), " ", reason);
+    duelLine.hidden = false;
+  }
+  if (state.week) showWeek(state.week);
+  else ensureWeek().then((week) => { if (viewId === state.viewId) showWeek(week); });
+
+  // ---- the actions, your own mark and the team's marks (MAR-06) ----
+  const interested = h("button", { type: "button", class: "button button--primary", "data-rol": "accion-principal" });
+  const discard = h("button", { type: "button", class: "button button--secondary" });
+  const ownLine = h("p", { class: "own-mark" });
+  const marksList = h("ul", { class: "mark-list", role: "list", "aria-labelledby": "marcas-titulo" });
+  const noMarks = h("p", { class: "detail-marks-none" }, T.noMarks);
+  // A line card's notice depends on the marks too (lineNoticeText): it is refreshed with the state.
   const lineNotice = isLineCard(data.card) ? h("p", {}) : null;
 
   const myMark = () => {
     const own = view.marks.find((m) => m && String(m.author ?? "").trim().toLowerCase() === email);
     return own ? own.mark : null;
   };
-  // The buttons say what pressing them does, and the line under them your own mark in words with its day. A button whose
-  // label changes with the state carries no aria-pressed (ARIA: a toggle keeps a fixed label).
+  // The state's pill and the buttons follow the marks. The buttons say what pressing them does, and the line under them
+  // your own mark in words with its day. A waiting pain's dot is grey (css/base.css, by its section), its lamp still
+  // amber.
   function refreshHeader() {
     const section = painStatus(data.pain, view.marks);
     const label = statusLabel(section);
-    tag.textContent = label || "";
+    statusText.textContent = label || "";
     statusLamp.dataset.lamp = painLamp(section);
     statusRow.dataset.lamp = statusLamp.dataset.lamp;
-    statusRow.hidden = !label; // a pain that just left every list (a dead one no longer kept): no tag
-    const mine = myMark();
-    const labels = markButtonLabels(mine);
+    statusRow.dataset.section = section ?? "out";
+    statusRow.hidden = !label; // a pain that just left every list (a dead one no longer kept): no pill
+    const labels = stationButtonLabels(myMark());
     interested.textContent = labels.interested;
     discard.textContent = labels.discard;
     const line = ownMarkLine(view.marks, email);
@@ -1249,21 +1287,19 @@ function renderPain(layout, id, email, data) {
     ownLine.hidden = !line;
     if (lineNotice) lineNotice.textContent = lineNoticeText(data.pain, view.marks);
   }
-
-  // ---- marks and comments ----
-  const marksList = h("ul", { class: "mark-list", role: "list" });
-  const noMarks = h("p", { class: "muted" }, T.noMarks);
-  const commentsHeading = h("h3", { tabindex: "-1" }, T.commentsTitle);
-  const commentList = h("ul", { class: "comment-list", role: "list" });
-  const noComments = h("p", { class: "muted" }, T.noComments);
-  const live = h("p", { class: "visually-hidden", role: "status" });
-
   function refreshMarks() {
     const lines = markLines(view.marks, data.people);
     replaceChildren(marksList, lines.map((line) => h("li", {}, line.text)));
     marksList.hidden = !lines.length;
     noMarks.hidden = lines.length > 0;
   }
+
+  // ---- comments ----
+  const commentList = h("ul", { class: "comment-list", role: "list" });
+  const noComments = h("p", { class: "muted" }, T.noComments);
+  const live = h("p", { class: "visually-hidden", role: "status" });
+  let commentsHeading = null; // the comments section's h2, where the focus goes after a deletion
+
   function refreshComments() {
     const items = commentItems(view.comments, data.people, email);
     replaceChildren(commentList, items.map(commentRow));
@@ -1350,7 +1386,7 @@ function renderPain(layout, id, email, data) {
       view.comments = view.comments.filter((c) => !c || c.id !== item.id);
       refreshComments();
       live.textContent = T.deleted;
-      commentsHeading.focus();
+      if (commentsHeading) commentsHeading.focus();
     };
     showDelete();
     return row;
@@ -1411,46 +1447,54 @@ function renderPain(layout, id, email, data) {
     formNotice,
     h("div", { class: "field" }, h("label", { for: "comment" }, T.commentLabel), textarea, counter, fieldErr),
     h("div", {}, publishButton));
+  // «Comentar» here, and on a row of the home, leads to the comment field ready to write.
+  const goToComment = () => {
+    textarea.focus({ preventScroll: true });
+    textarea.scrollIntoView({ block: "center" });
+  };
 
-  // ---- the body: the line card's notice, or the index; then the sections, «Cómo llegamos» before the marks ----
+  // ---- the sections: the card's, «Cómo llegamos» before the comments ----
   // The rivals' titles read with the pain win over the last home's (a pain opened from the email has only those).
   const titles = new Map([...(state.titles ?? []), ...(data.titles ?? [])]);
   const how = howWeGot(data.card, data.pain, titles);
   const sections = cardSections(data.card);
   if (how) sections.splice(sections.length - 1, 0, { id: "como-llegamos", title: T.secHowWeGot, paragraphs: [] });
   const blocks = sections.map((section) => {
-    if (section.id === "marcas") {
-      return cardSection(section,
-        h("h3", {}, T.marksTitle), marksList, noMarks,
-        commentsHeading, commentList, noComments,
-        form, live);
+    if (section.id === "comentarios") {
+      const block = cardSection(section, commentList, noComments, form, live);
+      commentsHeading = block.querySelector("h2");
+      return block;
     }
     if (section.id === "como-llegamos") return cardSection(section, howBody(how));
     return cardSection(section);
   });
-  // The card opens with its box cells (checkCells: the counts the run judged it by against the run's own
-  // thresholds) on a panel that is its container; a pain stored before the gate existed has none, claims nothing, and
-  // says so in one line where the panel would be.
-  const checks = checkCells(data.pain.gate);
-  const analysis = checks ? h("div", { class: "detail-analysis" }, checks) : h("p", { class: "analysis-none" }, T.analysisNone);
+
+  // ---- the open part, then the sections beside their index ----
+  const open = h("div", { class: "detail-open" },
+    lineNotice ? h("div", { class: "notice detail-notice" }, lineNotice) : null,
+    duelLine,
+    checkCells(data.pain.gate) || h("p", { class: "analysis-none" }, T.analysisNone),
+    h("div", { class: "detail-foot" },
+      h("div", { class: "actions detail-actions" }, interested, discard,
+        h("button", { type: "button", class: "button button--quiet", onclick: goToComment }, speech(), T.commentAction)),
+      how ? h("a", { class: "detail-evidence", href: "#como-llegamos", onclick: jumpTo("como-llegamos") }, T.stationEvidence) : null,
+      ownLine),
+    h("div", { class: "detail-marks" },
+      h("p", { class: "detail-marks-label", id: "marcas-titulo" }, T.marksTitle), marksList, noMarks));
+  layout.notices.classList.add("detail-notices");
+  layout.body.classList.add("detail-body");
   layout.body.removeAttribute("aria-busy");
-  if (isLineCard(data.card)) {
-    replaceChildren(layout.body, h("div", { class: "detail-sections" },
-      h("div", { class: "notice detail-notice" }, lineNotice), analysis, blocks));
-  } else {
-    // On a phone the index is a fold under the analysis; from 672 px it is a column beside the sections.
-    const [foldIndex, wideIndex] = sectionIndex(sections);
-    replaceChildren(layout.body, h("div", { class: "detail-layout" },
-      wideIndex, h("div", { class: "detail-sections" }, analysis, foldIndex, blocks)));
-  }
+  // A line card has two or three sections and no index.
+  const [foldIndex, wideIndex] = isLineCard(data.card) ? [] : sectionIndex(sections);
+  replaceChildren(layout.body, h("div", { class: wideIndex ? "detail-layout" : "detail-layout detail-layout--single" },
+    open, foldIndex, wideIndex, h("div", { class: "detail-sections" }, blocks)));
   refreshHeader();
   refreshMarks();
   refreshComments();
-  // «Comentar» on a station of the home opens the pain with its comment field ready.
+  // «Comentar» on a row of the home opens the pain with its comment field ready.
   if (state.focusComment === id) {
     state.focusComment = null;
-    textarea.focus({ preventScroll: true });
-    textarea.scrollIntoView({ block: "center" });
+    goToComment();
   }
 
   // NAV-06: a comment not yet published stops the way out and asks, in the notice zone; leaving drops it.

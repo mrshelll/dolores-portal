@@ -4,7 +4,7 @@ import {
   effectiveMark, buildSections, sectionOf, emptySentence, homeNotice, runNotice, classifyError, firstPage, nextPage, PAGE_SIZE, PAGED_ABOVE, rowMeta,
   decideList, catalogSections, painLamp, hasNewEvidence, lineView, latestTrace, brandLamp,
   stationMarks, stationMeta, decideLead, stationTags, lineHeading, runFacts, costRows, weekMeta, brandLampText, stageNotes, ownNicheName, isThisWeeksRun,
-  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows, checkRows, waitingCount,
+  sourceFigures, catalogView, brandLampShort, rowMarks, stationFacts, stationFactLines, analysisRows, checkRows, waitingCount, duelWinner,
 } from "../../js/model.js";
 import { scenarios } from "../browser/fixtures.mjs";
 import { loadHome, loadWeek } from "../../js/api.js";
@@ -630,6 +630,18 @@ test("decideList puts the survivors' duel winner first, then alive, then newest 
   assert.deepEqual(items.map((i) => i.winner), [true, false, false, false]);
   assert.deepEqual(items.map((i) => [i.section, i.lamp]), [["watching", "amber"], ["weighty", "green"], ["watching", "amber"], ["watching", "amber"]]);
   assert.deepEqual(items.map((i) => i.fresh), [true, false, true, true]);
+});
+
+// A pain's page asks the same question of the latest trace the home asks (decideList's winner): only the first of a
+// survivors' duel's final order won it.
+test("duelWinner: the first of a survivors' duel's order; nobody after a fallback duel, without a ranking or a trace", () => {
+  const survivors = trace("2030-02-04-1", "2030-02-04", { ranking: ["dol-9142", "dol-9141"], duel_kind: "survivors" });
+  assert.equal(duelWinner(survivors), "dol-9142");
+  assert.equal(duelWinner({ ...survivors, duel_kind: "fallback" }), null);
+  assert.equal(duelWinner({ ...survivors, ranking: [] }), null);
+  assert.equal(duelWinner({ ...survivors, ranking: null }), null);
+  assert.equal(duelWinner(null), null);
+  assert.equal(duelWinner(undefined), null);
 });
 
 test("a fallback duel's winner is on the home but not first, and wins nothing", () => {

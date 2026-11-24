@@ -109,7 +109,6 @@ export const T = Object.freeze({
   factAttacksOne: "Resistió {held} de 1 ataque",
   // The checks: the counts the run judged a pain by, each against the threshold the run used (the gate's own numbers,
   // never fixed here). A box cell says the count's name, its value, in or out of range and its minimum.
-  analysisCaption: "Análisis",
   analysisValueLabel: "Valor",
   analysisFlagLabel: "Indicador",
   analysisTestimonies: "Testimonios",
@@ -379,7 +378,7 @@ export const T = Object.freeze({
 
   // A pain: the frame and its states.
   painTitle: "Detalle del dolor",
-  back: "← Volver",
+  backToWeek: "Volver a «Esta semana»",
   backToList: "Volver a la lista",
   painLoading: "Cargando el dolor…",
   painError: "No pudimos cargar este dolor. Vuelve a intentarlo en un momento.",
@@ -396,7 +395,6 @@ export const T = Object.freeze({
   keyTopic: "Tema",
   keyRuns: "Visto en",
   keyRunsValue: "{count} corridas",
-  markInterestedAction: "Marcar «Nos interesa»",
   unmarkInterestedAction: "Quitar «Nos interesa»",
   markDiscardAction: "Descartar",
   unmarkDiscardAction: "Quitar descarte",
@@ -413,7 +411,6 @@ export const T = Object.freeze({
   // A pain: the card.
   indexLabel: "En esta página",
   secWhatHurts: "Qué le duele a la gente",
-  secWho: "A quién le duele",
   secBuyer: "A quién se lo venderíamos",
   secSolution: "Qué podríamos construir",
   secWhyReal: "Por qué creemos que es real",
@@ -421,7 +418,6 @@ export const T = Object.freeze({
   secRisk: "Lo que podría salir mal",
   secTeamView: "Lo que opina el equipo",
   secGlossary: "Palabras técnicas",
-  secMarks: "Marcas y comentarios",
   seeSource: "Ver la fuente",
   originalText: "Texto original",
   lineNotice: "Este dolor está en observación y por ahora solo tiene este resumen. Si lo marcas «Nos interesa», la próxima corrida escribe su ficha completa.",

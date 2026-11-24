@@ -11,9 +11,10 @@ import { h, svg } from "./dom.js";
 import { T } from "./text.js";
 import { checkRows } from "./model.js";
 
-// The stack's circle: its colour comes from the check's data-result (css/base.css), its mark from the result.
+// The stack's circle: its colour comes from its parent's data-result (css/base.css), its mark from the result. A pain's
+// page draws it too, before each attack's and duel's result in words.
 const CIRCLE_MARK = { pass: "m4.9 8.2 2.1 2.1 4.1-4.4", fail: "m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8", none: "M5 8h6" };
-const circle = (result) => svg("svg", { class: "check-icon", viewBox: "0 0 16 16", width: 16, height: 16, "aria-hidden": "true" },
+export const checkIcon = (result) => svg("svg", { class: "check-icon", viewBox: "0 0 16 16", width: 16, height: 16, "aria-hidden": "true" },
   svg("circle", { cx: 8, cy: 8, r: 7.5 }), svg("path", { d: CIRCLE_MARK[result] }));
 
 // The cell's verdict: a stroke tick or cross before its words. A check with no result has no verdict.
@@ -59,7 +60,7 @@ export function checkStack(gate) {
   const { rows } = checkRows(gate);
   if (!rows.length) return null;
   return h("ul", { class: "check-stack" },
-    rows.map((row) => h("li", { class: "check", "data-result": row.result }, circle(row.result), row.short, said(row.result))));
+    rows.map((row) => h("li", { class: "check", "data-result": row.result }, checkIcon(row.result), row.short, said(row.result))));
 }
 
 // checkCells(gate) → div.check-cells, one div.check-cell per check with its data-result, the note as p.check-note;

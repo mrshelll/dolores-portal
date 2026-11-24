@@ -220,8 +220,9 @@ export function quoteView(quote) {
 const paragraphs = (...values) => values.map(text).filter(Boolean);
 
 // The card's sections, in the brief's order, each { id, title, paragraphs, quotes?, glossary? }. The id is the anchor
-// of the index. A section with nothing to say is left out; «Marcas y comentarios» is always last. Nothing internal
-// (sources, the risk's lens) is passed on. A «full» card without its full part reads as a line card.
+// of the index. A section with nothing to say is left out; «Comentarios» is always last (the team's marks go with the
+// actions, and who suffers it under the title, so neither is a section). Nothing internal (sources, the risk's lens) is
+// passed on. A «full» card without its full part reads as a line card.
 export function cardSections(card) {
   const line = object(object(card) && card.line) ?? {};
   const full = object(card) && card.kind === "full" ? object(card.full) : null;
@@ -229,7 +230,6 @@ export function cardSections(card) {
   const add = (id, title, section) => sections.push({ id, title, paragraphs: [], ...section });
   if (!full) {
     add("dolor", T.secWhatHurts, { paragraphs: paragraphs(line.what_hurts) });
-    add("quien", T.secWho, { paragraphs: paragraphs(line.who) });
   } else {
     add("dolor", T.secWhatHurts, { paragraphs: paragraphs(full.what_hurts ?? line.what_hurts) });
     add("comprador", T.secBuyer, { paragraphs: paragraphs(object(full.buyer)?.text) });
@@ -246,7 +246,7 @@ export function cardSections(card) {
     add("glosario", T.secGlossary, { glossary });
   }
   const filled = sections.filter((s) => s.paragraphs.length || (s.quotes && s.quotes.length) || (s.glossary && s.glossary.length));
-  filled.push({ id: "marcas", title: T.secMarks, paragraphs: [] });
+  filled.push({ id: "comentarios", title: T.commentsTitle, paragraphs: [] });
   return filled;
 }
 
@@ -296,16 +296,8 @@ export function discardNote(pain, marks) {
   return painStatus(pain, marks) === "discarded" ? T.discardedNote : T.discardedKept;
 }
 
-// The two mark buttons say what pressing them does (no aria-pressed: the label already changes): «Marcar «Nos interesa»»
-// or «Quitar «Nos interesa»», «Descartar» or «Quitar descarte».
-export function markButtonLabels(mine) {
-  return {
-    interested: mine === "interested" ? T.unmarkInterestedAction : T.markInterestedAction,
-    discard: mine === "discarded" ? T.unmarkDiscardAction : T.markDiscardAction,
-  };
-}
-
-// A station's buttons on the home: «Nos interesa» and «Descartar», or how to undo your own mark.
+// The mark buttons, on a row of the home and on a pain's page: «Nos interesa» and «Descartar», or how to undo your own
+// mark. They say what pressing them does, so they carry no aria-pressed (the label already changes).
 export function stationButtonLabels(mine) {
   return {
     interested: mine === "interested" ? T.unmarkInterestedAction : T.stationInterested,

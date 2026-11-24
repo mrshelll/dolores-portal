@@ -226,11 +226,11 @@ const THRESHOLDS = { testimonies: 3, tiers: 2, survivals: 3, verdicts: 5 };
 const GATE_IN_RANGE = { testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: THRESHOLDS };
 const GATE_ONE_TIER = { testimonies: 4, tiers: 1, survivals: 4, verdicts: 5, has_statement: true, per_country: true, thresholds: THRESHOLDS };
 const PAIN_0002 = { id: "dol-0002", territory: null, status: "watching", team_discard: null };
-// A pain's detail opens with its analysis. The detail's dol-0027 has one count out of range (one type of source of the
-// two required), so the page shows both flags; with it the run keeps the pain under watch (decideStatus: fewer types of
-// source than required is never «con peso»), and Carla's «Nos interesa» puts it in «Nos interesa», which is why its card
-// is full. The detail scenarios without a gate (detail-no-gate, a pain stored before the gate existed, and the line
-// card's dol-0002) show no table and claim nothing: one line says there is no analysis.
+// A pain's page opens with its box cells. The detail's dol-0027 has one count out of range (one type of source of the
+// two required), so the page shows both verdicts; with it the run keeps the pain under watch (decideStatus: fewer types
+// of source than required is never «con peso»), and Carla's «Nos interesa» puts it in «Nos interesa», which is why its
+// card is full. The detail scenarios without a gate (detail-no-gate, a pain stored before the gate existed, and the line
+// card's dol-0002) show no cells and claim nothing: one line says there is no analysis.
 const GATE_DETAIL = { testimonies: 4, tiers: 1, survivals: 4, verdicts: 5, has_statement: true, per_country: false, thresholds: THRESHOLDS };
 const PAIN_0027_DETAIL = { ...PAIN_0027, status: "watching", gate: GATE_DETAIL };
 
@@ -471,7 +471,9 @@ function nichesData({ counts = false, vetoedCurrent = false, failed = false, emp
 // `note` says why (printed as a NOTE line).
 const PAIN_MAR14 = 180; // a pain at 320 × 640: the masthead (88 px), «← Volver» and a title on two lines
 const HOME_LIST = ".stations";
-const ANALYSIS = [T.analysisCaption.toLocaleUpperCase("es"), T.analysisIn, T.analysisOut];
+// A pain's box cells: in and out of range in words (detail-v2 and detail-v3 have one of each), the cells themselves shown.
+const ANALYSIS = [T.analysisIn, T.analysisOut];
+const CELLS = ".check-cells";
 const CATALOG_LIST = ".pain-list";
 const MORE_BUTTON = `button.link-button:text-is("${T.showMore.replace("{count}", "20")}")`;
 const runTitleOn = (day) => fill(T.runTitleDated, { date: formatDate(day) });
@@ -512,16 +514,17 @@ export function scenarios() {
     // A version-2 card: «Cómo llegamos» has the quotes and each attack's question and result, with no plain line.
     { name: "detail-v2", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
       data: detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title,
-      mustRead: ANALYSIS, mustNotRead: [T.statusWeighty, T.analysisNone] },
+      mustRead: ANALYSIS, mustNotRead: [T.statusWeighty, T.analysisNone], mustShow: [CELLS] },
     // A version-3 card: a plain line per attack and per duel, opened directly (the Monday email's link). The rival with
     // a title (dol-0101) goes by it, the version-1 one (dol-0002) by what hurts, and the one without a card (dol-0420)
     // by «otro dolor del catálogo».
     { name: "detail-v3", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027", data: detailV3Data(), ready: ".how-rows", expectedTitle: FULL_CARD.line.title,
-      mustRead: [fill(T.duelAgainst, { title: LINE_CARD_V1.line.what_hurts }), T.duelAgainstOther, V1_RIVAL_PLAIN, ...ANALYSIS] },
-    // A full card whose pain was stored before the gate existed: no «Análisis», one line in words where it would be.
+      mustRead: [fill(T.duelAgainst, { title: LINE_CARD_V1.line.what_hurts }), T.duelAgainstOther, V1_RIVAL_PLAIN, ...ANALYSIS],
+      mustShow: [CELLS] },
+    // A full card whose pain was stored before the gate existed: no box cells, one line in words where they would be.
     { name: "detail-no-gate", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
       data: detailData(PAIN_0027, { pain_id: "dol-0027", kind: "full", card: FULL_CARD }), ready: ".detail-actions", expectedTitle: FULL_CARD.line.title,
-      mustRead: [T.statusWeighty, T.analysisNone], mustNotRead: ANALYSIS },
+      mustRead: [T.statusWeighty, T.analysisNone], mustNotRead: ANALYSIS, mustShow: [".analysis-none"] },
     { name: "detail-long-title", mar14: PAIN_MAR14, hash: "#/dolor/dol-0027",
       data: detailData(PAIN_0027_DETAIL, { pain_id: "dol-0027", kind: "full", card: FULL_CARD_LONG_TITLE }), ready: ".detail-actions", expectedTitle: LONGEST_TITLE },
     { name: "detail-line", mar14: PAIN_MAR14, hash: "#/dolor/dol-0002",

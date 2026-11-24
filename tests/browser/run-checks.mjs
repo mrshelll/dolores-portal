@@ -18,11 +18,11 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { startStaticServer } from "./static-server.mjs";
 import {
   scenarios, installFakeSupabase, prepareStorage, ME, CODE, MARKUP_COMMENT, LONG_WORDS_TITLE, RUN_ID,
-  NICHE_WEEK, NICHE_COMPETING, NICHE_COMPETING_ID,
+  NICHE_WEEK, NICHE_COMPETING, NICHE_COMPETING_ID, WINNER_REASON,
 } from "./fixtures.mjs";
 import { T, fill, formatDayMonth } from "../../js/text.js";
 import { decideList, waitingCount } from "../../js/model.js";
-import { markButtonLabels } from "../../js/detail.js";
+import { stationButtonLabels } from "../../js/detail.js";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const USAGE = "usage: node tests/browser/run-checks.mjs --factory <software-factory repo> --out <dir> [--url <base>]";
@@ -37,7 +37,7 @@ const SETTLE_MS = 250; // the folds' 200 ms chevron turn, the last transition on
 
 // Explicit exceptions: a check that cannot pass for a stated reason. Never a deleted check.
 const EXCEPTIONS = [
-  "MAR-14 holds a pain's screens (detail-v2, detail-v3, detail-no-gate, detail-long-title, detail-line) to 180 px, not 160: at 320 × 640 their h1 ends at 180 px, under the two-row masthead band (88 px, the brand and the tabs), «← Volver» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180 exactly, so any growth fails.",
+  "MAR-14 holds a pain's screens (detail-v2, detail-v3, detail-no-gate, detail-long-title, detail-line) to 180 px, not 160: at 320 × 640 their h1 ends at 180 px, under the two-row masthead band (88 px, the brand and the tabs), the way back to «Esta semana» and a title on two lines. Every other screen ends its h1 within 160 px; these are held to 180 exactly, so any growth fails.",
   "MAR-14 skips detail-line-v1 (see its NOTE): a version-1 card has no title, so its h1 is what_hurts. Transitional: the next run rewrites every card with a title.",
   "Console errors: the browser's own «Failed to load resource» line for a request the fake failed on purpose (home-error's and niches-error's reads, the behaviours' 400, 401, 403 and 500) is expected and not counted. Every other console error fails.",
   "Targets: a link inside a sentence (other words in the same block) is not held to 44 × 44, as WCAG 2.5.8 allows: its height is the line's. Every other link, button, field and fold is.",
@@ -517,15 +517,109 @@ async function behaviours(browser, base) {
     const opened = await page.waitForFunction((home) => location.hash === "#/dolor/dol-0027" && !document.querySelector(".station")
       && document.querySelector("h1")?.textContent !== home && !document.querySelector("[aria-busy=true]"), T.homeTitle, { timeout: 10000 })
       .then(() => true, () => false);
-    const undo = page.getByRole("button", { name: markButtonLabels("interested").interested, exact: true });
+    const undo = page.getByRole("button", { name: stationButtonLabels("interested").interested, exact: true });
     await undo.waitFor({ state: "visible", timeout: 10000 }).catch(() => {});
     await undo.click().catch(() => {});
-    const redo = page.getByRole("button", { name: markButtonLabels(null).interested, exact: true });
+    const redo = page.getByRole("button", { name: stationButtonLabels(null).interested, exact: true });
     await redo.waitFor({ state: "visible", timeout: 5000 }).catch(() => {});
     const after = await tabCount(page);
     check("a mark from a pain's page counts on «Esta semana»'s tab at once",
       opened && before === String(HOME_WAITING) && after === String(HOME_WAITING + 1) && clean(log, problems),
       `pain opened: ${opened}; before ${before}, after ${after}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // A pain's page is the home's open row at full width (Task 4): «Esta semana» is the way back; the state is a pill, its
+  // dot blue for «Nos interesa»; the box cells sit on the page with no box around them, the actions under them; the
+  // team's marks come before the card's sections, each section a plain block under a hairline, the comments last; each
+  // attack and duel says its result in words after a ✓ or ✗ hidden from a screen reader. «Comentar» takes the focus to
+  // the comment field and «Ver los testimonios y los ataques» to «Cómo llegamos», neither leaving the page.
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), wide);
+    const seen = await page.evaluate(() => {
+      const main = document.querySelector("main");
+      const back = document.querySelector(".back-link");
+      const pill = document.querySelector(".detail-status");
+      const cells = document.querySelector(".check-cells");
+      const actions = document.querySelector(".detail-actions");
+      const marks = document.querySelector(".mark-list");
+      const sections = [...document.querySelectorAll(".detail-section")];
+      const follows = (a, b) => Boolean(a && b && a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      const boxed = [];
+      for (let el = cells && cells.parentElement; el && el !== main; el = el.parentElement) {
+        const style = getComputedStyle(el);
+        if (["Top", "Right", "Bottom", "Left"].some((side) => parseFloat(style[`border${side}Width`]) > 0)) boxed.push(el.className);
+      }
+      return {
+        back: back && { text: back.textContent.trim(), href: back.getAttribute("href") },
+        pill: pill && { text: pill.textContent.trim(), dot: getComputedStyle(pill.querySelector(".lamp")).backgroundColor },
+        cellsThenActions: Boolean(cells && actions && follows(cells, actions)
+          && cells.getBoundingClientRect().bottom <= actions.getBoundingClientRect().top),
+        boxed,
+        marksFirst: follows(marks, sections[0]),
+        plain: sections.length > 0 && sections.every((section) => {
+          const style = getComputedStyle(section);
+          return style.borderLeftWidth === "0px" && style.borderRightWidth === "0px" && style.borderTopWidth === "1px"
+            && style.borderTopLeftRadius === "0px";
+        }),
+        last: sections.length ? sections[sections.length - 1].querySelector("h2").textContent : null,
+        results: [...document.querySelectorAll(".how-result")].map((r) => ({
+          text: r.textContent.trim(), result: r.dataset.result, hidden: r.querySelector("svg.check-icon")?.getAttribute("aria-hidden") ?? null,
+        })),
+      };
+    });
+    const passWords = [T.attackHeld, T.duelWon];
+    const results = seen.results.length === 8 && seen.results.some((r) => r.result === "fail")
+      && seen.results.every((r) => r.hidden === "true" && (r.result === "pass") === passWords.includes(r.text)
+        && [...passWords, T.attackRefuted, T.duelLost].includes(r.text));
+    check("a pain's page reads as the open row: the way back, the pill, the cells unboxed before the actions, marks, plain sections, ✓/✗ in words",
+      seen.back && seen.back.text === T.tabWeek && seen.back.href === "#/" && seen.pill && seen.pill.text === T.statusInterested
+        && seen.pill.dot === "rgb(37, 99, 235)" && seen.cellsThenActions && seen.boxed.length === 0 && seen.marksFirst && seen.plain
+        && seen.last === T.commentsTitle && results && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await page.getByRole("button", { name: T.commentAction, exact: true }).click({ timeout: 5000 }).catch(() => {});
+    const commented = await page.evaluate(() => document.activeElement && document.activeElement.id);
+    await page.getByRole("link", { name: T.stationEvidence, exact: true }).click({ timeout: 5000 }).catch(() => {});
+    const jumped = await page.evaluate(() => ({ focus: document.activeElement && document.activeElement.id, hash: location.hash }));
+    check("a pain's «Comentar» goes to the comment field and «Ver los testimonios y los ataques» to «Cómo llegamos», on the page",
+      commented === "comment" && jumped.focus === "como-llegamos-titulo" && jumped.hash === "#/dolor/dol-0027" && clean(log, problems),
+      `focus after «Comentar»: ${commented}; ${JSON.stringify(jumped)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // The duel's winner opened straight from a link (the week arrives after the pain): its tag «Ganó el duelo» and the
+  // duel's line, as on its row; it waits under watch, so its pill's dot is grey (the edge, #737373 in dark); and on a
+  // 390 × 844 phone its «Nos interesa» shows without scrolling, before the box cells.
+  {
+    const phone = { width: 390, height: 844, scheme: "dark" };
+    const home = scenario("home");
+    const card = home.data.cards.find((row) => row.pain_id === "dol-0101").card;
+    const winner = { ...home, name: "detail-winner", hash: "#/dolor/dol-0101", ready: ".detail-actions", expectedTitle: card.line.title };
+    const { context, page, log, problems } = await openScreen(browser, base, winner, phone);
+    await page.waitForSelector(".detail-tags .station-tag", { timeout: 10000 }).catch(() => {});
+    await settle(page);
+    await page.evaluate(() => window.scrollTo(0, 0));
+    const seen = await page.evaluate(() => {
+      const pill = document.querySelector(".detail-status");
+      const primary = document.querySelector(".detail-actions .button--primary");
+      const cells = document.querySelector(".check-cells");
+      const box = (el) => (el ? el.getBoundingClientRect() : null);
+      return {
+        tags: [...document.querySelectorAll(".detail-tags .station-tag")].map((tag) => tag.textContent),
+        duel: document.querySelector(".detail-duel")?.textContent ?? null,
+        pill: pill && { text: pill.textContent.trim(), dot: getComputedStyle(pill.querySelector(".lamp")).backgroundColor },
+        primary: primary && { text: primary.textContent, top: Math.round(box(primary).top), bottom: Math.round(box(primary).bottom) },
+        cellsTop: cells ? Math.round(box(cells).top) : null,
+        height: window.innerHeight,
+      };
+    });
+    check("the duel's winner opened from a link: its tag, the duel's line, a grey dot, and «Nos interesa» on the first screen",
+      seen.tags.join() === T.tagWinner && seen.duel === `${T.duelReasonLabel} ${WINNER_REASON}` && seen.pill
+        && seen.pill.text === T.statusWatching && seen.pill.dot === "rgb(115, 115, 115)" && seen.primary
+        && seen.primary.text === T.stationInterested && seen.primary.top >= 0 && seen.primary.bottom <= seen.height
+        && seen.cellsTop !== null && seen.cellsTop > seen.primary.bottom && clean(log, problems),
+      `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
   }
 

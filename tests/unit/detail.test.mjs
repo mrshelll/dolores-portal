@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   nextMark, keyData, validComment, COMMENT_MAX, cardTitle, painStatus, statusLabel, cardSections, quoteView, safeUrl,
   markLines, commentItems, sendErrorKind, draftKey, draftValue, readDraft, isDraftKey, discardNote, markErrorText,
-  commentErrorText, markButtonLabels, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText,
+  commentErrorText, ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText,
   evidenceBySource, attackRows, duelRows, titleMap, howWeGot,
 } from "../../js/detail.js";
 import { loadPain, setMark, addComment, deleteComment } from "../../js/api.js";
@@ -228,10 +228,10 @@ test("the status tag says what the home says, for every placement", () => {
 
 test("a full card has its sections in order; the team's view only when there is one", () => {
   const ids = (card) => cardSections(card).map((s) => s.id);
-  assert.deepEqual(ids(FULL), ["dolor", "comprador", "solucion", "pruebas", "validar", "riesgo", "glosario", "marcas"]);
+  assert.deepEqual(ids(FULL), ["dolor", "comprador", "solucion", "pruebas", "validar", "riesgo", "glosario", "comentarios"]);
   assert.deepEqual(cardSections(FULL).map((s) => s.title), [
     "Qué le duele a la gente", "A quién se lo venderíamos", "Qué podríamos construir", "Por qué creemos que es real",
-    "Cómo validarlo esta semana", "Lo que podría salir mal", "Palabras técnicas", "Marcas y comentarios",
+    "Cómo validarlo esta semana", "Lo que podría salir mal", "Palabras técnicas", "Comentarios",
   ]);
   const withView = { ...FULL, full: { ...FULL.full, team_view: "Al equipo le parece prometedor." } };
   const view = cardSections(withView).find((s) => s.id === "equipo");
@@ -240,20 +240,20 @@ test("a full card has its sections in order; the team's view only when there is 
   assert.deepEqual(ids(withView).slice(5, 8), ["riesgo", "equipo", "glosario"]);
   // A blank view, an empty glossary and a missing risk leave their sections out, never empty.
   const thin = { ...FULL, full: { ...FULL.full, team_view: "  ", glossary: [], risk: { lens: "pricing", text: "" } } };
-  assert.deepEqual(ids(thin), ["dolor", "comprador", "solucion", "pruebas", "validar", "marcas"]);
+  assert.deepEqual(ids(thin), ["dolor", "comprador", "solucion", "pruebas", "validar", "comentarios"]);
   // Nothing internal goes out: no sources, no lens.
   assert.doesNotMatch(JSON.stringify(cardSections({ ...FULL, full: { ...FULL.full, risk: { lens: "pricing", text: "Riesgo." } } })), /lens|pricing|foro-|aviso-/);
 });
 
-test("a line card has what hurts, who, and the marks", () => {
+// Who suffers it is under the page's title (the row's own line), so no section says it again; the team's marks are with
+// the actions, so the last section is the comments.
+test("a line card has what hurts and the comments", () => {
   const sections = cardSections(LINE);
-  assert.deepEqual(sections.map((s) => [s.id, s.title]), [
-    ["dolor", "Qué le duele a la gente"], ["quien", "A quién le duele"], ["marcas", "Marcas y comentarios"],
-  ]);
+  assert.deepEqual(sections.map((s) => [s.id, s.title]), [["dolor", "Qué le duele a la gente"], ["comentarios", "Comentarios"]]);
   assert.deepEqual(sections[0].paragraphs, [LINE.line.what_hurts]);
-  assert.deepEqual(sections[1].paragraphs, [LINE.line.who]);
+  assert.ok(!JSON.stringify(sections).includes(LINE.line.who), "who suffers it is not a section");
   // A «full» card that lost its full part reads as a line card.
-  assert.deepEqual(cardSections({ ...FULL, full: null }).map((s) => s.id), ["dolor", "quien", "marcas"]);
+  assert.deepEqual(cardSections({ ...FULL, full: null }).map((s) => s.id), ["dolor", "comentarios"]);
 });
 
 test("a quote is its translation, with the original only when it differs and a link only to http(s)", () => {
@@ -477,13 +477,6 @@ test("commentErrorText: a 22023 is always about the text (kept, and what to chan
 });
 
 // ---- fix round 2 (rubric): the mark buttons say what they do, your own mark in words, the line card's notice ----------
-
-test("markButtonLabels: each button says what pressing it does", () => {
-  assert.deepEqual(markButtonLabels(null), { interested: "Marcar «Nos interesa»", discard: "Descartar" });
-  assert.deepEqual(markButtonLabels("interested"), { interested: "Quitar «Nos interesa»", discard: "Descartar" });
-  assert.deepEqual(markButtonLabels("discarded"), { interested: "Marcar «Nos interesa»", discard: "Quitar descarte" });
-  assert.deepEqual(markButtonLabels("something-else"), markButtonLabels(null));
-});
 
 test("ownMarkLine says your own mark and its day, ignoring case in the email, or null without one", () => {
   const day = formatDate("2026-11-10T22:10:00Z");
