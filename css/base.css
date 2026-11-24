@@ -147,8 +147,7 @@ a:hover { text-decoration-color: currentColor; }
 
 /* Two rows on the ground. The brand row: «tomoshi», the week after a thin slash, the run's pill, then at the right the
    niche, the cost and «Salir». Under it the tabs, across the width on a hairline. Mobile first: below 768 px the brand
-   row keeps the name, the pill and «Salir», and the week and its data take a third row under the tabs. One flex row
-   that wraps, its parts placed by `order`, so the week moves without being drawn twice. */
+   row keeps the name, the pill and «Salir», above the tabs. One flex row that wraps, its parts placed by `order`. */
 .masthead {
   display: flex;
   flex-wrap: wrap;
@@ -263,23 +262,15 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
   text-align: center;
 }
 
-/* The week and its data: under the tabs on a phone, one line that wraps. */
-.masthead-week { order: 5; padding-top: var(--space-2); font-size: 13px; font-weight: 500; }
-.masthead-meta {
-  order: 6;
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: var(--space-3);
-  padding-top: var(--space-2);
-  color: var(--muted);
-  font-size: 13px;
-}
+/* The week and its data. On a phone they leave the masthead, so the first screen keeps the heading: the home's line
+   strip says them (.line-strip-week); the other screens do without them. */
+.masthead-week { order: 2; display: flex; align-items: center; gap: var(--space-3); font-weight: 500; }
+.masthead-meta { order: 4; display: flex; margin-left: auto; color: var(--muted); font-size: 13px; white-space: nowrap; }
 .masthead-meta b { color: var(--ink); font-weight: 500; }
 /* The week's niche is a link to Nichos. */
 .masthead-meta .meta-link { color: inherit; }
-.masthead:has(> .masthead-week:not([hidden]), > .masthead-meta:not([hidden])) {
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--hairline);
+@media (max-width: 767.98px) {
+  .masthead-week, .masthead-meta { display: none; }
 }
 /* At 320 px the name, the longest pill and «Salir» share the brand row only a step smaller and closer. */
 @media (max-width: 379.98px) {
@@ -291,10 +282,8 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
 /* From 768 px the sketch's two rows: the brand row 60 px, everything but the tabs on it, the niche and the cost at the
    right divided by a rule, «Salir» last; then the tabs, 46 px. */
 @media (min-width: 768px) {
-  .masthead,
-  .masthead:has(> .masthead-week:not([hidden]), > .masthead-meta:not([hidden])) { padding-block: var(--space-2) 0; border-bottom: 0; }
-  .masthead:not(:has(> .tabs)) { padding-bottom: var(--space-2); border-bottom: 1px solid var(--hairline); }
-  .masthead-week { order: 2; display: flex; align-items: center; gap: var(--space-3); padding: 0; font-size: 14px; }
+  .masthead { padding-top: var(--space-2); }
+  .masthead:not(:has(> .tabs)) { padding-bottom: var(--space-2); }
   /* The slash between the name and the week: a 1 px rule, leaning. */
   .masthead-week::before {
     content: "";
@@ -305,7 +294,6 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
     transform: rotate(20deg);
   }
   .run-pill { order: 3; }
-  .masthead-meta { order: 4; flex-wrap: nowrap; gap: 0; margin-left: auto; padding: 0; white-space: nowrap; }
   .meta-item { padding-inline: var(--space-4); }
   .meta-item + .meta-item { border-left: 1px solid var(--hairline); }
   .masthead-actions { order: 5; }
@@ -334,8 +322,9 @@ main { min-width: 0; padding: var(--space-4) var(--pad) 48px; }
   .line-panel-inner { padding: var(--space-5) var(--pad) var(--space-6) 0; }
 }
 
-/* The title band: the h1 (28 px, 24 on a phone), then its lines. */
-.page-head h1 { font-size: 24px; font-weight: 600; line-height: 32px; letter-spacing: -0.03em; }
+/* The title band: the h1 (28 px; on a phone 24 px on 28 px lines, so a pain's two-line title stays in the first
+   screen, MAR-14), then its lines. */
+.page-head h1 { font-size: 24px; font-weight: 600; line-height: 28px; letter-spacing: -0.03em; }
 @media (min-width: 640px) {
   .page-head h1 { font-size: 28px; line-height: 36px; }
 }
@@ -705,7 +694,7 @@ summary.sheet-head:hover { background: color-mix(in srgb, var(--brand) 5%, var(-
 .line-strip-week { display: none; flex-basis: 100%; color: var(--muted); font-size: var(--text-xs); }
 .line-strip-week b { color: var(--ink); font-weight: 600; }
 .line-strip--empty .line-strip-week { margin-top: 6px; }
-/* The week's data is in the masthead at every width now (under the tabs on a phone), so the strip no longer repeats it. */
+@media (max-width: 767.98px) { .line-strip-week { display: block; } }
 .line-strip-body { padding: 0 var(--space-4) var(--space-4); border-top: 1px solid var(--line); }
 .line-strip-summary:hover { background: var(--hover); }
 .line-strip-body .line-head { padding-top: 12px; }

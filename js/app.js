@@ -77,7 +77,8 @@ const TABS = [
 // went as a pill (a dot and two or three words; the whole sentence for a screen reader and the pointer), then at the
 // right the week's niche and cost and «Salir». Under it the tabs, the current one underlined, «Esta semana» carrying how
 // many pains wait for your own mark. Below 768 px the brand row keeps the name, the pill and «Salir», and the week and
-// its data go under the tabs (css/base.css). The name links home on every screen with a session (NAV-09); on the
+// its data leave the masthead, so the heading stays in the first screen: the home's line strip says them (css/base.css).
+// The name links home on every screen with a session (NAV-09); on the
 // sign-in screens it is plain text, because there is no home yet and tapping it would only wipe the code being typed.
 // The pill, the week and the count stay hidden until a load says what they are.
 function masthead({ brandLink, actions, tab }) {

@@ -422,25 +422,28 @@ async function behaviours(browser, base) {
     await context.close();
   }
 
-  // Below 768 px the brand row keeps «tomoshi», the pill and «Salir»; the week and its data go under the tabs; the tabs
-  // scroll inside their own row if they must, never the page (the page's scroll is measured on every screen).
+  // Below 768 px the brand row keeps «tomoshi», the pill and «Salir» above the tabs, which scroll inside their own row if
+  // they must, never the page (the page's scroll is measured on every screen). The week and its data leave the masthead,
+  // so the heading stays in the first screen (MAR-14), and the home's line strip says them.
   for (const phone of [{ width: 390, height: 844, scheme: "dark" }, PHONE]) {
     const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), phone);
-    await page.waitForSelector(".masthead-meta:not([hidden])", { timeout: 10000 }).catch(() => {});
+    await page.waitForSelector(".line-strip-week", { timeout: 10000 }).catch(() => {});
     const seen = await page.evaluate(() => {
       const rect = (sel) => { const el = document.querySelector(sel); return el && el.checkVisibility() ? el.getBoundingClientRect() : null; };
       const tabs = rect("nav.tabs");
       if (!tabs) return { tabs: false };
       const above = (sel) => { const r = rect(sel); return Boolean(r) && Math.round(r.bottom) <= Math.round(tabs.top); };
-      const under = (sel) => { const r = rect(sel); return Boolean(r) && Math.round(r.top) >= Math.round(tabs.bottom); };
+      const strip = document.querySelector(".line-strip-week");
       return {
         above: [".brand-word", ".run-pill", ".masthead-actions .button"].map((sel) => [sel, above(sel)]),
-        under: [".masthead-week", ".masthead-meta"].map((sel) => [sel, under(sel)]),
+        gone: [".masthead-week", ".masthead-meta"].map((sel) => [sel, !rect(sel)]),
+        strip: strip && strip.checkVisibility() ? strip.textContent : null,
         overflow: getComputedStyle(document.querySelector("nav.tabs")).overflowX,
       };
     });
-    check(`the shell at ${phone.width}: brand, pill and «Salir» above the tabs, the week and its data under them`,
-      seen.above && seen.above.every(([, ok]) => ok) && seen.under.every(([, ok]) => ok) && seen.overflow === "auto" && clean(log, problems),
+    check(`the shell at ${phone.width}: brand, pill and «Salir» above the tabs; the week and its data in the home's strip, not the masthead`,
+      seen.above && seen.above.every(([, ok]) => ok) && seen.gone.every(([, ok]) => ok)
+        && typeof seen.strip === "string" && seen.strip.startsWith(T.metaWeek) && seen.overflow === "auto" && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
   }
