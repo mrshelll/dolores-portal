@@ -1149,8 +1149,9 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 
 /* ---- Nichos: the week's niche and why, every candidate, and the veto ------------------------ */
 
-/* «ESTA SEMANA»: the niche that ran as a result block (.station). A proposed niche's origin is a long tag: it wraps. */
-.niche-origin-tag { white-space: normal; }
+/* «ESTA SEMANA»: the niche that ran as a result block (.station). A proposed niche's origin is a long tag, and a state
+   like «Se eligió el <día>; la corrida falló» a long flag: both wrap. */
+.niche-origin-tag, .niche-week .station-state { white-space: normal; }
 .niche-week .station-duel { max-width: var(--measure-prose); }
 .niche-analysis .analysis-range-text { display: block; }
 /* The versus bar: a band with one tick per rival and the niche's own marker, each at its value over the week's
@@ -1201,8 +1202,13 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .niche-table thead th.niche-num { text-align: right; }
 .niche-table td.niche-num { font-size: 17px; font-weight: 600; text-align: right; white-space: nowrap; }
 .niche-num small { display: block; color: var(--muted); font-size: var(--text-xs); font-weight: 400; }
+/* The indicator column is held to about a fifth of the table, as in the sketch, so the niche's column takes the slack
+   and its origin line stays whole; a long state («Se eligió el <día>; la corrida falló», «Vetado · corrió esta semana»)
+   wraps inside it, its dot on the first line. */
+.niche-table thead th:first-child, .niche-table .niche-cell-state { width: 20%; }
 .niche-cell-state > * { display: block; }
-.niche-state { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-small); font-weight: 600; white-space: nowrap; }
+.niche-state { display: inline-flex; align-items: flex-start; gap: 8px; font-size: var(--text-small); font-weight: 600; }
+.niche-state > .lamp { margin-top: calc((1lh - 8px) / 2); }
 .niche-state[data-lamp="green"] { color: var(--state-ok-text); }
 .niche-state[data-lamp="amber"] { color: var(--state-attention-text); }
 .niche-state[data-lamp="red"] { color: var(--state-fail-text); }
@@ -1215,27 +1221,29 @@ input[aria-invalid="true"], textarea[aria-invalid="true"], select[aria-invalid="
 .niche-row--quiet .niche-num, .niche-row--quiet .niche-name { color: var(--muted); }
 .niche-cell-pains { font-size: var(--text-small); white-space: nowrap; }
 .niche-cell-pains b { font-size: 15px; }
+.niche-pains-line { display: block; }
 .niche-cell-action { text-align: right; white-space: nowrap; }
 .niche-cell-action .button { min-width: 7.5rem; }
 .niche-who { display: block; margin-top: 4px; color: var(--muted); font-size: var(--text-xs); }
 .niche-cell-action .station-note { max-width: 14rem; margin: 6px 0 0 auto; text-align: left; white-space: normal; }
 .niche-table-foot { padding: 12px var(--space-2); border-top: 1px solid var(--line); color: var(--muted); font-size: var(--text-small); }
 
-/* Below 900 px each niche is a stacked block: its state, its name, the three figures side by side (each says its
-   column), its pains and the veto across the whole width. */
+/* Below 900 px each niche is a stacked block: its state, its name, the three figures side by side as one group (each
+   says its column; three tracks of at most 8rem, the slack in a fourth, empty one), its pains and the veto across the
+   whole width. */
 @media (max-width: 899.98px) {
   .niche-table thead { display: none; }
   .niche-table, .niche-table tbody { display: block; }
   .niche-table tr {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 8rem)) minmax(0, 1fr);
     gap: 10px 12px;
     padding: 14px var(--space-2);
     border-top: 1px solid var(--line);
   }
   .niche-table tbody tr:first-child { border-top: 0; }
   .niche-table td, .niche-table tbody th { padding: 0; border: 0; }
-  .niche-table .niche-cell-state { grid-column: 1 / -1; grid-row: 1; }
+  .niche-table .niche-cell-state { grid-column: 1 / -1; grid-row: 1; width: auto; }
   .niche-table .niche-cell-name { grid-column: 1 / -1; grid-row: 2; }
   .niche-table td.niche-num { font-size: 16px; text-align: left; white-space: normal; }
   .niche-table td.niche-num::before {
