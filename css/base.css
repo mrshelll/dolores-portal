@@ -95,7 +95,7 @@ p, li { text-wrap: pretty; } /* no word alone on a paragraph's last line */
 a { color: inherit; text-decoration-color: var(--edge); text-underline-offset: 3px; text-decoration-thickness: 1px; }
 a:hover { text-decoration-color: currentColor; }
 
-.visually-hidden {
+.visually-hidden, .station-note:empty {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
   clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
@@ -149,7 +149,8 @@ a:hover { text-decoration-color: currentColor; }
 }
 a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px; text-decoration-color: currentColor; }
 
-/* The run's state: a pill with its dot and two or three words, in the state's colour on its tint. */
+/* The run's state: a pill with its dot and two or three words, in the state's colour on its tint. A pain's and a run's
+   state pills (.detail-status, .run-state) take the same tints. */
 .run-pill {
   --pill-mark: var(--edge);
   --pill-text: var(--muted);
@@ -170,15 +171,15 @@ a.brand-word:hover { text-decoration: underline; text-decoration-thickness: 2px;
   line-height: 16px;
   white-space: nowrap;
 }
-.run-pill[data-lamp="green"] {
+:is(.run-pill, .detail-status, .run-state)[data-lamp="green"] {
   --pill-mark: var(--pass); --pill-text: var(--pass-text); --pill-tint: var(--pass-tint);
   --pill-edge: color-mix(in srgb, var(--pass) 35%, var(--ground));
 }
-.run-pill[data-lamp="amber"] {
+:is(.run-pill, .detail-status, .run-state)[data-lamp="amber"] {
   --pill-mark: var(--accent); --pill-text: var(--accent); --pill-tint: var(--accent-tint);
   --pill-edge: color-mix(in srgb, var(--accent) 35%, var(--ground));
 }
-.run-pill[data-lamp="red"] {
+:is(.run-pill, .detail-status, .run-state)[data-lamp="red"] {
   --pill-mark: var(--fail); --pill-text: var(--fail-text); --pill-tint: var(--fail-tint);
   --pill-edge: color-mix(in srgb, var(--fail) 35%, var(--ground));
 }
@@ -699,19 +700,20 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
   text-decoration: none;
 }
 .stations .station-title a:hover { text-decoration: underline; text-decoration-color: var(--edge); }
-.station-who { max-width: 62ch; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
+.station-who, .pain-who { max-width: 62ch; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
 
-.station-row > .check-stack, .station-row > .station-facts { grid-area: checks; padding-top: 2px; }
+:is(.station-row, .pain-row) > :is(.check-stack, .station-facts) { grid-area: checks; padding-top: 2px; }
 .station-facts { font-size: 13px; line-height: 20px; }
 
-/* The state: its dot and its words in ink; the team's marks under it. The dot's colour is the pain's lamp. */
-.station-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
-.stations .station-state { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
-.stations .station-state > .lamp { margin-inline: 4px 0; }
+/* The state: its dot and its words in ink; the team's marks under it. The dot's colour is the pain's lamp. A Catálogo
+   row's state and marks (.pain-*) and the week's niche's marks are drawn the same. */
+.station-status, .pain-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
+.stations .station-state, .pain-state { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+.stations .station-state > .lamp, .pain-state > .lamp { margin-inline: 4px 0; }
 /* A pain waiting under watch is grey (an edge: 3.45:1 light, 4.18:1 dark); blue stays for attention, cuts and the
    primary action. The model's lamp for it is amber, shared with «Nos interesa», so the section tells them apart. */
 .stations .station-state[data-section="watching"] > .lamp { --lamp: var(--edge); }
-.stations .station-marks { margin-top: 2px; color: var(--muted); }
+.stations .station-marks, .niche-week .station-marks, .pain-marks { margin-top: 2px; color: var(--muted); }
 
 /* Open: on the panel grey, aligned with the title, the duel's line, the box cells and the actions, «Ver los testimonios
    y los ataques» at the right. On a narrow row it takes the row's whole width and the actions come right after the
@@ -730,18 +732,19 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 .stations .station-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-4); }
 .stations .station-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); }
 .stations .station-actions > .button { white-space: nowrap; } /* a label never breaks inside its guillemets */
-.station-evidence, .detail-evidence {
+/* «Ver los testimonios y los ataques» (a row's and a pain's page) and «Abrir el catálogo»: a link in the accent, a
+   44 px target. */
+.station-evidence, .detail-evidence, .catalog-line-link {
   display: inline-flex;
   align-items: center;
   min-height: var(--target);
-  margin-left: auto;
   color: var(--accent);
-  font-size: 13px;
   font-weight: 500;
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
 }
-:is(.station-evidence, .detail-evidence):hover { text-decoration-color: currentColor; }
+:is(.station-evidence, .detail-evidence, .catalog-line-link):hover { text-decoration-color: currentColor; }
+.station-evidence, .detail-evidence { margin-left: auto; font-size: 13px; }
 
 @container station (max-width: 33.99rem) {
   .station-open { padding-inline: var(--space-4); } /* the whole row's width: the cells and the three actions fit a phone */
@@ -758,26 +761,14 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 }
 
 /* A mark's outcome in words under the actions (here and on Nichos). The live region stays in the accessibility tree
-   while empty (display: none would drop it and lose the first announcement); it is only hidden from the eye. */
+   while empty (display: none would drop it and lose the first announcement); it is only hidden from the eye, as
+   .visually-hidden is. */
 .station-note { flex-basis: 100%; font-size: 13px; line-height: 20px; }
-.station-note:empty {
-  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
-  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
-}
 .station-note[data-tone="error"] { display: flex; align-items: baseline; gap: var(--space-2); font-weight: 600; }
 
-/* The whole catalog by state in one muted line under the list, «Abrir el catálogo» at its end. */
+/* The whole catalog by state in one muted line under the list, «Abrir el catálogo» (.catalog-line-link, above) at its
+   end. */
 .catalog-line { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-2); margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 20px; }
-.catalog-line-link {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--target);
-  color: var(--accent);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--accent) 45%, transparent);
-}
-.catalog-line-link:hover { text-decoration-color: currentColor; }
 
 /* ---- Catálogo: every pain by state, each state a bordered list of the home's closed rows ------------- */
 
@@ -811,22 +802,12 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 .catalog-heading { display: flex; align-items: center; gap: var(--space-2); font-size: 14px; font-weight: 600; line-height: 20px; }
 .catalog-count { color: var(--muted); font-weight: 500; }
 .catalog-empty { padding: 14px var(--space-4); color: var(--muted); }
-/* The discarded ones, folded: the head row is the fold's summary, the chevron after its words, turned when open. */
+/* The discarded ones, folded: the head row is the fold's summary, the chevron after its words drawn as a fold's
+   (below), turned when open. */
 summary.catalog-head { list-style: none; cursor: pointer; }
 summary.catalog-head::-webkit-details-marker { display: none; }
-summary.catalog-head::after {
-  content: "";
-  width: 7px;
-  height: 7px;
-  margin-left: 2px;
-  border-right: 1.5px solid var(--muted);
-  border-bottom: 1.5px solid var(--muted);
-  transform: translateY(-25%) rotate(45deg);
-  transition: transform 200ms var(--ease-out);
-}
-.catalog-fold[open] > summary.catalog-head::after { transform: translateY(25%) rotate(225deg); }
+summary.catalog-head::after { margin-left: 2px; }
 summary.catalog-head:hover { background: color-mix(in srgb, var(--ink) 3%, var(--panel)); }
-summary.catalog-head:hover::after { border-color: var(--ink); }
 summary.catalog-head:focus-visible { outline-offset: -2px; }
 /* «Ver N más»: under what it adds to; at a list's foot, across it under a hairline. */
 .more-button { margin-top: var(--space-2); }
@@ -841,7 +822,8 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 
 /* A pain as the home's closed row with no chevron. The list is the container its rows lay out by: stacked on a phone;
    from 34rem the checks take a column at the right; from 46rem the home's columns (the title and who suffers it, the
-   checks, the state and the marks). The title's link covers its whole row, so the row is the target. */
+   checks, the state and the marks). The title's link covers its whole row, so the row is the target. Who suffers it,
+   its checks, its state and its marks are drawn as the home row's (above). */
 .pain-list { container: pain / inline-size; margin: 0; padding: 0; list-style: none; }
 .pain-row {
   position: relative;
@@ -856,18 +838,13 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .pain-row:hover { background: color-mix(in srgb, var(--ink) 2%, var(--ground)); }
 .pain-name { grid-area: name; min-width: 0; }
 .pain-title { color: var(--ink); font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; }
-.pain-title a { color: inherit; text-decoration: none; }
-.pain-title a::after { content: ""; position: absolute; inset: 0; }
-.pain-title a:focus-visible { outline: none; }
-.pain-title a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* A title whose link covers its whole row (here and in Corridas): the focus ring is drawn inside the row's edge. */
+:is(.pain-title, .run-title) a { color: inherit; text-decoration: none; }
+:is(.pain-title, .run-title) a::after { content: ""; position: absolute; inset: 0; }
+:is(.pain-title, .run-title) a:focus-visible { outline: none; }
+:is(.pain-title, .run-title) a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
 .pain-row:hover .pain-title a { text-decoration: underline; text-decoration-color: var(--edge); }
-.pain-who { max-width: 62ch; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
 .pain-meta { margin-top: 2px; color: var(--muted); font-size: 12px; line-height: 18px; }
-.pain-row > :is(.check-stack, .station-facts) { grid-area: checks; padding-top: 2px; }
-.pain-status { grid-area: status; padding-top: 2px; font-size: 13px; line-height: 20px; }
-.pain-state { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
-.pain-state > .lamp { margin-left: 4px; }
-.pain-marks { margin-top: 2px; color: var(--muted); }
 @container pain (min-width: 34rem) and (max-width: 45.99rem) {
   .pain-row { grid-template-columns: minmax(0, 1fr) 12rem; grid-template-areas: "name checks" "status checks"; }
 }
@@ -909,7 +886,7 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .detail-who { max-width: 72ch; margin-top: var(--space-2); color: var(--muted); font-size: 15px; line-height: 22px; }
 
 /* A pain's or a run's state (its page's head, and a run's row in Corridas): a pill, its dot and its words, tinted by
-   the state as the masthead's run pill. A pain waiting under watch is neutral with a grey dot (an edge: 3.45:1 light,
+   the state as the masthead's run pill (its tints are that pill's, above). A pain waiting under watch is neutral with a grey dot (an edge: 3.45:1 light,
    4.18:1 dark); blue stays for attention, cuts and the primary action. The model's lamp for it is amber, shared with
    «Nos interesa», so its section tells them apart. */
 :is(.detail-status, .run-state) {
@@ -933,18 +910,6 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 }
 .page-head > .detail-status { margin-top: var(--space-2); }
 :is(.detail-status, .run-state) > .lamp { --lamp: var(--pill-mark); width: 7px; height: 7px; }
-:is(.detail-status, .run-state)[data-lamp="green"] {
-  --pill-mark: var(--pass); --pill-text: var(--pass-text); --pill-tint: var(--pass-tint);
-  --pill-edge: color-mix(in srgb, var(--pass) 35%, var(--ground));
-}
-:is(.detail-status, .run-state)[data-lamp="amber"] {
-  --pill-mark: var(--accent); --pill-text: var(--accent); --pill-tint: var(--accent-tint);
-  --pill-edge: color-mix(in srgb, var(--accent) 35%, var(--ground));
-}
-:is(.detail-status, .run-state)[data-lamp="red"] {
-  --pill-mark: var(--fail); --pill-text: var(--fail-text); --pill-tint: var(--fail-tint);
-  --pill-edge: color-mix(in srgb, var(--fail) 35%, var(--ground));
-}
 .detail-status[data-section="watching"] {
   --pill-mark: var(--edge); --pill-text: var(--ink); --pill-tint: var(--ground); --pill-edge: var(--hairline);
 }
@@ -1020,7 +985,8 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   .detail-index--fold { display: none; }
 }
 
-/* A fold: its summary a 44 px target, the chevron after its words, turned when open. */
+/* A fold: its summary a 44 px target, the chevron after its words, turned when open. Catálogo's discarded fold draws
+   the same chevron. */
 .fold > summary {
   display: inline-flex;
   align-items: center;
@@ -1031,7 +997,7 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   cursor: pointer;
 }
 .fold > summary::-webkit-details-marker { display: none; }
-.fold > summary::after {
+.fold > summary::after, summary.catalog-head::after {
   content: "";
   width: 7px;
   height: 7px;
@@ -1040,8 +1006,8 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   transform: translateY(-25%) rotate(45deg);
   transition: transform 200ms var(--ease-out);
 }
-.fold[open] > summary::after { transform: translateY(25%) rotate(225deg); }
-.fold > summary:hover::after { border-color: var(--ink); }
+.fold[open] > summary::after, .catalog-fold[open] > summary.catalog-head::after { transform: translateY(25%) rotate(225deg); }
+.fold > summary:hover::after, summary.catalog-head:hover::after { border-color: var(--ink); }
 
 /* A section: its h2 under a hairline, more room above it than under it; prose kept to a reading measure. */
 .detail-section { padding-block: var(--space-5) var(--space-6); border-top: 1px solid var(--hairline); }
@@ -1136,10 +1102,6 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .run-row + .run-row { border-top: 1px solid var(--hairline); }
 .run-row:hover { background: color-mix(in srgb, var(--ink) 2%, var(--ground)); }
 .run-title { flex: 1 1 auto; min-width: 0; color: var(--ink); font-size: 14px; font-weight: 600; line-height: 22px; }
-.run-title a { color: inherit; text-decoration: none; }
-.run-title a::after { content: ""; position: absolute; inset: 0; }
-.run-title a:focus-visible { outline: none; }
-.run-title a:focus-visible::after { outline: 2px solid var(--accent); outline-offset: -2px; }
 .run-row:hover .run-title a { text-decoration: underline; text-decoration-color: var(--edge); }
 .run-niche { flex: 1 0 100%; margin-top: 4px; }
 .run-duration { color: var(--muted); }
@@ -1238,7 +1200,6 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
    who vetoed it, or «Sin veto», under them. */
 .niche-week .station-state { display: flex; align-items: flex-start; gap: var(--space-2); font-weight: 500; }
 .niche-week .station-state > .lamp { margin: 6px 0 0 4px; }
-.niche-week .station-marks { margin-top: 2px; color: var(--muted); }
 @container nweek (min-width: 34rem) and (max-width: 45.99rem) {
   .niche-week-row { grid-template-columns: minmax(0, 1fr) 15rem; grid-template-areas: "name pains" "status pains"; }
 }

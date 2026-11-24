@@ -31,6 +31,8 @@ function weekLine(rows) {
 }
 
 const said = (words) => h("span", { class: "visually-hidden" }, words);
+// A missing figure's dash is for the eye only.
+const dash = () => h("span", { "aria-hidden": "true" }, "—");
 const lowered = (words) => words.toLocaleLowerCase("es");
 
 // The icons: the scissors of a cut, the ✓ circle of a clear step, the dash circle of a step with no count.
@@ -60,7 +62,7 @@ function sourceItem(source) {
   return h("li", { class: "line-source", "data-lamp": source.lamp },
     h("span", { class: "line-source-name" }, said(`${T.sourceRowLabel} `), source.name || source.kind || T.sourceUnknown),
     h("span", { class: "line-source-figures" }, figure === null
-      ? h("span", { "aria-hidden": "true" }, "—")
+      ? dash()
       : [h("span", { class: "line-figure" }, figure), of ? h("span", { class: "line-count-of" }, of) : null]),
     h("span", { class: "line-source-state" }, state));
 }
@@ -73,7 +75,7 @@ function stepItem(stage, index, view) {
   const cut = stage.lamp === "amber";
   const cutTexts = view.cuts.filter((c) => c.stage === stage.key && c.text).map((c) => c.text);
   const count = stage.count === null
-    ? h("span", { class: "line-step-count is-empty" }, h("span", { "aria-hidden": "true" }, "—"))
+    ? h("span", { class: "line-step-count is-empty" }, dash())
     : h("span", { class: "line-step-count" },
       said(`${lowered(T.lineColLeft)} `),
       h("b", {}, formatNumber(stage.count)),

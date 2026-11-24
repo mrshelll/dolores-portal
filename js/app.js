@@ -498,6 +498,19 @@ function stationList(items, ctx) {
 const chevron = () => icon("station-chevron", { paths: ["m9 6 6 6-6 6"] });
 const speech = () => icon("station-speech", { paths: ["M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"] });
 
+// The parts a home row, a Catálogo row and a pain's page share. A row's tags (stationTags) as pills.
+const tagPills = (tags) => tags.map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
+// Who suffers it, its label for a screen reader only; null when the card does not say.
+const whoLine = (className, who) => (who
+  ? h("p", { class: className }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), who) : null);
+// Why it is there (stationFactLines) in one line, where a row without a gate would show its checks; null with nothing
+// to say.
+function factsLine(itemFacts) {
+  const facts = stationFactLines(itemFacts);
+  return facts.length
+    ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null;
+}
+
 // One pain of «Para decidir» as a row. Closed: the chevron that opens it; the title as the link to the pain, its tags
 // and who suffers it; its checks (checkStack: each count against the run's own threshold, a ✓ or ✗ beside its words)
 // or, without a gate, why it is there in a facts line; its state (a dot and its words) and the team's marks. Open, under
@@ -516,11 +529,7 @@ function station(item, index, ctx) {
   const light = lamp(item.lamp);
   const stateText = h("span", { class: "station-state-text" });
   const stateFlag = h("p", { class: "station-state" }, light, stateText);
-  const tags = stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" })
-    .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text));
-  const facts = stationFactLines(item.facts);
-  const factsLine = () => (facts.length
-    ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null);
+  const tags = tagPills(stationTags(item, { isThisWeek: ctx.latest.isThisWeek, dateLabel: ctx.view ? ctx.view.dateLabel : "" }));
   const cells = checkCells(item.gate);
   const reason = item.facts && item.facts.duelReason;
   const marksLine = h("p", { class: "station-marks" });
@@ -614,8 +623,8 @@ function station(item, index, ctx) {
         h("div", { class: "station-heading" },
           h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title)),
           tags),
-        item.who ? h("p", { class: "station-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null),
-      checkStack(item.gate) || factsLine(),
+        whoLine("station-who", item.who)),
+      checkStack(item.gate) || factsLine(item.facts),
       h("div", { class: "station-status" }, stateFlag, marksLine)),
     region);
   return row;
@@ -666,14 +675,12 @@ function catalogSection(section) {
 function painRow(item, section) {
   const meta = stationMeta(item);
   const marks = rowMarks(item);
-  const facts = stationFactLines(item.facts);
   return h("li", { class: "pain-row" },
     h("div", { class: "pain-name" },
       h("h3", { class: "pain-title" }, h("a", { href: `#/dolor/${encodeURIComponent(item.id)}` }, item.title)),
-      item.who ? h("p", { class: "pain-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), item.who) : null,
+      whoLine("pain-who", item.who),
       meta.length ? h("p", { class: "pain-meta" }, meta.join(" · ")) : null),
-    checkStack(item.gate) || (facts.length
-      ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null),
+    checkStack(item.gate) || factsLine(item.facts),
     h("div", { class: "pain-status" },
       h("p", { class: "pain-state" }, lamp(section.lamp), h("span", {}, section.state)),
       h("p", { class: "pain-marks" }, marks.length ? marks.join(" · ") : T.noMarksYet)));
@@ -835,11 +842,12 @@ function nicheWeek(week, ctx, layout) {
 // rule, hidden from a screen reader) and said in words under it, and whether it has a signal at all: ✓ «Con señal» on
 // the ground, ✗ «Sin señal» on the fail tint. Over the cells, the day of the sounding and how many niches it was
 // measured against; in them, the week's note.
+const FIGURE_RESULT = { in: "pass", out: "fail" };
 function nicheFigures(week) {
   const rivals = Math.max(0, ...week.analysis.map((a) => a.positions.length));
   const caption = week.date ? fill(T.nicheProbeCaption, { date: week.date }) : T.nicheProbeCaptionUndated;
   const cell = (a) => {
-    const result = a.flag === "in" ? "pass" : a.flag === "out" ? "fail" : null;
+    const result = FIGURE_RESULT[a.flag] ?? null;
     // A value in words («sin medir») or missing reads at the size of the words, as a check with no result does.
     const words = a.value === null || a.value === T.nicheNoiseUnmeasured;
     const versus = a.at === null || a.flag === null ? null : h("span", { class: "versus", "aria-hidden": "true" },
@@ -1256,7 +1264,7 @@ function renderPain(layout, id, email, data) {
   layout.head.classList.add("detail-head");
   layout.head.append(...[
     h("div", { class: "detail-meta" }, tags, statusRow),
-    who ? h("p", { class: "detail-who" }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), who) : null,
+    whoLine("detail-who", who),
     h("ul", { class: "key-data", role: "list" }, keyData(data.pain, data.card).map(keyItem)),
   ].filter(Boolean)); // Element.append writes a null as the text «null»
 
@@ -1266,8 +1274,7 @@ function renderPain(layout, id, email, data) {
   function showWeek(week) {
     const latest = week && week.latest;
     if (!latest || !latest.trace || duelWinner(latest.trace) !== id) return;
-    replaceChildren(tags, stationTags({ winner: true }, { isThisWeek: latest.isThisWeek, dateLabel: formatDate(latest.trace.date) })
-      .map((tag) => h("span", { class: `station-tag station-tag--${tag.kind}` }, tag.text)));
+    replaceChildren(tags, tagPills(stationTags({ winner: true }, { isThisWeek: latest.isThisWeek, dateLabel: formatDate(latest.trace.date) })));
     tags.hidden = false;
     const reason = stationFacts(data.pain, data.card, { winner: true }).duelReason;
     if (!reason) return;
