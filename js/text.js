@@ -137,6 +137,8 @@ export const T = Object.freeze({
   checkSaidFail: "fuera del rango",
   // Where the checks would be, on a full result or a pain's page, when the pain has no gate (stored before it existed).
   analysisNone: "Sin análisis guardado para este dolor",
+  // The same in a closed row: after the dash of a check with no result, where the stacked checks would be.
+  checkUnmeasured: "Sin medir contra los umbrales",
   duelReasonLabel: "En el duelo:",
   commentAction: "Comentar",
   stationInterested: "Nos interesa",
@@ -256,6 +258,9 @@ export const T = Object.freeze({
   nicheVersus: "Frente a los otros {n}",
   nicheVersusOne: "Frente al otro",
   nicheVersusNone: "Frente a los otros",
+  // Under the week's figures: what the marks on their bars are.
+  nicheVersusKey: "En las barras, cada marca corta es otro nicho medido igual; la marca alta es este.",
+  nicheVersusKeyOne: "En las barras, la marca corta es el otro nicho, medido igual; la marca alta es este.",
   nicheOwnPains: "Sus dolores",
   nichePainsFull: "{weighty} con peso para trabajar · {watching} en observación",
   nichePainsShort: "{weighty} con peso · {watching} en obs.",
@@ -503,7 +508,7 @@ export function topicName(territory) {
 // as lib/trace.mjs names them): the run's line and a pain's quotes call a source the same. Evidence comes as `hn`,
 // `github`, `cfpb`, `socrata` (SECOP's open data) or `adzuna` with its country apart; the trace's `adzuna:US` and
 // `socrata:p6dx-8zbt` (SECOP's dataset) are read too. Another Socrata dataset is not SECOP. A source the page does not
-// know keeps its id as its name, as the run does.
+// know is «Otra fuente», never its id (an id is internal; the run's line names its sources itself).
 const SOURCES = new Map([
   ["hn", { name: "Hacker News", kind: "Foro de programadores" }],
   ["github", { name: "GitHub", kind: "Proyectos de código libre" }],
@@ -525,7 +530,7 @@ export function sourceName(source, country = null) {
     const code = String(jobs[1] ?? country ?? "").trim().toUpperCase();
     return { name: code ? `${JOBS} · ${COUNTRIES.get(code) ?? code}` : JOBS, kind: JOBS };
   }
-  return { name: id, kind: OTHER_SOURCE };
+  return { name: OTHER_SOURCE, kind: OTHER_SOURCE };
 }
 
 const DATE = new Intl.DateTimeFormat("es", { day: "numeric", month: "short", year: "numeric" });

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { T, TOPICS, topicName, formatDate, fill, formatDayMonth, formatUsd, formatNumber } from "../../js/text.js";
+import { T, TOPICS, topicName, sourceName, formatDate, fill, formatDayMonth, formatUsd, formatNumber } from "../../js/text.js";
 
 // Nothing internal is ever visible (FUN-45 and the plan's constraints), nor the words of the dashboards the page is
 // modelled on («check», «deploy», «build»). Whole words only: «lente» inside «excelente» is not jargon. \p{L} and \p{N} make accented letters count as word characters. «Corrida» left this list with tomoshi:
@@ -41,6 +41,16 @@ test("topicName gives each territory its plain name", () => {
   assert.equal(topicName("us-consumer-finance"), "Finanzas personales en EE. UU.");
   assert.equal(topicName("developer-tools"), "Herramientas para programadores");
   assert.equal(topicName(null), "Sin tema");
+});
+
+// A source the page does not know is «Otra fuente», never its id: an id is internal (a Socrata dataset, a new feed).
+test("sourceName names every known source the run's way and any other one «Otra fuente»", () => {
+  assert.deepEqual(sourceName("hn"), { name: "Hacker News", kind: "Foro de programadores" });
+  assert.deepEqual(sourceName("socrata:p6dx-8zbt"), { name: "SECOP · Colombia", kind: "Contratos públicos" });
+  assert.deepEqual(sourceName("adzuna:US"), { name: "Ofertas de empleo · Estados Unidos", kind: "Ofertas de empleo" });
+  for (const id of ["foro-nuevo", "socrata:abcd-1234", "socrata:", "constructor", "__proto__", "  ", null, undefined, 3]) {
+    assert.deepEqual(sourceName(id), { name: "Otra fuente", kind: "Otra fuente" }, String(id));
+  }
 });
 
 test("topicName(undefined) is «Otro tema»", () => {
@@ -181,4 +191,5 @@ test("the checks' copy", () => {
   assert.equal(T.checkMissingOne, "falta 1");
   assert.equal(fill(T.checkMissing, { n: 2 }), "faltan 2");
   assert.equal(T.checkStatement, "Falta cómo lo cuenta quien lo sufre");
+  assert.equal(T.checkUnmeasured, "Sin medir contra los umbrales");
 });

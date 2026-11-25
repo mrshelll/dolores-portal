@@ -25,9 +25,9 @@ import {
   ownMarkLine, lineNoticeText, stationButtonLabels, stationStateText, howWeGot, titleMap,
 } from "./detail.js";
 import { renderLine, lamp } from "./line.js";
-import { checkStack, checkCells, checkIcon, verdictIcon } from "./checks.js";
+import { checkStack, checkCells, checkUnmeasured, checkIcon, verdictIcon } from "./checks.js";
 import { runRows, runState, runTitle, runKeys, runCostLines, runCutLines, runDuelLines, runTechnical, duelIds } from "./runs.js";
-import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "./niches.js";
+import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel, versusKey } from "./niches.js";
 
 const root = document.getElementById("app");
 
@@ -52,6 +52,7 @@ const state = {
   waiting: null, // { items, marks, me }: «Para decidir» as last loaded, for «Esta semana»'s count (setWaiting)
   focusComment: null, // the pain whose comment field takes the focus when it opens («Comentar» on a station)
   titles: null, // each pain's title by its id, from the last home or Catálogo load; a pain adds its rivals' own (loadPain)
+  painTab: null, // the tab a pain's page keeps current: "catalog" when opened from Catálogo, else "week" (route)
 };
 
 const t = (key, params) => fill(T[key], params);
@@ -251,10 +252,13 @@ async function route() {
 
   const email = state.session.user && state.session.user.email;
   const screen = ROUTE_SCREEN[target.name];
+  // A pain's page keeps the tab of the screen it was opened from: Catálogo from Catálogo, «Esta semana» from anywhere
+  // else or when opened directly (a link, a reload).
+  if (target.name !== "pain") state.painTab = screen.tab === "catalog" ? "catalog" : "week";
   const layout = frameLayout({
     title: T[screen.title],
     pageTitle: screen.pageTitle ? T[screen.pageTitle] : null,
-    tab: screen.tab,
+    tab: target.name === "pain" ? (state.painTab ?? screen.tab) : screen.tab,
     context: target.name === "pain" ? backLink("#/", T.backToWeek, backChevron(), T.tabWeek)
       : target.name === "run" ? backLink("#/corridas", T.runsBackLabel, backChevron(), T.tabRuns) : null,
     actions: [signOutButton()],
@@ -276,14 +280,14 @@ async function route() {
   return showHome(layout, email);
 }
 
-// Each route's h1, the tab's title when it differs, and which tab is current.
+// Each route's h1, the tab's title when it differs, and which tab is current (a pain's: the one it was opened from).
 const ROUTE_SCREEN = {
   home: { title: "homeTitle", pageTitle: "tabWeek", tab: "week" },
   catalog: { title: "catalogTitle", tab: "catalog" },
   niches: { title: "nichesTitle", tab: "niches" },
   runs: { title: "runsTitle", tab: "runs" },
   run: { title: "runTitle", tab: "runs" },
-  pain: { title: "painTitle", tab: null },
+  pain: { title: "painTitle", tab: "week" }, // opened directly; from Catálogo, "catalog" (state.painTab)
 };
 
 // ---- access ---------------------------------------------------------------------------------
@@ -503,23 +507,26 @@ const tagPills = (tags) => tags.map((tag) => h("span", { class: `station-tag sta
 // Who suffers it, its label for a screen reader only; null when the card does not say.
 const whoLine = (className, who) => (who
   ? h("p", { class: className }, h("span", { class: "visually-hidden" }, `${T.whoLabel}: `), who) : null);
-// Why it is there (stationFactLines) in one line, where a row without a gate would show its checks; null with nothing
-// to say.
+// Why it is there (stationFactLines) in one line; null with nothing to say.
 function factsLine(itemFacts) {
   const facts = stationFactLines(itemFacts);
   return facts.length
     ? h("p", { class: "station-facts" }, h("span", { class: "visually-hidden" }, `${T.factsLabel}: `), facts.join(" · ")) : null;
 }
+// A closed row's checks (checkStack); without a gate, the dash and «Sin medir contra los umbrales» (checkUnmeasured),
+// then why it is there in its facts line.
+const rowChecks = (item) => checkStack(item.gate)
+  || h("div", { class: "check-unmeasured" }, checkUnmeasured(), factsLine(item.facts));
 
 // One pain of «Para decidir» as a row. Closed: the chevron that opens it; the title as the link to the pain, its tags
 // and who suffers it; its checks (checkStack: each count against the run's own threshold, a ✓ or ✗ beside its words)
-// or, without a gate, why it is there in a facts line; its state (a dot and its words) and the team's marks. Open, under
-// it: the duel's line (for the winner); the box cells (checkCells) or, without a gate, a line that says there is no
-// analysis; then «Nos interesa», «Descartar» and «Comentar», and at the right the way to its
-// testimonies and attacks. The first row starts open, the rest closed; a row opens and closes by its chevron or a click
-// on its title area, never leaving the page, and opening one never closes another. Each button says what pressing it
-// does and names its pain for a screen reader (aria-describedby). A mark changes the row in place: a discarded pain
-// stays until the next load, its dot off, so it can be undone with the same button.
+// or, without a gate, a dash that says it was not measured and why it is there (rowChecks); its state (a dot and its
+// words) and the team's marks. Open, under it: the duel's line (for the winner); the box cells (checkCells) or, without
+// a gate, a line that says there is no analysis; then «Nos interesa», «Descartar» and «Comentar», and at the right the
+// way to its testimonies and attacks. The first row starts open, the rest closed; a row opens and closes by its chevron
+// or a click on its title area, never leaving the page, and opening one never closes another. Each button says what
+// pressing it does and names its pain for a screen reader (aria-describedby). A mark changes the row in place: a
+// discarded pain stays until the next load, its dot off, so it can be undone with the same button.
 function station(item, index, ctx) {
   const { home, me, pain } = ctx;
   const viewId = state.viewId;
@@ -624,7 +631,7 @@ function station(item, index, ctx) {
           h("h2", { class: "station-title", id: titleId }, h("a", { href }, item.title)),
           tags),
         whoLine("station-who", item.who)),
-      checkStack(item.gate) || factsLine(item.facts),
+      rowChecks(item),
       h("div", { class: "station-status" }, stateFlag, marksLine)),
     region);
   return row;
@@ -669,8 +676,8 @@ function catalogSection(section) {
 }
 
 // One pain as the home's row, closed and with no chevron: the title as the link to it (the whole row is its target),
-// who suffers it and its trend and topic; its checks (checkStack) or, without a gate, why it is there in its facts
-// line; its state (a dot and its words) and the team's marks (LIS-01). Its actions live on its page. The pain id only
+// who suffers it and its trend and topic; its checks or, without a gate, the dash and why it is there (rowChecks); its
+// state (a dot and its words) and the team's marks (LIS-01). Its actions live on its page. The pain id only
 // travels in the address.
 function painRow(item, section) {
   const meta = stationMeta(item);
@@ -680,7 +687,7 @@ function painRow(item, section) {
       h("h3", { class: "pain-title" }, h("a", { href: `#/dolor/${encodeURIComponent(item.id)}` }, item.title)),
       whoLine("pain-who", item.who),
       meta.length ? h("p", { class: "pain-meta" }, meta.join(" · ")) : null),
-    checkStack(item.gate) || factsLine(item.facts),
+    rowChecks(item),
     h("div", { class: "pain-status" },
       h("p", { class: "pain-state" }, lamp(section.lamp), h("span", {}, section.state)),
       h("p", { class: "pain-marks" }, marks.length ? marks.join(" · ") : T.noMarksYet)));
@@ -841,16 +848,18 @@ function nicheWeek(week, ctx, layout) {
 // and gasto its place against the other niches drawn beside it (the versus bar: a tick per rival and the niche's own
 // rule, hidden from a screen reader) and said in words under it, and whether it has a signal at all: ✓ «Con señal» on
 // the ground, ✗ «Sin señal» on the fail tint. Over the cells, the day of the sounding and how many niches it was
-// measured against; in them, the week's note.
+// measured against; in them, the week's note; under them, when a bar draws a rival, what its marks are (versusKey).
 const FIGURE_RESULT = { in: "pass", out: "fail" };
+const drawsVersus = (a) => a.at !== null && a.flag !== null;
 function nicheFigures(week) {
   const rivals = Math.max(0, ...week.analysis.map((a) => a.positions.length));
   const caption = week.date ? fill(T.nicheProbeCaption, { date: week.date }) : T.nicheProbeCaptionUndated;
+  const key = week.analysis.some((a) => drawsVersus(a) && a.positions.length) ? versusKey(rivals) : null;
   const cell = (a) => {
     const result = FIGURE_RESULT[a.flag] ?? null;
     // A value in words («sin medir») or missing reads at the size of the words, as a check with no result does.
     const words = a.value === null || a.value === T.nicheNoiseUnmeasured;
-    const versus = a.at === null || a.flag === null ? null : h("span", { class: "versus", "aria-hidden": "true" },
+    const versus = !drawsVersus(a) ? null : h("span", { class: "versus", "aria-hidden": "true" },
       a.positions.map((at) => h("span", { class: "versus-tick", style: `--at: ${at}%` })),
       h("span", { class: "versus-at", style: `--at: ${a.at}%` }));
     return h("div", { class: "check-cell", "data-result": result ?? (words ? "none" : null) },
@@ -862,6 +871,7 @@ function nicheFigures(week) {
   return [
     h("p", { class: "niche-probe" }, `${caption} · ${versusLabel(rivals)}`),
     h("div", { class: "check-cells niche-cells" }, week.analysis.map(cell), week.note ? h("p", { class: "check-note" }, week.note) : null),
+    key ? h("p", { class: "niche-versus-key" }, key) : null,
   ];
 }
 
@@ -1186,8 +1196,9 @@ function howQuote(quote) {
       quote.url ? h("a", { class: "how-quote-link", href: quote.url, target: "_blank", rel: "noopener noreferrer" }, T.seeSource) : null) : null);
 }
 
-// A source: its name and kind, how many quotes, the newest three and «Ver N más» for the rest. The focus goes to the
-// first quote added (its item, so a screen reader starts at the quote and not at its «Ver la fuente» link).
+// A source: its name and kind (the kind left out when it is the name, as «Otra fuente» is), how many quotes, the newest
+// three and «Ver N más» for the rest. The focus goes to the first quote added (its item, so a screen reader starts at
+// the quote and not at its «Ver la fuente» link).
 function howSource(group, index) {
   const id = `fuente-${index + 1}`;
   const list = h("ul", { class: "how-quotes", role: "list" }, group.quotes.slice(0, group.shown).map(howQuote));
@@ -1205,7 +1216,7 @@ function howSource(group, index) {
   return h("section", { class: "how-source", "aria-labelledby": id },
     h("div", { class: "how-source-head" },
       h("h4", { id }, group.source),
-      h("p", { class: "how-source-kind" }, `${group.kind} · ${count}`)),
+      h("p", { class: "how-source-kind" }, group.kind === group.source ? count : `${group.kind} · ${count}`)),
     list, more);
 }
 

@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { T, fill, formatDayMonth, topicName } from "../../js/text.js";
-import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel } from "../../js/niches.js";
+import { nicheBoard, withVeto, paidRunsText, painsText, versusLabel, versusKey } from "../../js/niches.js";
 
 // Nichos: the board the tab draws from the newest trace with a choice (dolores' buildTrace: choice, probe, why,
 // territories, niche, date, status), the proposed niches, the vetoes, the pains, the marks and the people. Every name
@@ -705,4 +705,13 @@ test("the tab's counts in words: paid runs, pains and the rivals' column", () =>
   assert.equal(versusLabel(4), "Frente a los otros 4");
   assert.equal(versusLabel(1), "Frente al otro");
   assert.equal(versusLabel(0), "Frente a los otros");
+});
+
+// The versus bars' marks said in words under the figures: each short mark is another niche measured the same way, the
+// tall one this niche. With no rival there is no short mark to explain.
+test("versusKey: what the bars' marks are, in words; null with no rival", () => {
+  assert.equal(versusKey(4), "En las barras, cada marca corta es otro nicho medido igual; la marca alta es este.");
+  assert.equal(versusKey(2), versusKey(4));
+  assert.equal(versusKey(1), "En las barras, la marca corta es el otro nicho, medido igual; la marca alta es este.");
+  for (const n of [0, -1, null, undefined, "4", NaN]) assert.equal(versusKey(n), null, String(n));
 });

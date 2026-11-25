@@ -85,9 +85,10 @@ const time = (value) => {
 };
 
 // The pain's evidence (pains.doc.evidence) grouped by source, each source by the run's name and kind (sourceName), its
-// quotes verbatim and in their language, newest first, with their day and a link only to a web address (safeUrl). The
-// sources go by their newest quote. `shown` quotes are shown and `more` wait for «Ver más». The same words from the same
-// address count once; nothing internal (tier, hash) is passed on.
+// quotes verbatim and in their language, newest first, with their day and a link only to a web address (safeUrl); the
+// sources the page does not know read together as one «Otra fuente». The sources go by their newest quote. `shown`
+// quotes are shown and `more` wait for «Ver más». The same words from the same address count once; nothing internal
+// (tier, hash) is passed on.
 export function evidenceBySource(evidence, { limit = QUOTES_SHOWN } = {}) {
   const cap = Number.isInteger(limit) && limit > 0 ? limit : QUOTES_SHOWN;
   const groups = new Map();

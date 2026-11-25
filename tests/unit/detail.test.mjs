@@ -580,7 +580,7 @@ test("evidenceBySource puts every link through safeUrl", () => {
   assert.deepEqual(group.quotes.map((q) => q.url), [null, null, null, "https://example.org/ok%20a", null]);
 });
 
-test("evidenceBySource names every source the run's way, and an unknown one by its id", () => {
+test("evidenceBySource names every source the run's way, and an unknown one «Otra fuente»", () => {
   const names = (source, country = null) => {
     const [g] = evidenceBySource([ev(source, "x", "2026-01-01", { country })]);
     return [g.source, g.kind];
@@ -592,12 +592,16 @@ test("evidenceBySource names every source the run's way, and an unknown one by i
   assert.deepEqual(names("adzuna"), ["Ofertas de empleo", "Ofertas de empleo"]);
   assert.deepEqual(names("socrata:p6dx-8zbt"), ["SECOP · Colombia", "Contratos públicos"]);
   assert.deepEqual(names("socrata"), ["SECOP · Colombia", "Contratos públicos"]);
-  // Only SECOP's dataset is SECOP: another Socrata dataset is another source, by its id, as the run names it.
-  assert.deepEqual(names("socrata:abcd-1234"), ["socrata:abcd-1234", "Otra fuente"]);
-  assert.deepEqual(names("socrata:"), ["socrata:", "Otra fuente"]);
-  assert.deepEqual(names("foro-nuevo"), ["foro-nuevo", "Otra fuente"]);
-  assert.deepEqual(names("constructor"), ["constructor", "Otra fuente"]);
+  // Only SECOP's dataset is SECOP: another Socrata dataset is another source, and a source the page does not know is
+  // «Otra fuente», never its id.
+  assert.deepEqual(names("socrata:abcd-1234"), ["Otra fuente", "Otra fuente"]);
+  assert.deepEqual(names("socrata:"), ["Otra fuente", "Otra fuente"]);
+  assert.deepEqual(names("foro-nuevo"), ["Otra fuente", "Otra fuente"]);
+  assert.deepEqual(names("constructor"), ["Otra fuente", "Otra fuente"]);
   assert.deepEqual(names(null), ["Otra fuente", "Otra fuente"]);
+  // Two sources it does not know read as one «Otra fuente», their quotes together, newest first.
+  const others = evidenceBySource([ev("foro-nuevo", "a", "2026-01-01"), ev("socrata:abcd-1234", "b", "2026-01-03"), ev("hn", "c", "2026-01-02")]);
+  assert.deepEqual(others.map((g) => [g.source, g.quotes.map((q) => q.quote)]), [["Otra fuente", ["b", "a"]], ["Hacker News", ["c"]]]);
   // Two job boards are two sources; the same one twice is one.
   const jobs = evidenceBySource([ev("adzuna", "a", "2026-01-02", { country: "US" }), ev("adzuna:US", "b", "2026-01-01"), ev("adzuna", "c", "2026-01-01", { country: "MX" })]);
   assert.deepEqual(jobs.map((g) => [g.source, g.quotes.length]), [["Ofertas de empleo · Estados Unidos", 2], ["Ofertas de empleo · México", 1]]);

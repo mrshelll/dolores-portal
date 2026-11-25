@@ -387,8 +387,7 @@ async function behaviours(browser, base) {
   // «Para decidir» as rows (Review Focus 4): the first starts open, the rest closed, each chevron a button that says
   // whether its row is open and which region it opens. A closed row shows its checks and hides its actions. Its chevron,
   // or a click on its title area (here, who suffers it), opens it without leaving the page, and the rows already open
-  // stay open; the title is still the link to the pain. A pain without a gate (dol-0002) shows its facts line instead of
-  // the checks.
+  // stay open; the title is still the link to the pain. Every station has a gate: closed, its checks; open, its cells.
   {
     const wide = { width: 1440, height: 900, scheme: "light" };
     const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), wide);
@@ -401,8 +400,8 @@ async function behaviours(browser, base) {
         expanded: toggle ? toggle.getAttribute("aria-expanded") : null,
         region: Boolean(region && li.contains(region) && region.classList.contains("station-open")),
         open: Boolean(region && region.checkVisibility()),
-        stack: shown(".check-stack"), actions: shown(".station-actions"), facts: shown(".station-facts"),
-        openFacts: region ? region.querySelectorAll(".station-facts").length : null,
+        stack: shown(".check-stack"), actions: shown(".station-actions"), unmeasured: shown(".check-unmeasured"),
+        cells: Boolean(region && region.querySelector(".check-cells") && region.querySelector(".check-cells").checkVisibility()),
         none: Boolean(region && region.querySelector(".checks-none") && region.querySelector(".checks-none").checkVisibility()),
         dot: (() => { const d = li.querySelector(".station-state .lamp"); return d ? getComputedStyle(d).backgroundColor : null; })(),
       };
@@ -427,16 +426,47 @@ async function behaviours(browser, base) {
         && [2, 3].every((i) => after[i] && after[i].open && after[i].expanded === "true" && after[i].actions)
         && after.filter((row) => row.open).length === 3 && clean(log, problems),
       `hash ${hash}; ${JSON.stringify(after)}; ${why(log, problems)}`);
-    // Opened, a pain without a gate says there is no analysis, and why it is there only once: in its row's own line.
-    check("Esta semana's rows: a pain without a gate shows its facts line and no checks; open, it says so once",
-      at(before, "dol-0002").facts === true && at(before, "dol-0002").stack === false
-        && at(after, "dol-0100").open && at(after, "dol-0100").none && at(after, "dol-0100").openFacts === 0 && clean(log, problems),
-      `${JSON.stringify([at(before, "dol-0002"), at(after, "dol-0100")])}; ${why(log, problems)}`);
+    check("Esta semana's rows: every station shows its checks closed and its cells open, none says it was not measured",
+      before.every((row) => row.stack && !row.unmeasured) && after.filter((row) => row.open).every((row) => row.cells && !row.none)
+        && clean(log, problems),
+      `${JSON.stringify(after)}; ${why(log, problems)}`);
     // A pain waiting under watch (the duel's winner) has a grey dot, the edge's #8A8A8A; one kept by «Nos interesa»
     // (dol-0002) keeps the attention blue.
     check("Esta semana's rows: a waiting pain's dot is grey, an interested one's blue",
       at(before, "dol-0101").dot === "rgb(138, 138, 138)" && at(before, "dol-0002").dot === "rgb(37, 99, 235)" && clean(log, problems),
       `${JSON.stringify(["dol-0101", "dol-0002"].map((id) => [id, at(before, id).dot]))}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // A row whose pain has no gate (home-old-trace: stored before the gate existed) claims no range: where its checks go,
+  // the dash of a check with no result, hidden from a screen reader, and «Sin medir contra los umbrales» in muted ink,
+  // then why it is there in its facts line, under the dash's words. Opened, it says there is no analysis, once.
+  {
+    const wide = { width: 1440, height: 900, scheme: "light" };
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home-old-trace"), wide);
+    const rows = await page.evaluate(() => [...document.querySelectorAll("li.station")].map((li) => {
+      const slot = li.querySelector(".station-row > .check-unmeasured");
+      const dash = slot && slot.querySelector(":scope > .check[data-result=none]");
+      const facts = slot && slot.querySelector(":scope > .station-facts");
+      const region = li.querySelector(".station-open");
+      return {
+        stack: Boolean(li.querySelector(".check-stack")),
+        dash: dash && dash.checkVisibility() ? {
+          text: dash.textContent, icon: dash.querySelector("svg.check-icon")?.getAttribute("aria-hidden") ?? null,
+          color: getComputedStyle(dash).color,
+        } : null,
+        facts: facts && facts.checkVisibility() ? facts.textContent : null,
+        open: Boolean(region && region.checkVisibility()),
+        none: region ? region.querySelectorAll(".checks-none").length : null,
+        openFacts: region ? region.querySelectorAll(".station-facts").length : null,
+      };
+    }));
+    const MUTED = "rgb(82, 82, 82)"; // --muted, #525252 in light
+    check("a row without a gate: the dash and «Sin medir contra los umbrales» in muted ink, then its facts; open, no analysis once",
+      rows.length >= 4 && rows.every((row) => !row.stack && row.dash && row.dash.text === T.checkUnmeasured && row.dash.icon === "true"
+        && row.dash.color === MUTED && typeof row.facts === "string" && row.facts.length > 0)
+        && rows[0].open && rows[0].none === 1 && rows[0].openFacts === 0 && clean(log, problems),
+      `${JSON.stringify(rows)}; ${why(log, problems)}`);
     await context.close();
   }
 
@@ -856,16 +886,16 @@ async function behaviours(browser, base) {
 
   // Catálogo (Task 5): each state a bordered list whose head row says its dot, its state and its count; each pain a
   // closed row like the home's, with no chevron and no actions (they live on the pain's page): its title is the link,
-  // then who suffers it, its checks (or, without a gate, its facts line), its state and its marks. The discarded ones
-  // stay folded.
+  // then who suffers it, its checks (or, without a gate, the dash, «Sin medir contra los umbrales» and its facts line),
+  // its state and its marks. The discarded ones stay folded.
   {
     const { context, page, log, problems } = await openScreen(browser, base, scenario("catalog"), DESK);
-    const seen = await page.evaluate(() => {
+    const seen = await page.evaluate((unmeasuredText) => {
       const dot = (el) => (el ? getComputedStyle(el).backgroundColor : null);
       const row = (id) => {
         const li = document.querySelector(`.pain-list li:has(a[href="#/dolor/${id}"])`);
         const shown = (sel) => { const el = li && li.querySelector(sel); return Boolean(el && el.checkVisibility()); };
-        return li && { stack: shown(".check-stack"), facts: shown(".station-facts"), dot: dot(li.querySelector(".pain-state .lamp")),
+        return li && { stack: shown(".check-stack"), unmeasured: shown(".check-unmeasured"), dot: dot(li.querySelector(".pain-state .lamp")),
           state: li.querySelector(".pain-state")?.textContent ?? null, marks: li.querySelector(".pain-marks")?.textContent ?? null };
       };
       return {
@@ -881,19 +911,27 @@ async function behaviours(browser, base) {
         }),
         controls: document.querySelectorAll(".pain-list :is(button, .station-toggle, .station-actions)").length,
         weighty: row("dol-0027"), interested: row("dol-0002"), winner: row("dol-0101"),
+        // Every row shown: its checks, or the dash's words and its facts line (the watched pains without a gate).
+        slots: [...document.querySelectorAll(".pain-list li.pain-row")].filter((li) => li.checkVisibility()).map((li) => {
+          const unmeasured = li.querySelector(".pain-row > .check-unmeasured");
+          return li.querySelector(".pain-row > .check-stack") ? "checks"
+            : unmeasured && unmeasured.querySelector(".check[data-result=none]")?.textContent === unmeasuredText
+              && unmeasured.querySelector(".station-facts") ? "unmeasured" : "neither";
+        }),
       };
-    });
+    }, T.checkUnmeasured);
     const [weighty, interested, watching, discarded] = seen.sections;
-    check("Catálogo: each state a bordered list headed by its dot, state and count; rows with checks or facts, no actions; waiting is grey",
+    check("Catálogo: each state a bordered list headed by its dot, state and count; rows with checks or not measured, no actions; waiting is grey",
       seen.sections.length === 4 && seen.sections.slice(0, 3).every((s) => s.tag === "SECTION" && s.bordered)
         && discarded.tag === "DETAILS" && discarded.open === false && discarded.bordered
         && [weighty.state, weighty.count, weighty.dot].join() === [T.sectionWeighty, "1", GREEN].join()
         && [interested.state, interested.count, interested.dot].join() === [T.sectionInterested, "1", BLUE].join()
         && [watching.state, watching.count, watching.dot].join() === [T.sectionWatching, "55", GREY].join()
         && discarded.state === T.sectionDiscarded && seen.controls === 0
-        && seen.weighty && seen.weighty.stack && !seen.weighty.facts && seen.weighty.dot === GREEN && seen.weighty.marks === "Nos interesa: Carla"
-        && seen.interested && !seen.interested.stack && seen.interested.facts && seen.interested.dot === BLUE
-        && seen.winner && seen.winner.stack && seen.winner.dot === GREY && seen.winner.state === T.statusWatching && clean(log, problems),
+        && seen.weighty && seen.weighty.stack && !seen.weighty.unmeasured && seen.weighty.dot === GREEN && seen.weighty.marks === "Nos interesa: Carla"
+        && seen.interested && seen.interested.stack && !seen.interested.unmeasured && seen.interested.dot === BLUE
+        && seen.winner && seen.winner.stack && seen.winner.dot === GREY && seen.winner.state === T.statusWatching
+        && seen.slots.includes("checks") && seen.slots.includes("unmeasured") && !seen.slots.includes("neither") && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
   }
@@ -933,8 +971,8 @@ async function behaviours(browser, base) {
   }
 
   // A run's page (Task 5) reads as a pain's: «Corridas» as the way back after the chevron, the state's pill and the key
-  // data under the title; then its line across the page's width, then its sections as plain blocks under a hairline,
-  // «Detalle técnico» folded.
+  // data under the title; then its line in the page's measure (48rem), then its sections as plain blocks under a
+  // hairline as wide as the line, «Detalle técnico» folded.
   {
     const { context, page, log, problems } = await openScreen(browser, base, scenario("run-detail"), DESK);
     const seen = await page.evaluate(() => {
@@ -948,7 +986,8 @@ async function behaviours(browser, base) {
         back: back && { text: back.textContent.trim(), href: back.getAttribute("href"), chevron: Boolean(back.querySelector(".back-chevron")) },
         pill: pill && { text: pill.textContent.trim(), dot: getComputedStyle(pill.querySelector(".lamp")).backgroundColor },
         keys: Boolean(document.querySelector(".page-head .key-data")),
-        full: Boolean(line && body) && Math.abs(box(line).width - box(body).width) <= 1 && box(line).width >= 900,
+        measure: Boolean(line && body) && Math.abs(box(line).width - box(body).width) <= 1 && Math.round(box(line).width) === 768
+          && sections.every((s) => Math.abs(box(s).width - box(line).width) <= 1),
         below: Boolean(line && sections.length) && box(line).bottom <= box(sections[0]).top,
         plain: sections.length === 4 && sections.every((s) => {
           const style = getComputedStyle(s);
@@ -957,10 +996,10 @@ async function behaviours(browser, base) {
         tech: sections.length ? sections[sections.length - 1].tagName === "DETAILS" && !sections[sections.length - 1].open : false,
       };
     });
-    check("a run's page reads as a pain's: «Corridas» back, the pill and key data, its line full width, then plain sections",
+    check("a run's page reads as a pain's: «Corridas» back, the pill and key data, its line in the measure, then plain sections",
       seen.back && seen.back.text === T.tabRuns && seen.back.href === "#/corridas" && seen.back.chevron
         && seen.pill && seen.pill.text === T.runStateComplete && seen.pill.dot === GREEN && seen.keys
-        && seen.full && seen.below && seen.plain && seen.tech && clean(log, problems),
+        && seen.measure && seen.below && seen.plain && seen.tech && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
     await context.close();
   }
@@ -1160,13 +1199,57 @@ async function behaviours(browser, base) {
       JSON.stringify(seen));
   }
 
-  // A pain's page belongs to no tab: none is the current one.
+  // One measure on the detail views: on a pain's page the head, the open part (the box cells), every section and every
+  // list in them share one width; on a run's page the head, the line, every section and its lists. At 1440 (the index
+  // beside a pain's measure) and at 768 (the page's width).
   {
-    const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), PHONE);
-    const current = await page.evaluate(() => document.querySelectorAll("nav.tabs a").length
-      ? document.querySelectorAll("nav.tabs a[aria-current]").length : null);
-    check("a pain's page marks no tab as the current one", current === 0 && clean(log, problems), `current tabs ${current}; ${why(log, problems)}`);
-    await context.close();
+    const PAIN_PARTS = [".page-head", ".detail-open", ".detail-open > .check-cells", ".detail-section", ".quotes", ".how-sources",
+      ".how-source-head", ".how-rows", ".glossary", ".comment-list", ".comment-form"];
+    const RUN_PARTS = [".page-head", ".run-line > .line", ".run-section", ".run-costo-list", ".run-recortes-list", ".run-duelos-list", ".run-tech"];
+    const seen = [];
+    for (const [name, parts] of [["detail-v2", PAIN_PARTS], ["run-detail", RUN_PARTS]]) {
+      for (const width of [1440, 768]) {
+        const { context, page, log, problems } = await openScreen(browser, base, scenario(name), { width, height: 900, scheme: "light" });
+        const widths = await page.evaluate((sels) => sels.map((sel) => [sel, [...document.querySelectorAll(sel)]
+          .filter((el) => el.checkVisibility()).map((el) => Math.round(el.getBoundingClientRect().width))]), parts);
+        const all = widths.flatMap(([, list]) => list);
+        seen.push({ name, width, widths, one: widths.every(([, list]) => list.length > 0) && new Set(all).size === 1,
+          measure: all[0], clean: clean(log, problems), why: why(log, problems) });
+        await context.close();
+      }
+    }
+    check("the detail views share one measure: a pain's head, cells and sections, a run's head, line and sections",
+      seen.every((s) => s.one && s.clean) && seen.filter((s) => s.width === 1440).every((s) => s.measure === 768),
+      JSON.stringify(seen));
+  }
+
+  // A pain's page keeps the tab it was opened from current: «Esta semana» from the home, Catálogo from Catálogo, and
+  // «Esta semana» when it is opened directly (the Monday email's link, a reload).
+  {
+    const currentTabs = (page) => page.evaluate(() => [...document.querySelectorAll("nav.tabs a[aria-current]")]
+      .map((a) => `${a.firstChild?.textContent ?? ""}=${a.getAttribute("aria-current")}`));
+    const seen = [];
+    for (const [name, link] of [["home", ".station-title a[href=\"#/dolor/dol-0027\"]"], ["catalog", ".pain-title a[href=\"#/dolor/dol-0027\"]"]]) {
+      const { context, page, log, problems } = await openScreen(browser, base, scenario(name), DESK);
+      const before = await currentTabs(page);
+      await page.click(link, { timeout: 5000 }).catch(() => {});
+      const opened = await page.waitForFunction(() => location.hash === "#/dolor/dol-0027" && document.querySelector(".detail-actions")
+        && !document.querySelector("[aria-busy=true]"), null, { timeout: 10000 }).then(() => true, () => false);
+      seen.push({ name, before, opened, after: await currentTabs(page), clean: clean(log, problems), why: why(log, problems) });
+      await context.close();
+    }
+    {
+      const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), PHONE);
+      seen.push({ name: "direct", opened: true, after: await currentTabs(page), clean: clean(log, problems), why: why(log, problems) });
+      await context.close();
+    }
+    const [fromHome, fromCatalog, direct] = seen;
+    check("a pain's page keeps current the tab it was opened from, and «Esta semana» when opened directly",
+      fromHome.before.join() === `${T.tabWeek}=page` && fromCatalog.before.join() === `${T.tabCatalog}=page`
+        && seen.every((s) => s.opened && s.clean)
+        && fromHome.after.join() === `${T.tabWeek}=page` && fromCatalog.after.join() === `${T.tabCatalog}=page`
+        && direct.after.join() === `${T.tabWeek}=page`,
+      JSON.stringify(seen));
   }
   return results;
 }

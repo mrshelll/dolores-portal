@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { T } from "../../js/text.js";
-import { checkStack, checkCells } from "../../js/checks.js";
+import { checkStack, checkCells, checkUnmeasured } from "../../js/checks.js";
 
 // A minimal document for dom.js, enough to walk what checkStack and checkCells build; createElementNS for the icons.
 function withFakeDocument(run) {
@@ -87,6 +87,22 @@ test("checkStack: each check's circle is an SVG hidden from a screen reader, its
   // A tick, a cross and a dash: three different marks inside the circle.
   const marks = icons.map(([svg]) => byTag(svg, "PATH")[0].attributes.d);
   assert.equal(new Set(marks).size, 3);
+});
+
+// A row whose pain has no gate claims no range: where its checks go, the dash of a check with no result and its words,
+// muted by data-result="none" (css/base.css).
+test("checkUnmeasured: the dash circle, hidden from a screen reader, and «Sin medir contra los umbrales»", () => {
+  const el = withFakeDocument(() => checkUnmeasured());
+  assert.equal(el.tagName, "P");
+  assert.equal(el.attributes.class, "check");
+  assert.equal(el.attributes["data-result"], "none");
+  assert.equal(textOf(el), "Sin medir contra los umbrales");
+  const [icon] = byTag(el, "SVG");
+  assert.equal(icon.namespaceURI, SVG_NS);
+  assert.equal(icon.attributes["aria-hidden"], "true");
+  assert.equal(byTag(icon, "CIRCLE").length, 1);
+  const noResult = byTag(stack(gateWith({ survivals: null, verdicts: 3 })), "LI")[2];
+  assert.equal(byTag(icon, "PATH")[0].attributes.d, byTag(noResult, "PATH")[0].attributes.d);
 });
 
 test("checkStack: a missing statement is a fourth check, failed", () => {

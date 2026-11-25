@@ -5,7 +5,8 @@
 // («Fuera del rango · falta 1») and the minimum («Mínimo 2»); the per-country note closes them. Every circle, verdict
 // icon and box row is hidden from a screen reader: the words beside it carry its meaning, and a stack's line says its
 // result in words for a screen reader only (the ✓ and ✗ already differ for the eye). Both return null when the
-// gate gives no checks (missing or malformed): the caller then keeps its facts line and claims nothing.
+// gate gives no checks (missing or malformed): a closed row then shows checkUnmeasured (the dash and «Sin medir contra
+// los umbrales») and its facts line, an open one says there is no analysis; neither claims a range.
 
 import { h, svg } from "./dom.js";
 import { T } from "./text.js";
@@ -63,6 +64,10 @@ export function checkStack(gate) {
   return h("ul", { class: "check-stack" },
     rows.map((row) => h("li", { class: "check", "data-result": row.result }, checkIcon(row.result), row.short, said(row.result))));
 }
+
+// checkUnmeasured() → p.check with data-result "none": where a row's stack goes when its pain has no gate (stored before
+// it existed), the dash circle and «Sin medir contra los umbrales», muted, so the row claims no range.
+export const checkUnmeasured = () => h("p", { class: "check", "data-result": "none" }, checkIcon("none"), T.checkUnmeasured);
 
 // checkCells(gate) → div.check-cells, one div.check-cell per check with its data-result, the note as p.check-note;
 // null without checks.

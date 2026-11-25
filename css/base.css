@@ -40,6 +40,7 @@
   --side-width: calc(21.5rem + var(--pad)); /* the home's line panel: 344 px and the page's margin at its right */
   --measure-form: 440px;
   --measure-text: 38rem;
+  --measure-detail: 48rem; /* a pain's and a run's page: the head, the cells or the line, and every section */
 
   --radius-control: 6px;
   --radius-panel: 8px;
@@ -702,8 +703,13 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 .stations .station-title a:hover { text-decoration: underline; text-decoration-color: var(--edge); }
 .station-who, .pain-who { max-width: 62ch; margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
 
-:is(.station-row, .pain-row) > :is(.check-stack, .station-facts) { grid-area: checks; padding-top: 2px; }
-.station-facts { font-size: 13px; line-height: 20px; }
+:is(.station-row, .pain-row) > :is(.check-stack, .check-unmeasured) { grid-area: checks; padding-top: 2px; }
+/* A row without a gate: where the checks go, the muted dash and «Sin medir contra los umbrales», then why it is there,
+   its words under the dash's words. The dash stays on the first line when the words wrap (the 12rem column). */
+.check-unmeasured { font-size: 13px; line-height: 20px; }
+.check-unmeasured > .check { align-items: flex-start; }
+.check-unmeasured > .check > .check-icon { margin-top: 2px; }
+.check-unmeasured > .station-facts { padding-left: calc(16px + var(--space-2)); }
 
 /* The state: its dot and its words in ink; the team's marks under it. The dot's colour is the pain's lamp. A Catálogo
    row's state and marks (.pain-*) and the week's niche's marks are drawn the same. */
@@ -854,10 +860,12 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 
 /* ---- a pain's page: the home's open row at full width, then its card, «Cómo llegamos» and the comments --------- */
 
-/* The page keeps to the width of the home's rows, at the left as they are. On the shell's grey: the head (the row's own
-   line), the open part (the duel's line, the box cells on the ground, the actions and the marks), then the sections as
-   plain headed blocks under a hairline. Nothing is boxed but the cells and a line card's notice. */
-.detail-head, .detail-notices, .detail-body { max-width: 64rem; }
+/* One measure, at the left: the head (the row's own line), the open part (the duel's line, the box cells on the ground,
+   the actions and the marks), then the sections as plain headed blocks under a hairline, every list in them as wide as
+   its section; from 1024 px a pain's index is a column beside the measure. A run's page keeps the same measure. Prose
+   and quotes keep a reading measure inside it. On the shell's grey; nothing is boxed but the cells and a line card's
+   notice. */
+.detail-head, .detail-notices, .run-body { max-width: var(--measure-detail); }
 
 /* The way back: muted, after a drawn chevron. A run's page shares it. */
 .back-link {
@@ -952,9 +960,9 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   .detail-foot > .detail-evidence { order: 2; margin-left: 0; }
 }
 
-/* The open part across the page, then the sections; from 1024 px the index is a column beside them, sticky. On a phone
+/* The open part, then the sections, in the measure; from 1024 px the index is a column beside them, sticky. On a phone
    and a tablet the index is a fold above the sections. A line card has no index. */
-.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr); align-items: start; gap: var(--space-6) 48px; }
+.detail-layout { display: grid; grid-template-columns: minmax(0, var(--measure-detail)); align-items: start; gap: var(--space-6) 48px; }
 .detail-sections { min-width: 0; }
 .detail-index ul { display: grid; padding: 0; list-style: none; }
 .detail-index a {
@@ -970,8 +978,8 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .detail-index--wide { display: none; }
 .detail-index-label { padding-bottom: 2px; font-size: 13px; font-weight: 600; line-height: 20px; }
 @media (min-width: 1024px) {
-  .detail-layout:not(.detail-layout--single) { grid-template-columns: minmax(0, 1fr) 13rem; }
-  .detail-open { grid-column: 1 / -1; }
+  .detail-layout:not(.detail-layout--single) { grid-template-columns: minmax(0, var(--measure-detail)) 13rem; }
+  .detail-open { grid-column: 1; }
   .detail-sections { grid-column: 1; grid-row: 2; }
   .detail-index--wide {
     display: block;
@@ -1017,9 +1025,9 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .detail-prose { max-width: 70ch; margin-top: var(--space-2); font-size: 15px; line-height: 24px; }
 
 /* Quotes, the card's and «Cómo llegamos»'s: the words between guillemets, then their day and link in a muted line. */
-.quotes { display: grid; gap: var(--space-3); max-width: 46rem; margin-top: var(--space-4); padding: 0; list-style: none; }
+.quotes { display: grid; gap: var(--space-3); margin-top: var(--space-4); padding: 0; list-style: none; }
 .quote + .quote { padding-top: var(--space-3); border-top: 1px solid var(--hairline); }
-:is(.quote, .how-quote) blockquote { margin: 0; font-size: 15px; line-height: 24px; }
+:is(.quote, .how-quote) blockquote { max-width: 70ch; margin: 0; font-size: 15px; line-height: 24px; }
 :is(.quote, .how-quote) blockquote p::before { content: "«"; }
 :is(.quote, .how-quote) blockquote p::after { content: "»"; }
 :is(.quote-source, .how-quote-link) { display: inline-flex; align-items: center; min-height: var(--target); color: var(--ink); font-size: 13px; }
@@ -1027,19 +1035,19 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .original { display: inline-block; font-size: 13px; }
 .original > p { max-width: 70ch; padding-bottom: var(--space-2); color: var(--muted); font-size: 14px; line-height: 22px; }
 
-.glossary { max-width: 70ch; margin: var(--space-3) 0 0; }
+.glossary { margin: var(--space-3) 0 0; }
 .glossary-row { padding-block: var(--space-2); }
 .glossary-row:first-child { padding-top: 0; }
 .glossary-row + .glossary-row { border-top: 1px solid var(--hairline); }
 .glossary dt { font-weight: 600; }
-.glossary dd { margin: 2px 0 0; }
+.glossary dd { max-width: 70ch; margin: 2px 0 0; }
 
 /* «Cómo llegamos a este dolor»: the quotes by source, then the attacks and the duels as rows divided by hairlines, each
    with its result in words after a ✓ or ✗ (checkIcon), the result a column at the left when there is room. */
 .how-part { margin-top: var(--space-5); }
 .how-heading { font-size: 15px; font-weight: 600; line-height: 22px; }
 .how-lead { margin-top: 2px; color: var(--muted); font-size: 13px; line-height: 20px; }
-.how-sources { display: grid; gap: var(--space-5); max-width: 46rem; margin-top: var(--space-4); }
+.how-sources { display: grid; gap: var(--space-5); margin-top: var(--space-4); }
 .how-source-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--hairline); }
 .how-source-head h4 { margin: 0; font-size: 14px; font-weight: 600; line-height: 20px; }
 .how-source-kind { color: var(--muted); font-size: 13px; }
@@ -1050,7 +1058,7 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .how-quote-meta { display: flex; flex-wrap: wrap; align-items: center; column-gap: var(--space-4); color: var(--muted); font-size: 13px; }
 .how-quote-meta > span { padding-block: 6px; }
 
-.how-rows { max-width: 46rem; margin-top: var(--space-1); padding: 0; list-style: none; container: how / inline-size; }
+.how-rows { margin-top: var(--space-1); padding: 0; list-style: none; container: how / inline-size; }
 .how-row { display: grid; align-items: start; gap: 4px; padding-block: 12px; }
 .how-row:last-child { padding-bottom: 0; }
 .how-row + .how-row { border-top: 1px solid var(--hairline); }
@@ -1064,12 +1072,12 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 
 /* The comments: who and when, muted, over each one, divided by hairlines; then the form. */
 .detail-section > .muted { margin-top: var(--space-2); }
-.comment-list { max-width: 70ch; margin-top: var(--space-2); padding: 0; list-style: none; }
+.comment-list { margin-top: var(--space-2); padding: 0; list-style: none; }
 .comment { padding-block: var(--space-3); border-bottom: 1px solid var(--hairline); }
 .comment-meta { color: var(--muted); font-size: 13px; line-height: 20px; }
-.comment-body { margin-top: 2px; font-size: 14px; line-height: 22px; white-space: pre-wrap; }
+.comment-body { max-width: 70ch; margin-top: 2px; font-size: 14px; line-height: 22px; white-space: pre-wrap; }
 .comment-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-5); }
-.comment-form { margin-top: var(--space-5); }
+.comment-form { max-width: none; margin-top: var(--space-5); }
 .comment-form textarea { resize: vertical; }
 .form-notices:empty { display: none; }
 
@@ -1134,21 +1142,21 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   .run-cost, .run-columns > :last-child { text-align: end; }
 }
 
-/* One run opened reads as a pain's page: the same head (the pill and the key data), then its line across the page's
-   width, then its sections as plain blocks under a hairline, «Detalle técnico» last and folded. */
+/* One run opened reads as a pain's page, in its measure: the same head (the pill and the key data), then its line, then
+   its sections as plain blocks under a hairline, every list as wide as its section, «Detalle técnico» last and folded. */
 .run-detail { display: grid; gap: var(--space-6); }
 .run-sections { min-width: 0; }
 .run-empty { max-width: var(--measure-text); margin-top: var(--space-2); color: var(--muted); }
 
 /* The cost: each model, the cards, then the total in ink, as label and value on a hairline row. */
-.run-costo-list { max-width: 26rem; margin-top: var(--space-2); }
+.run-costo-list { margin-top: var(--space-2); }
 .run-cost-row { display: flex; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-2); border-bottom: 1px solid var(--hairline); font-size: 14px; line-height: 20px; }
 .run-cost-row dt { color: var(--muted); }
 .run-cost-row dd { margin: 0; font-weight: 500; }
 .run-cost-row--total { border-bottom: 0; }
 .run-cost-row--total :is(dt, dd) { color: var(--ink); font-weight: 600; }
 
-.run-recortes-list, .run-duelos-list { max-width: 70ch; margin-top: var(--space-1); padding: 0; list-style: none; font-size: 14px; line-height: 22px; }
+.run-recortes-list, .run-duelos-list { margin-top: var(--space-1); padding: 0; list-style: none; font-size: 14px; line-height: 22px; }
 .run-recortes-list li, .run-duelos-list li { padding-block: 10px; }
 .run-recortes-list li:last-child, .run-duelos-list li:last-child { padding-bottom: 0; }
 .run-recortes-list li + li, .run-duelos-list li + li { border-top: 1px solid var(--hairline); }
@@ -1156,8 +1164,8 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 /* «Detalle técnico»: a fold whose summary reads as the sections' h2; inside, the raw texts as the run wrote them, each
    part under its own small heading, as hairline rows. */
 .run-tech > summary { margin-block: -9px; font-size: 18px; font-weight: 600; line-height: 26px; letter-spacing: -0.015em; }
-.run-tech-body { max-width: 70ch; margin-top: var(--space-2); }
-.run-tech-lead { color: var(--muted); font-size: 13px; line-height: 20px; }
+.run-tech-body { margin-top: var(--space-2); }
+.run-tech-lead { max-width: 70ch; color: var(--muted); font-size: 13px; line-height: 20px; }
 .run-tech-body > .run-empty { margin-top: var(--space-3); }
 .tech-part { margin-top: var(--space-5); }
 .tech-part h3 { font-size: 13px; font-weight: 600; line-height: 20px; }
@@ -1220,13 +1228,15 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
 .niche-week-why { max-width: 72ch; font-size: 14px; line-height: 22px; }
 .niche-week-why-label { color: var(--muted); font-weight: 500; }
 .niche-probe { margin-bottom: calc(-1 * var(--space-1)); color: var(--muted); font-size: 13px; line-height: 20px; }
+.niche-versus-key { margin-top: calc(-1 * var(--space-1)); color: var(--muted); font-size: 13px; line-height: 20px; }
 .niche-cells .check-cell { flex-basis: 12rem; }
 .niche-week-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 var(--space-4); }
 .niche-week-foot > .niche-veto { white-space: nowrap; }
 .niche-veto-next { color: var(--muted); font-size: 13px; line-height: 20px; }
 
 /* The versus bar: a band, a grey tick per rival and the niche's own ink rule, each at its value over the week's
-   highest. Hidden from a screen reader: the place in words under it carries it. */
+   highest. Hidden from a screen reader: the place in words under it carries it, and the line under the cells
+   (.niche-versus-key) says what its marks are. */
 .versus { position: relative; flex: 1 1 auto; min-width: 48px; max-width: 132px; height: 8px; border-radius: 2px; background: var(--hairline); }
 .versus-tick, .versus-at { position: absolute; left: clamp(0px, calc(var(--at) - 1px), calc(100% - 2px)); }
 .versus-tick { top: 0; width: 2px; height: 8px; background: var(--edge); }

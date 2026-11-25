@@ -299,3 +299,11 @@ export function versusLabel(rivals) {
   if (n === 1) return T.nicheVersusOne;
   return fill(T.nicheVersus, { n: formatNumber(n) });
 }
+
+// What the week's versus bars draw, in words under the figures: a short mark per rival, the niche's own tall one. null
+// with no rival (no short mark to explain).
+export function versusKey(rivals) {
+  const n = number(rivals) ?? 0;
+  if (n < 1) return null;
+  return n === 1 ? T.nicheVersusKeyOne : T.nicheVersusKey;
+}
