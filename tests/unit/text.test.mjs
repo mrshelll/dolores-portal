@@ -111,7 +111,7 @@ test("every label the shell, the home and the line use exists", () => {
     "metaWeek", "metaNiche", "metaCost", "homeTitle", "leadNoPending", "leadPendingOne", "leadPendingMany",
     "leadOrderWinnerWeighty", "leadOrderWinner", "leadOrderWeighty", "decideEmpty", "seeCatalog", "catalogLine",
     "catalogLineWeighty", "catalogLineInterestedOne", "catalogLineInterested", "catalogLineWatching", "catalogLineDiscardedOne",
-    "catalogLineDiscarded", "openCatalog", "stationDetail", "stationEvidence", "whoLabel", "tagWinner", "tagWinnerDated", "backToWeek",
+    "catalogLineDiscarded", "openCatalog", "stationDetail", "stationEvidence", "whoLabel", "tagWinner", "tagWinnerDated", "backToWeek", "backToCatalog",
     "tagFresh", "noMarksYet", "commentAction", "stationInterested", "markSavedInterested", "markRemoved",
     "lineLabel", "lineTitle", "lineTitleOld", "lineTitleOldUndated", "lineNoTrace", "lineOlderNote",
     "lineNoRun", "lineStripClean", "durationMinutes", "durationHours", "durationShort",
@@ -134,6 +134,7 @@ test("every label the shell, the home and the line use exists", () => {
   assert.equal([T.lineColStep, T.lineColLeft].join(), "Paso,Quedan");
   assert.equal(T.tabWeek, "Esta semana");
   assert.equal(T.tabCatalog, "Catálogo");
+  assert.equal(T.backToCatalog, "Volver al catálogo");
   assert.equal(T.tabRuns, "Corridas");
   assert.equal(T.analysisNone, "Sin análisis guardado para este dolor");
 });

@@ -252,14 +252,15 @@ async function route() {
 
   const email = state.session.user && state.session.user.email;
   const screen = ROUTE_SCREEN[target.name];
-  // A pain's page keeps the tab of the screen it was opened from: Catálogo from Catálogo, «Esta semana» from anywhere
-  // else or when opened directly (a link, a reload).
+  // A pain's page keeps the tab of the screen it was opened from, and its way back goes there: Catálogo from Catálogo,
+  // «Esta semana» from anywhere else or when opened directly (a link, a reload).
   if (target.name !== "pain") state.painTab = screen.tab === "catalog" ? "catalog" : "week";
+  const tab = target.name === "pain" ? (state.painTab ?? screen.tab) : screen.tab;
   const layout = frameLayout({
     title: T[screen.title],
     pageTitle: screen.pageTitle ? T[screen.pageTitle] : null,
-    tab: target.name === "pain" ? (state.painTab ?? screen.tab) : screen.tab,
-    context: target.name === "pain" ? backLink("#/", T.backToWeek, backChevron(), T.tabWeek)
+    tab,
+    context: target.name === "pain" ? painBackLink(tab)
       : target.name === "run" ? backLink("#/corridas", T.runsBackLabel, backChevron(), T.tabRuns) : null,
     actions: [signOutButton()],
   });
@@ -289,6 +290,13 @@ const ROUTE_SCREEN = {
   run: { title: "runTitle", tab: "runs" },
   pain: { title: "painTitle", tab: "week" }, // opened directly; from Catálogo, "catalog" (state.painTab)
 };
+
+// A pain's way back, to the tab its page keeps current: its address, its words for a screen reader and for the eye.
+const PAIN_BACK = { week: ["#/", "backToWeek", "tabWeek"], catalog: ["#/catalogo", "backToCatalog", "tabCatalog"] };
+function painBackLink(tab) {
+  const [href, label, words] = PAIN_BACK[tab] ?? PAIN_BACK.week;
+  return backLink(href, T[label], backChevron(), T[words]);
+}
 
 // ---- access ---------------------------------------------------------------------------------
 

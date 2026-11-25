@@ -922,12 +922,14 @@ summary.catalog-head:focus-visible { outline-offset: -2px; }
   --pill-mark: var(--edge); --pill-text: var(--ink); --pill-tint: var(--ground); --pill-edge: var(--hairline);
 }
 
-/* The key data, one line of text: each label muted before its value, «·» after every datum but the last. The «·»
-   follows its datum with no space to break at (a margin), and the space after it is where a line may wrap, so a line
-   never starts with it. On a phone a value that reads alone keeps its label for a screen reader only (DET-12). */
+/* The key data, one line of text: each label muted before its value, «·» after every datum but the last. Each datum
+   is an inline block, so a line wraps between data and never inside one («Visto en 8 corridas» stays whole; one longer
+   than the line still wraps inside itself, so a phone never scrolls sideways). The «·» ends its datum, between two
+   margins, so a line never starts with it. On a phone a value that reads alone keeps its label for a screen reader
+   only (DET-12). */
 .key-data { margin-top: var(--space-2); padding: 0; list-style: none; color: var(--muted); font-size: 13px; line-height: 20px; }
-.key { display: inline; }
-.key:not(:last-child)::after { content: "· "; content: "· " / ""; margin-left: var(--space-2); word-spacing: 4px; }
+.key { display: inline-block; }
+.key:not(:last-child)::after { content: "·"; content: "·" / ""; margin-inline: var(--space-2); }
 .key-value { color: var(--ink); }
 @media (max-width: 671.98px) {
   .key--alone .key-label {

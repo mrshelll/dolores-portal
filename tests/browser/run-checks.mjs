@@ -1223,11 +1223,16 @@ async function behaviours(browser, base) {
       JSON.stringify(seen));
   }
 
-  // A pain's page keeps the tab it was opened from current: «Esta semana» from the home, Catálogo from Catálogo, and
-  // «Esta semana» when it is opened directly (the Monday email's link, a reload).
+  // A pain's page keeps the tab it was opened from current, and its way back goes there: «Esta semana» and #/ from the
+  // home, Catálogo and #/catalogo from Catálogo (pressed, it lands on Catálogo with its tab current), and «Esta semana»
+  // when it is opened directly (the Monday email's link, a reload).
   {
     const currentTabs = (page) => page.evaluate(() => [...document.querySelectorAll("nav.tabs a[aria-current]")]
       .map((a) => `${a.firstChild?.textContent ?? ""}=${a.getAttribute("aria-current")}`));
+    const backOf = (page) => page.evaluate(() => {
+      const back = document.querySelector("main .back-link");
+      return back ? [back.textContent.trim(), back.getAttribute("href"), back.getAttribute("aria-label")].join("|") : null;
+    });
     const seen = [];
     for (const [name, link] of [["home", ".station-title a[href=\"#/dolor/dol-0027\"]"], ["catalog", ".pain-title a[href=\"#/dolor/dol-0027\"]"]]) {
       const { context, page, log, problems } = await openScreen(browser, base, scenario(name), DESK);
@@ -1235,20 +1240,53 @@ async function behaviours(browser, base) {
       await page.click(link, { timeout: 5000 }).catch(() => {});
       const opened = await page.waitForFunction(() => location.hash === "#/dolor/dol-0027" && document.querySelector(".detail-actions")
         && !document.querySelector("[aria-busy=true]"), null, { timeout: 10000 }).then(() => true, () => false);
-      seen.push({ name, before, opened, after: await currentTabs(page), clean: clean(log, problems), why: why(log, problems) });
+      const after = await currentTabs(page);
+      const back = await backOf(page);
+      await page.click("main .back-link", { timeout: 5000 }).catch(() => {});
+      const returned = await page.waitForFunction((title) => document.querySelector("h1")?.textContent === title
+        && !document.querySelector("[aria-busy=true]"), name === "home" ? T.homeTitle : T.catalogTitle, { timeout: 10000 })
+        .then(() => page.evaluate(() => location.hash), () => null);
+      seen.push({ name, before, opened, after, back, returned, returnedTabs: await currentTabs(page), clean: clean(log, problems), why: why(log, problems) });
       await context.close();
     }
     {
       const { context, page, log, problems } = await openScreen(browser, base, scenario("detail-v3"), PHONE);
-      seen.push({ name: "direct", opened: true, after: await currentTabs(page), clean: clean(log, problems), why: why(log, problems) });
+      seen.push({ name: "direct", opened: true, after: await currentTabs(page), back: await backOf(page), clean: clean(log, problems), why: why(log, problems) });
       await context.close();
     }
     const [fromHome, fromCatalog, direct] = seen;
+    const toWeek = [T.tabWeek, "#/", T.backToWeek].join("|");
     check("a pain's page keeps current the tab it was opened from, and «Esta semana» when opened directly",
       fromHome.before.join() === `${T.tabWeek}=page` && fromCatalog.before.join() === `${T.tabCatalog}=page`
         && seen.every((s) => s.opened && s.clean)
         && fromHome.after.join() === `${T.tabWeek}=page` && fromCatalog.after.join() === `${T.tabCatalog}=page`
         && direct.after.join() === `${T.tabWeek}=page`,
+      JSON.stringify(seen));
+    check("a pain's way back goes to the tab it keeps: «Esta semana» to #/, Catálogo to #/catalogo",
+      fromHome.back === toWeek && direct.back === toWeek
+        && fromCatalog.back === [T.tabCatalog, "#/catalogo", T.backToCatalog].join("|")
+        && fromHome.returned === "#/" && fromHome.returnedTabs.join() === `${T.tabWeek}=page`
+        && fromCatalog.returned === "#/catalogo" && fromCatalog.returnedTabs.join() === `${T.tabCatalog}=page`
+        && seen.every((s) => s.clean),
+      JSON.stringify(seen));
+  }
+
+  // The key data under a pain's or a run's title: each datum on one line, at 1440 and at 320 (a line wraps between
+  // data, never inside one).
+  {
+    const seen = [];
+    for (const name of ["detail-v2", "run-detail"]) {
+      for (const width of [1440, 320]) {
+        const { context, page, log, problems } = await openScreen(browser, base, scenario(name), { width, height: 900, scheme: "light" });
+        const keys = await page.evaluate(() => [...document.querySelectorAll(".page-head .key")].map((key) => ({
+          text: key.innerText.replace(/\s+/g, " ").trim(), lines: key.getClientRects().length, height: Math.round(key.getBoundingClientRect().height),
+        })));
+        seen.push({ name, width, keys, clean: clean(log, problems), why: why(log, problems) });
+        await context.close();
+      }
+    }
+    check("the key data under a title: each datum on one line, at 1440 and 320",
+      seen.every((s) => s.keys.length >= 3 && s.keys.every((k) => k.lines === 1 && k.height <= 20) && s.clean),
       JSON.stringify(seen));
   }
   return results;

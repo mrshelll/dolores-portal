@@ -384,6 +384,7 @@ export const T = Object.freeze({
   // A pain: the frame and its states.
   painTitle: "Detalle del dolor",
   backToWeek: "Volver a «Esta semana»",
+  backToCatalog: "Volver al catálogo",
   backToList: "Volver a la lista",
   painLoading: "Cargando el dolor…",
   painError: "No pudimos cargar este dolor. Vuelve a intentarlo en un momento.",
