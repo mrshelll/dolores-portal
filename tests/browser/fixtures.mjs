@@ -238,6 +238,10 @@ const PAIN_0002 = { id: "dol-0002", territory: null, status: "watching", team_di
 // of source than required is never «con peso»), and Carla's «Nos interesa» puts it in «Nos interesa», which is why its
 // card is full. The detail scenarios without a gate (detail-no-gate, a pain stored before the gate existed, and the line
 // card's dol-0002) show no cells and claim nothing: one line says there is no analysis.
+// The home and the detail scenarios show dol-0027 in two different weeks, each one as a run would leave it: on the home
+// it is alive and passes every count (GATE_IN_RANGE); on its page, the week it was one type of source short
+// (GATE_DETAIL), so watching. Their gates differ on purpose: one gate for both would draw «con peso» beside a ✗, which
+// decideStatus never does, or leave the home without a pain with weight.
 const GATE_DETAIL = gate(4, 1, 4);
 const PAIN_0027_DETAIL = { ...PAIN_0027, status: "watching", gate: GATE_DETAIL };
 
