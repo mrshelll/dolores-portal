@@ -1,255 +1,390 @@
 ---
 name: tomoshi
-description: The clinical lab results report where a small team decides which pains to work on, each pain measured against the weekly run's own reference ranges.
+description: The category standard for a weekly decision, each pain a row that passes or fails three checks against the run's own thresholds, read like a list of deployments.
 colors:
-  report-white: "#FFFFFF"
-  section-tint: "#E8EEF6"
-  report-ink: "#14213D"
-  muted-ink: "#4A5568"
-  hairline: "#D5DCE6"
-  control-edge: "#6B778A"
-  institutional-blue: "#1F4E8C"
-  signal-blue: "#2B6CC4"
-  attention-blue: "#2B6CC4"
-  attention-blue-text: "#2862B3"
-  in-range-green: "#2E9E4F"
-  in-range-green-text: "#1D7A3A"
-  failed-red: "#C62828"
-  off-grey: "#7A8597"
-  navy-ground: "#0D1729"
-  navy-panel: "#111E33"
-  navy-section: "#18294A"
-  navy-ink: "#E6ECF5"
-  navy-muted: "#A9B6CA"
-  navy-hairline: "#2A3B5A"
-  navy-edge: "#7486A3"
-  navy-brand: "#8DB6EE"
-  navy-band: "#173763"
-  navy-attention: "#5B9BEA"
-  navy-ok: "#3FB565"
-  navy-fail: "#F0605A"
+  ground: "#FFFFFF"
+  panel: "#FAFAFA"
+  ink: "#0A0A0A"
+  muted: "#525252"
+  hairline: "#E5E5E5"
+  edge: "#8A8A8A"
+  accent: "#2563EB"
+  accent-fill: "#2563EB"
+  accent-fill-hover: "#1D4ED8"
+  on-accent: "#FFFFFF"
+  accent-tint: "#F0F4FE"
+  pass: "#16A34A"
+  pass-text: "#15803D"
+  pass-tint: "#EFF9F2"
+  fail: "#DC2626"
+  fail-text: "#B91C1C"
+  fail-tint: "#FEF2F2"
+  dark-ground: "#0A0A0A"
+  dark-panel: "#111111"
+  dark-ink: "#EDEDED"
+  dark-muted: "#A1A1A1"
+  dark-hairline: "#262626"
+  dark-edge: "#737373"
+  dark-accent: "#3B82F6"
+  dark-accent-tint: "#0D121B"
+  dark-pass: "#22C55E"
+  dark-pass-tint: "#0C1710"
+  dark-fail: "#F87171"
+  dark-fail-tint: "#2A1215"
 typography:
-  title:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+  display:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "28px"
+    fontWeight: 600
+    lineHeight: "36px"
+    letterSpacing: "-0.03em"
+    fontFeature: "tnum"
+  display-compact:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
     fontSize: "24px"
-    fontWeight: 700
-    lineHeight: 1.1
-    letterSpacing: "-0.01em"
+    fontWeight: 600
+    lineHeight: "28px"
+    letterSpacing: "-0.03em"
+    fontFeature: "tnum"
+  wordmark:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "22px"
+    fontWeight: 600
+    lineHeight: "28px"
+    letterSpacing: "-0.035em"
+  wordmark-compact:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "20px"
+    fontWeight: 600
+    lineHeight: "28px"
+    letterSpacing: "-0.035em"
+  figure:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "28px"
+    fontWeight: 600
+    lineHeight: "34px"
+    letterSpacing: "-0.03em"
+    fontFeature: "tnum"
   headline:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
     fontSize: "18px"
     fontWeight: 600
-    lineHeight: 1.3
-  result-title:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "17px"
-    fontWeight: 600
-    lineHeight: 1.3
-  body:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    lineHeight: "26px"
+    letterSpacing: "-0.015em"
+  subhead:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
     fontSize: "16px"
-    fontWeight: 400
-    lineHeight: 1.45
-    fontFeature: "tnum"
-  small:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontWeight: 600
+    lineHeight: "24px"
+    letterSpacing: "-0.01em"
+  title:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
+    lineHeight: "22px"
+    letterSpacing: "-0.01em"
+  body:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
     fontSize: "14px"
     fontWeight: 400
-    lineHeight: 1.45
-  label:
-    fontFamily: "Public Sans, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
-    fontSize: "11px"
+    lineHeight: "20px"
+    fontFeature: "tnum"
+  prose:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "15px"
+    fontWeight: 400
+    lineHeight: "24px"
+  field:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: "22px"
+  code:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "24px"
     fontWeight: 600
+    lineHeight: "30px"
+    letterSpacing: "0.3em"
+    fontFeature: "tnum"
+  label:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "13px"
+    fontWeight: 500
+    lineHeight: "20px"
+    fontFeature: "tnum"
+  caption:
+    fontFamily: "Geist, system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
     lineHeight: "16px"
-    letterSpacing: "0.12em"
 rounded:
-  chip: "2px"
-  control: "3px"
-  block: "4px"
+  rule: "1px"
+  box: "2px"
+  control: "6px"
+  panel: "8px"
+  count: "10px"
+  tag: "11px"
+  pill: "12px"
 spacing:
-  xs: "8px"
-  sm: "16px"
-  md: "24px"
-  lg: "32px"
-  xl: "48px"
+  space-1: "4px"
+  space-2: "8px"
+  space-3: "12px"
+  space-4: "16px"
+  space-5: "24px"
+  space-6: "32px"
   target: "44px"
 components:
   button-primary:
-    backgroundColor: "{colors.institutional-blue}"
-    textColor: "{colors.report-white}"
-    rounded: "{rounded.control}"
-    padding: "6px 16px"
-    height: "44px"
-  button-secondary:
-    backgroundColor: "{colors.report-white}"
-    textColor: "{colors.institutional-blue}"
-    rounded: "{rounded.control}"
-    padding: "6px 16px"
-    height: "44px"
-  input-field:
-    backgroundColor: "{colors.report-white}"
-    textColor: "{colors.report-ink}"
+    backgroundColor: "{colors.accent-fill}"
+    textColor: "{colors.on-accent}"
+    typography: "{typography.body}"
     rounded: "{rounded.control}"
     padding: "8px 12px"
+    height: "36px"
+  button-primary-hover:
+    backgroundColor: "{colors.accent-fill-hover}"
+    textColor: "{colors.on-accent}"
+  button-secondary:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "8px 12px"
+    height: "36px"
+  button-secondary-hover:
+    backgroundColor: "{colors.panel}"
+  button-quiet:
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "8px 12px"
+    height: "36px"
+  input:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    padding: "10px 12px"
     height: "44px"
-  result-block:
-    backgroundColor: "{colors.report-white}"
-    textColor: "{colors.report-ink}"
-    rounded: "{rounded.block}"
-  result-head:
-    backgroundColor: "{colors.section-tint}"
-    textColor: "{colors.report-ink}"
-    padding: "6px 16px"
-    height: "44px"
-  tag-chip:
-    backgroundColor: "{colors.report-white}"
-    textColor: "{colors.institutional-blue}"
-    rounded: "{rounded.chip}"
-    padding: "0 6px"
+  tab:
+    textColor: "{colors.muted}"
+    typography: "{typography.body}"
+    padding: "0 10px"
+    height: "46px"
+  tab-current:
+    textColor: "{colors.ink}"
+  tab-count:
+    backgroundColor: "{colors.accent-fill}"
+    textColor: "{colors.on-accent}"
+    rounded: "{rounded.count}"
+    height: "20px"
+  state-pill:
+    backgroundColor: "{colors.panel}"
+    textColor: "{colors.muted}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.pill}"
+    padding: "2px 10px"
     height: "24px"
-  masthead-band:
-    backgroundColor: "{colors.institutional-blue}"
-    textColor: "{colors.report-white}"
-  range-bar:
-    backgroundColor: "{colors.section-tint}"
-    rounded: "{rounded.chip}"
-    height: "8px"
+  state-pill-pass:
+    backgroundColor: "{colors.pass-tint}"
+    textColor: "{colors.pass-text}"
+  state-pill-attention:
+    backgroundColor: "{colors.accent-tint}"
+    textColor: "{colors.accent}"
+  state-pill-fail:
+    backgroundColor: "{colors.fail-tint}"
+    textColor: "{colors.fail-text}"
+  tag:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.tag}"
+    padding: "0 8px"
+    height: "22px"
+  tag-fresh:
+    backgroundColor: "{colors.accent-tint}"
+    textColor: "{colors.accent}"
+  row-list:
+    backgroundColor: "{colors.ground}"
+    rounded: "{rounded.panel}"
+    padding: "16px"
+  row-open:
+    backgroundColor: "{colors.panel}"
+    padding: "16px 20px 18px 48px"
+  check-cell:
+    backgroundColor: "{colors.ground}"
+    textColor: "{colors.ink}"
+    padding: "12px 18px 14px"
+  check-cell-fail:
+    backgroundColor: "{colors.fail-tint}"
+    textColor: "{colors.fail-text}"
 ---
 
 # Design System: tomoshi
 
 ## Overview
 
-**Creative North Star: "The Lab Results Report"**
+**Creative North Star: "Revisión por dolor"**
 
-Each pain arrives as a result, not a card: its evidence measured against the reference ranges the weekly run itself used, with what falls in or out of range said in words. The page reads like a clinical report on white paper: an institutional blue band across the top, pale blue-grey section heads, hairline-ruled tables, ink on white. At night (automatic, no toggle) it is the same report on a deep navy ground, never graphite and never warm.
+The page is the category standard of a developer dashboard, held to the craft of Stripe Dashboard, Vercel and Notion, and bent to one job: three people leave each week with a decision. Every pain is a row read like a deployment in a deployments list. It passes or fails three checks against the run's own thresholds, each check a filled ✓ or ✗ circle with its result in words. Opening a row shows the same three checks as box cells, small boxes filled up to a black threshold rule, then the duel's line and the actions. Beside the rows, the run's line lists every step, what remained, and each cut, marked with blue scissors and said in words. Everything else (Catálogo, Corridas, Nichos, a pain's page, a run's page) inherits these rows, cells and lists.
 
-The voice is calm, exact and unadorned. Density is that of a document a person reads closely on Monday, on a phone or a computer: small tracked section labels, tabular numbers, short plain-Spanish sentences. Nothing decorates; the one drawn element is the reference-range bar, because it is data.
+The world is quiet on purpose. A white ground, a #FAFAFA shell, near-black ink, grey hairlines and one blue accent. Green means in range, red means out of range with a pale red cell tint, and blue means attention, a cut, a link or the primary action. Depth is flat: 1 px borders, 6 px controls, 8 px panels, no shadow. Density is a working dashboard's, 14 px body on a 4 px spacing step, with tabular figures everywhere so counts line up. Light and dark follow the system setting with no toggle, and both keep the same roles.
 
-This replaces the earlier andon-board world, which was rejected, above all for its yellow. None of that world carries over.
+It rejects the worlds it replaced: the clinical lab results report (institutional blue band, range bars) and the Toyota andon board. It also rejects a feed of cards with a separate analytics tab. The evidence sits in the row, never on another screen.
 
 **Key Characteristics:**
-- White paper, one institutional blue, hairline rules; flat, no shadows.
-- One typeface (Public Sans) with tabular figures everywhere.
-- Never yellow or amber. Attention is blue.
-- Every state is written in words beside its colour; dots and bars are `aria-hidden`.
-- The signature move is the reference-range bar drawn from the run's real thresholds.
-- AA contrast in both themes, usable from 320 px.
+- Rows, not cards: bordered lists on the ground with a hairline between rows; the open part of a row sits on the panel grey.
+- Three checks per pain, each a ✓/✗ circle with its words; never a score.
+- Box cells filled to a 2 px black threshold rule, the failed cell on the fail tint.
+- Blue scissors mark a cut step; the cut is always said in words too.
+- One blue accent; green and red only for in range and out of range; no yellow, amber or orange anywhere.
+- Geist 400/500/600 with tabular figures; light and dark by `prefers-color-scheme`.
+- Flat: hairline borders, small radii, an outline focus ring, no shadows.
 
 ## Colors
 
-A blue-and-white report palette: one institutional blue carries identity, three state hues (blue, green, red) carry meaning, everything else is blue-tinted neutral. Dark theme keeps the same roles on navy; the values below are light, the navy counterparts are listed under Neutral and State.
+A neutral grey scale carries the page; one blue and a strict green/red pair carry every signal.
 
 ### Primary
-- **Institutional Blue** (#1F4E8C): the masthead band, headings (h1, h2), the primary button, result numbers, tag text and the focus ring. 8.31:1 on white. In dark it becomes **Navy-Lit Blue** (#8DB6EE) for text and controls, while the band itself drops to **Deep Band Navy** (#173763) so it does not glare.
-- **Signal Blue** (#2B6CC4): the text caret and the selection tint only.
+- **Signal Blue** (accent, accent-fill): links, the primary button, the waiting count in the tab, the focus ring, text selection, cut steps and their scissors, a «Evidencia nueva» tag, a pain that asks for attention. In dark mode the text accent lifts to Dark Signal Blue while the filled button stays Signal Blue, because white on the lighter blue drops to 3.68:1.
+- **Pressed Blue** (accent-fill-hover): the primary button under the pointer or pressed.
+- **Blue Wash** (accent-tint): the 7 % blue tint behind attention pills and fresh-evidence tags.
 
-### State
-- **Attention Blue** (#2B6CC4; text #2862B3): something awaiting attention, such as a pain pending a mark or fresh evidence. Dark: #5B9BEA, text #93BEF5.
-- **In-Range Green** (#2E9E4F; text #1D7A3A): evidence inside the reference range. Dark: #3FB565, text #6FCF8E.
-- **Failed Red** (#C62828): out of range, failures and errors. Dark: #F0605A, text #FF8A84.
-- **Off Grey** (#7A8597): no state yet. Dark: #7486A3.
+### Secondary
+- **In-Range Green** (pass): the ✓ circle, a passing check's filled boxes, a green state dot. A mark, not text.
+- **In-Range Green Text** (pass-text): the words of a passing state or source ("Completa", "Dentro del rango").
+- **Green Wash** (pass-tint): the pill behind a run that finished or a pain with weight to work.
+
+### Tertiary
+- **Out-of-Range Red** (fail): the ✗ circle, a failing check's filled boxes, the large figure in a failed cell, an invalid field's edge, a red state dot.
+- **Out-of-Range Red Text** (fail-text): the words of a failed check, source or error.
+- **Pale Red Cell** (fail-tint): the background of a failed box cell and a failed pill.
 
 ### Neutral
-- **Report White** (#FFFFFF): the page and every result block, notice and field.
-- **Section Tint** (#E8EEF6): section heads, the range track, the tinted strips.
-- **Report Ink** (#14213D): body text, 15.97:1 on white.
-- **Muted Ink** (#4A5568): secondary text, 7.53:1.
-- **Hairline** (#D5DCE6): every rule and block border.
-- **Control Edge** (#6B778A): input and control borders, 4.53:1.
-- Dark neutrals: ground #0D1729, panel #111E33, section #18294A, ink #E6ECF5, muted #A9B6CA, hairline #2A3B5A, edge #7486A3.
+- **Ground** (ground): the page, the masthead, every bordered list's rows, the auth page.
+- **Panel Grey** (panel): the shell under the masthead, a row's open part, column-head rows, the cost foot of the run's line.
+- **Ink** (ink): all primary text, the current tab and its 2 px underline, the box cells' threshold rule.
+- **Muted Ink** (muted): secondary lines (who suffers it, key data, column heads, captions, team marks).
+- **Hairline** (hairline): rules and panel borders; they divide and carry nothing. Also the empty boxes.
+- **Control Edge** (edge): the secondary button's and the fields' border, link underlines, and the grey dot of any waiting state.
+- **Dark roles** (dark-*): the same roles on a near-black ground, switched by `prefers-color-scheme: dark`. Washes are mixed at 7 % into the ground in both themes.
 
 ### Named Rules
-**The Never-Yellow Rule.** No yellow, amber or orange anywhere, in either theme. Attention is blue. (The code keeps the internal attribute name `data-lamp="amber"`; it is only a name and renders the attention blue. Likewise `green`, `red`, `off`.)
+**The Never Yellow Rule.** No yellow, amber or orange anywhere on the page, in either theme. Attention is blue. The model's internal lamp name `amber` renders as Signal Blue, and a state merely waiting renders as the grey edge dot.
 
-**The Words-Beside-Colour Rule.** A state is never colour alone. The dot or bar is `aria-hidden` and the state is written next to it («DENTRO DEL RANGO», «FUERA DEL RANGO», the run's status).
+**The Words Beside the Colour Rule.** Every state is written in words beside its colour: a dot is followed by its state, a ✓/✗ by its result, a filled box row by its figure, a cut's scissors by "Con recorte". Colour never carries meaning alone.
 
-**The Text-Variant Rule.** A state written as text uses its `-text` value (4.5:1 or better); the plain state value is for dots, bars and control edges (3:1). A green dot never sits directly on the section tint: it goes inside a chip on the panel.
+**The One Blue Rule.** Blue is reserved for attention, cuts, links, selection, the focus ring and the primary action. A waiting pain does not get blue; it gets the grey edge dot, and its section heading says what it is waiting for.
+
+**The AA Both Ways Rule.** Text meets 4.5:1 and marks and control edges meet 3:1 in light and in dark. The contrast ratios are annotated beside each token in the stylesheet; a new colour arrives with its ratios measured on the ground, the panel and any tint it sits on.
 
 ## Typography
 
-**Display Font:** Public Sans (with system-ui, Segoe UI, Roboto)
-**Body Font:** Public Sans
-**Label/Mono Font:** Public Sans; there is no second face.
+**Display Font:** Geist (with system-ui, -apple-system, Segoe UI, Roboto, sans-serif)
+**Body Font:** Geist, same stack
+**Label/Mono Font:** none distinct; Geist with tabular figures serves every number.
 
-**Character:** a plain, institutional grotesque in four weights (400, 500, 600, 700). Tabular figures are on for the whole page (`font-variant-numeric: tabular-nums`), so counts and thresholds align in columns.
+**Character:** One grotesque in three weights, tight negative tracking on the large sizes and none on body. It reads as a precise tool, not an editorial page.
 
 ### Hierarchy
-- **Title** (700, 24px, 1.1, -0.01em; 30px from 640px): the screen's h1, in Institutional Blue.
-- **Headline** (600, 18px, 1.3): section h2; sheet heads use 17px.
-- **Result title** (600, 17px, 1.3): a pain's title, in ink, next to its number in blue.
-- **Body** (400, 16px, 1.45): running text; measure 38rem (about 72 letters), prose 64ch.
-- **Small** (400/600, 14px): table rows, notes, buttons at 15px/600.
-- **Label** (600, 11px, 0.12em tracked, uppercase, muted): «RESULTADOS», «QUIÉN LO SUFRE», the analysis caption and its column heads. The range flag is 11px/700 at 0.06em.
+- **Display** (600, 28px / 36px, -0.03em; Display Compact, 24px / 28px, below 640px): the page h1, "Para decidir" and a pain's or run's title.
+- **Wordmark** (600, 22px / 28px, -0.035em; Wordmark Compact, 20px, below 380px): «tomoshi» in the brand row and on the sign-in panel. The run's line heading uses the same size.
+- **Figure** (600, 28px / 34px, -0.03em, tabular): the count in a box cell, in ink or in the fail red when it fails.
+- **Headline** (600, 18px / 26px, -0.015em): section headings on a pain's and a run's page, the «Detalle técnico» fold.
+- **Subhead** (600, 16px / 24px, -0.01em): Nichos' section headings; the folded line strip's heading takes the same size when the run left no line.
+- **Title** (600, 15px / 22px, -0.01em): a row's title in every list.
+- **Body** (400, 14px / 20px, tabular): the default for everything not otherwise set.
+- **Prose** (400, 15px / 24px, max 70ch): a pain's card text, quotes, glossary.
+- **Field** (400, 16px / 22px): the text typed in a field, at 16px so iOS never zooms.
+- **Code** (600, 24px / 30px, 0.3em, tabular): the sign-in code's eight digits.
+- **Label** (500, 13px / 20px): the check stack's lines, state words, key data, row secondary lines. 13px is the system's most used size.
+- **Caption** (500, 12px / 16px): pills, tags, column heads, cost labels, a step's cap.
 
 ### Named Rules
-**The No-Eyebrow Rule.** Tracked uppercase labels name a section or a table; they never sit as a kicker above a heading.
+**The Tabular Everywhere Rule.** `font-variant-numeric: tabular-nums` is set on the body; counts in rows, cells and the run's line align without per-element overrides.
 
-**The Out-of-Range-Is-Bold Rule.** A value outside its range is set bold in the failing state's text colour, as a lab report marks it.
+**The Lowercase Wordmark Rule.** tomoshi is a lowercase text wordmark set in Geist 600, never a logo image, never capitalised.
 
 ## Layout
 
-Mobile first, from 320 px. The page is a masthead, then a `shell`: one column, with the run's line panel (a 22 to 28rem column, `clamp(22rem, 30vw, 28rem)`) beside the main content from 1024 px; below that the line becomes a collapsible strip. Side padding is 16px, 24px from 640px, 28px from 1024px. Spacing steps on 8px: 8, 16, 24, 32, 48. Touch targets are at least 44px. Each result block lays out by its own width (a container query): stacked below about 600px, analysis table plus a side column of who suffers it and the actions above. The masthead stacks brand and actions, tabs, then the week's data on a phone, and moves the week's data into the line strip.
+Mobile first, on a 4 px spacing step (4, 8, 12, 16, 24, 32). The side margin grows from 16px to 24px at 640px and 28px at 1024px. There is no sidebar: a brand row, then the tabs across the full width on a hairline. Below 768px the brand row keeps only the wordmark, the run pill and «Salir»; the week and its data move into the home's folded line strip. From 768px the brand row carries the week (after a leaning 1 px slash), the run pill and «Salir»; up to 1023px the niche and the cost take their own row under the tabs, divided by a hairline, and the masthead closes on a hairline under them. From 1024px they join the brand row at the right, before «Salir».
+
+On the home from 1024px the shell becomes two columns: the rows, and the run's line as a 344 px side panel. Below 1024px the line is a folded strip under the heading. A pain's and a run's page keep one 48rem measure at the left; from 1024px a pain's index is a sticky 13rem column beside it, and below it a fold above the sections. Prose keeps 70ch, notices and sentences 38rem, forms 440px.
+
+Rows lay out by their own container width, not the viewport: stacked on a phone; from 34rem the checks take a 12rem column at the right; from 46rem the four columns (chevron, title and who suffers it, the checks, the state and marks). Box cells keep 11-12rem each and stack one per line on a phone. On a narrow open row the actions come before the cells so the decision is on the first screen.
+
+Every interactive element has a 44px target. Buttons draw a 36px box inside that target. Tabs scroll inside their own row; the page never scrolls sideways at 320px.
 
 ## Elevation & Depth
 
-Flat. There are no shadows; depth is a hairline border (1px) and a tonal step between white panels and the Section Tint head. The only `box-shadow` in the build is an inset 1px ring that thickens an invalid field's border without moving its text. State changes are immediate colour swaps; transitions are removed under `prefers-reduced-motion`.
+Flat. There are no shadows anywhere. Depth is tonal and drawn with lines: the ground for lists and controls, the panel grey for the shell, a row's open part and column-head rows, 1 px hairlines between rows and around panels. Hover is a 2 % to 5 % ink wash over the surface. Focus is a 2px Signal Blue outline offset 2px (inset on full-row links).
 
 ### Named Rules
-**The Hairline-Not-Shadow Rule.** Separate surfaces with a 1px Hairline or a Section Tint head, never a shadow.
+**The Hairline Not Shadow Rule.** A surface is separated by a 1 px hairline or a change between ground and panel grey, never by a shadow or a raised card.
 
 ## Shapes
 
-Small, square-leaning radii: 2px for chips and the range bar, 3px for buttons and fields, 4px for result blocks, sheets and notices. State dots are circles (10px, 8px small, 12px on the band with a 2px white ring). The range marker is a 3px-wide vertical bar. Borders are always 1px, except the active tab (3px underline) and the in-range edge (2px).
+Small, consistent radii: 1px on the ends of the 2px rules (the current tab's underline, the threshold rule, the niche's mark on the versus band), 2px on the boxes and the versus band, 6px on controls (buttons, fields, the chevron's hover box), 8px on panels and bordered lists, fully rounded pills (12px) for states and tags (11px), circles for state dots (7-8px) and the 20px tab count. Borders are always 1px; the only 2px lines are the current tab's underline, the threshold rule in box cells, and an invalid field's doubled red edge. Chevrons are drawn as two borders of a rotated square, not glyphs. Icons are inline SVG strokes at 16px, stroke 1.6, round caps; the ✓/✗ check is an SVG filled circle with the mark cut in the ground colour.
 
 ## Components
 
 ### Buttons
-- **Shape:** 3px radius, 44px minimum height, 15px/600 label.
-- **Primary:** Institutional Blue fill, white text; hover mixes 14% toward the ground.
-- **Secondary:** panel fill, 1px blue border and blue text; hover tints 8% blue.
-- **Quiet:** blue text, underlined, tinted hover; used for low-emphasis actions like «Comentar» and «Salir» (on the band «Salir» is drawn as the outline below). «Descartar» is a secondary button, not a quiet one.
-- **Masthead «Salir»:** an outline button on the band, a 32px outline inside its 44px target.
-- **Focus:** a 2px ring in `--focus` offset 2px (white on the band).
+Restrained and exact; one blue button per decision.
+- **Shape:** gently rounded (6px), a 36px box inside a 44px target.
+- **Primary:** Signal Blue fill with white text, 500 weight, 8px 12px padding; «Nos interesa», «Entrar».
+- **Hover / Focus:** fill shifts to Pressed Blue in 90ms; focus is the 2px blue outline around the drawn box.
+- **Secondary:** ground with a Control Edge border, ink text; hover turns the box panel grey. «Descartar».
+- **Quiet:** no box until hovered, then a 5 % ink wash; «Comentar», with its stroke icon.
+- **Link button:** Signal Blue text underlined at 45 % blue; for secondary actions that read as links.
+- **Busy:** `aria-disabled` at 72 % opacity with a progress cursor.
 
-### Result block (station)
-A 1px hairline block on the panel, 4px radius. Its head sits on the Section Tint: number in blue, title in ink, tag chips, and the state flag pushed to the right. The body is the analysis table with a side column («Quién lo sufre», actions).
+### Chips (tags and state pills)
+- **Tag:** 22px pill on a hairline, ground fill, ink caption. «Ganó el duelo».
+- **Fresh tag:** Blue Wash fill, blue text, a 35 % blue edge. «Evidencia nueva».
+- **State pill:** 24px pill with a 7px dot and two or three words, tinted by state: green wash for complete, blue wash for attention or running, pale red for failed, neutral otherwise. Used for the run in the brand row, a pain's state on its page and each run in Corridas.
 
-### Chips and flags
-- **Tag:** 24px tall, 1px hairline outline on the panel, 2px radius, 12px/600 blue text; «Evidencia nueva» in attention blue.
-- **State flag:** the same chip with a dot and words, coloured by state (green, attention blue, muted).
+### Cards / Containers (bordered lists)
+- **Corner Style:** 8px.
+- **Background:** ground for rows; panel grey for column heads and open parts.
+- **Shadow Strategy:** none (see Elevation & Depth).
+- **Border:** 1px hairline around the list and between rows.
+- **Internal Padding:** 16px.
 
-### Fields
-44px, 1px Control Edge border, 3px radius, panel fill, 16px text (no iOS zoom). Invalid: red border plus an inset ring, and a message in words after a red dot.
+### Inputs / Fields
+- **Style:** ground fill, 1px Control Edge, 6px radius, 44px tall, 16px text so iOS never zooms.
+- **Focus:** the 2px blue outline offset 1px.
+- **Error:** a doubled red edge (border plus a 1px inset outline) and the error in words in red text after a red dot. The sign-in code field sets its 8 digits at 24px 600 with 0.3em tracking.
 
 ### Navigation
-Tabs live on the band: 15px, band-soft text at rest, white and 600 with a 3px white underline when current. The brand «tomoshi» is 20px/700 with the run's dot and status in words beside it.
+- **Brand row:** lowercase «tomoshi» wordmark, the week, the run pill, the niche (a link) and the cost, «Salir» as a secondary button.
+- **Tabs:** muted 14px words; the current one in ink 500 with a 2px ink underline over the row's hairline. «Esta semana» carries the waiting count in a 20px blue circle. Below 380px the tabs step down to 13px and tighter padding so all four fit at 320px.
+
+### Pain row (signature)
+The chevron, the title with its tags, who suffers it in muted text, the three stacked checks, the state (dot and words in ink) and the team's marks. Each check line is a 16px filled circle (green ✓ or red ✗, muted when unmeasured) and its words: ink when it passes, fail text plus "falta N" when it fails. A pain with no gate shows a muted dash and «Sin medir contra los umbrales». The whole row is the target; hover is a 2 % ink wash.
+
+### Box cells (signature)
+In an open row and on a pain's page: one bordered panel cut into a cell per check. Each cell has its label, a 28px figure, a row of 14 × 8px boxes (filled green to the count when it passes, red when it fails, hairline when empty) broken by a 2 × 18px ink threshold rule, then the result in words after a ✓ or ✗ and the minimum. A failed cell sits on the Pale Red Cell with its words in fail text and its figure in fail red. A note across the cells' foot says how the count was taken. Nichos reuses the cells for a niche's three figures, with a versus band (grey ticks per rival, an ink rule for the niche) where the boxes go.
+
+### Run's line (signature)
+A bordered panel: the title, the run's facts, and "Hubo recorte en N pasos" after the blue scissors; column heads «Paso» and «Quedan» on the panel grey; one hairline row per step with its icon (blue scissors for a cut, a muted ✓ circle for a clear step, a muted dash circle with no count), the name, the count in 600 and the cap muted under it, a cut's note in blue under the name, the sources indented under the first step with their state in words and colour; then other cuts, and the cost by model on the panel grey at the foot.
 
 ### Notices
-Hairline panel block, 14px 16px padding, optional dot; warning borders mix attention blue, error borders are Failed Red.
-
-### Reference-range bar (signature)
-A 8px track (Section Tint, hairline border, 2px radius, 48 to 200px wide) from 0 to the row's top. The in-range part is shaded from the threshold to the end, with a 2px In-Range Green edge on the threshold side. The value is a 3px by 16px ink marker. The thresholds come from the run's real `gate.thresholds`, not constants in the page. The bar is `aria-hidden`; the row says the value, the range text and the flag in words («DENTRO DEL RANGO» in green text, «FUERA DEL RANGO» in red text, value bold red when out).
-
-### Analysis table and the run's line
-The analysis table is rows of label, value, range bar and flag, separated by hairlines under a 1px ink caption. The line is the processed sample's stage table (number, stage, cant., tope, indicador) with source sub-rows on a faint section tint.
+A bordered 8px panel on the ground with the dot of its tone beside its words; a warning takes a 45 % blue edge, an error a red edge.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** write every state in words beside its colour; keep dots and bars `aria-hidden`.
-- **Do** draw ranges from the run's real thresholds and flag them in words.
-- **Do** use Public Sans at 400/500/600/700 with tabular figures.
-- **Do** separate surfaces with 1px Hairline rules and the Section Tint; keep radii 2 to 4px.
-- **Do** keep both themes at AA (4.5:1 text, 3:1 marks and control edges) and usable at 320 px.
+- **Do** write every state in words beside its colour: a dot with its state, a ✓/✗ with its result, a box row with its figure, scissors with "Con recorte".
+- **Do** use Signal Blue (#2563EB) for attention, cuts, links, selection, focus and the single primary action, and nothing else.
+- **Do** keep text at 4.5:1 and marks and control edges at 3:1 on the ground, the panel and every tint, in both light and dark.
+- **Do** build new views from the bordered row list, the three-check stack and the box cells; Catálogo, Corridas, Nichos and the detail pages already do.
+- **Do** keep every target at 44px and every screen usable at 320px wide, with tabs and tables reflowing inside their container, never the page.
+- **Do** write in plain Spanish: «Nos interesa», «Descartar», «Con recorte», «Fuera del rango · falta 1».
+- **Do** set «tomoshi» as a lowercase Geist 600 text wordmark.
 
 ### Don't:
-- **Don't** use yellow, amber or orange, or reintroduce the andon-board look (lamps, graphite, a second display face).
+- **Don't** use yellow, amber or orange anywhere, in either theme, for any state; attention is blue.
 - **Don't** convey a state by colour alone.
-- **Don't** add shadows, gradients or rounded pills.
-- **Don't** put a tracked uppercase label above a heading as an eyebrow.
-- **Don't** show jargon or internal ids; the page is plain Spanish.
-
-## Implementation notes
-
-The class `.lamp` and attribute `data-lamp` (`green`, `amber`, `red`, `off`) are legacy code names kept to avoid churn; `amber` renders Attention Blue and is not a colour of this system. Not canonized: the build's `.line-strip` and some 11 to 13px sizes are legibility floors, not a type scale to extend.
+- **Don't** add shadows, raised cards, gradients or a sidebar; separate with hairlines and the panel grey.
+- **Don't** show internal ids, slugs or pipeline jargon (tier, lens, underserved, scores, pain ids) on the page.
+- **Don't** reduce a pain to a single score; it is three checks against the run's own thresholds.
+- **Don't** invent a value the run did not leave (a step's duration, a missing count); show a muted dash or leave it out.
+- **Don't** add a theme toggle; light and dark follow the system.
+- **Don't** use a logo image, another brand's mark or capitals for tomoshi.

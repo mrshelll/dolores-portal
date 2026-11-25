@@ -1,424 +1,501 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-23T18:03:57.042155Z",
+  "generatedAt": "2026-11-25T01:28:57+00:00",
   "title": "Design System: tomoshi",
   "extensions": {
     "colorMeta": {
-      "report-white": {
+      "ground": {
         "role": "neutral",
-        "displayName": "Report White",
+        "displayName": "Ground",
         "canonical": "#FFFFFF",
         "tonalRamp": [
-          "#666666",
-          "#999999",
-          "#CCCCCC",
-          "#FFFFFF",
-          "#FFFFFF",
-          "#FFFFFF",
-          "#FFFFFF",
-          "#FFFFFF"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "section-tint": {
+      "panel": {
         "role": "neutral",
-        "displayName": "Section Tint",
-        "canonical": "#E8EEF6",
+        "displayName": "Panel Grey",
+        "canonical": "#FAFAFA",
         "tonalRamp": [
-          "#5D5F62",
-          "#8B8F94",
-          "#BABEC5",
-          "#E8EEF6",
-          "#EEF2F8",
-          "#F4F6FA",
-          "#F9FBFD",
-          "#FDFDFE"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "report-ink": {
+      "ink": {
         "role": "neutral",
-        "displayName": "Report Ink",
-        "canonical": "#14213D",
+        "displayName": "Ink",
+        "canonical": "#0A0A0A",
         "tonalRamp": [
-          "#080D18",
-          "#0C1425",
-          "#101A31",
-          "#14213D",
-          "#4F586E",
-          "#8A909E",
-          "#C4C8CE",
-          "#E8E9EC"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "muted-ink": {
+      "muted": {
         "role": "neutral",
         "displayName": "Muted Ink",
-        "canonical": "#4A5568",
+        "canonical": "#525252",
         "tonalRamp": [
-          "#1E222A",
-          "#2C333E",
-          "#3B4453",
-          "#4A5568",
-          "#77808E",
-          "#A4AAB4",
-          "#D2D4D9",
-          "#EDEEF0"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
       "hairline": {
         "role": "neutral",
         "displayName": "Hairline",
-        "canonical": "#D5DCE6",
+        "canonical": "#E5E5E5",
         "tonalRamp": [
-          "#55585C",
-          "#80848A",
-          "#AAB0B8",
-          "#D5DCE6",
-          "#E0E5EC",
-          "#EAEEF2",
-          "#F4F6F9",
-          "#FBFCFC"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "control-edge": {
+      "edge": {
         "role": "neutral",
         "displayName": "Control Edge",
-        "canonical": "#6B778A",
+        "canonical": "#8A8A8A",
         "tonalRamp": [
-          "#2B3037",
-          "#404753",
-          "#565F6E",
-          "#6B778A",
-          "#9099A7",
-          "#B5BBC4",
-          "#DADDE2",
-          "#F0F1F3"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "institutional-blue": {
+      "accent": {
         "role": "primary",
-        "displayName": "Institutional Blue",
-        "canonical": "#1F4E8C",
-        "tonalRamp": [
-          "#0C1F38",
-          "#132F54",
-          "#193E70",
-          "#1F4E8C",
-          "#577AA9",
-          "#8FA6C6",
-          "#C7D3E2",
-          "#E9EDF4"
-        ]
-      },
-      "signal-blue": {
-        "role": "tertiary",
         "displayName": "Signal Blue",
-        "canonical": "#2B6CC4",
+        "canonical": "#2563EB",
         "tonalRamp": [
-          "#112B4E",
-          "#1A4176",
-          "#22569D",
-          "#2B6CC4",
-          "#6091D3",
-          "#95B6E2",
-          "#CADAF0",
-          "#EAF0F9"
+          "#141F39",
+          "#1B3265",
+          "#1C4296",
+          "#1951CC",
+          "#4376E4",
+          "#8CA7E3",
+          "#C6D2EB",
+          "#EDF0F7"
         ]
       },
-      "attention-blue": {
-        "role": "tertiary",
-        "displayName": "Attention Blue",
-        "canonical": "#2B6CC4",
-        "tonalRamp": [
-          "#112B4E",
-          "#1A4176",
-          "#22569D",
-          "#2B6CC4",
-          "#6091D3",
-          "#95B6E2",
-          "#CADAF0",
-          "#EAF0F9"
-        ]
-      },
-      "attention-blue-text": {
-        "role": "tertiary",
-        "displayName": "Attention Blue Text",
-        "canonical": "#2862B3",
-        "tonalRamp": [
-          "#102748",
-          "#183B6B",
-          "#204E8F",
-          "#2862B3",
-          "#5E89C6",
-          "#94B0D9",
-          "#C9D8EC",
-          "#EAEFF7"
-        ]
-      },
-      "in-range-green": {
-        "role": "tertiary",
-        "displayName": "In Range Green",
-        "canonical": "#2E9E4F",
-        "tonalRamp": [
-          "#123F20",
-          "#1C5F2F",
-          "#257E3F",
-          "#2E9E4F",
-          "#62B67B",
-          "#96CEA7",
-          "#CBE7D3",
-          "#EAF5ED"
-        ]
-      },
-      "in-range-green-text": {
-        "role": "tertiary",
-        "displayName": "In Range Green Text",
-        "canonical": "#1D7A3A",
-        "tonalRamp": [
-          "#0C3117",
-          "#114923",
-          "#17622E",
-          "#1D7A3A",
-          "#569B6B",
-          "#8EBC9C",
-          "#C6DECE",
-          "#E8F2EB"
-        ]
-      },
-      "failed-red": {
-        "role": "tertiary",
-        "displayName": "Failed Red",
-        "canonical": "#C62828",
-        "tonalRamp": [
-          "#4F1010",
-          "#771818",
-          "#9E2020",
-          "#C62828",
-          "#D45E5E",
-          "#E29494",
-          "#F1C9C9",
-          "#F9EAEA"
-        ]
-      },
-      "off-grey": {
-        "role": "tertiary",
-        "displayName": "Off Grey",
-        "canonical": "#7A8597",
-        "tonalRamp": [
-          "#31353C",
-          "#49505B",
-          "#626A79",
-          "#7A8597",
-          "#9BA4B1",
-          "#BCC2CB",
-          "#DEE0E5",
-          "#F2F3F5"
-        ]
-      },
-      "navy-ground": {
-        "role": "neutral",
-        "displayName": "Navy Ground",
-        "canonical": "#0D1729",
-        "tonalRamp": [
-          "#050910",
-          "#080E19",
-          "#0A1221",
-          "#0D1729",
-          "#4A515E",
-          "#868B94",
-          "#C2C5CA",
-          "#E7E8EA"
-        ]
-      },
-      "navy-panel": {
-        "role": "neutral",
-        "displayName": "Navy Panel",
-        "canonical": "#111E33",
-        "tonalRamp": [
-          "#070C14",
-          "#0A121F",
-          "#0E1829",
-          "#111E33",
-          "#4C5666",
-          "#888E99",
-          "#C4C7CC",
-          "#E7E8EB"
-        ]
-      },
-      "navy-section": {
-        "role": "neutral",
-        "displayName": "Navy Section",
-        "canonical": "#18294A",
-        "tonalRamp": [
-          "#0A101E",
-          "#0E192C",
-          "#13213B",
-          "#18294A",
-          "#525E77",
-          "#8C94A4",
-          "#C5CAD2",
-          "#E8EAED"
-        ]
-      },
-      "navy-ink": {
-        "role": "neutral",
-        "displayName": "Navy Ink",
-        "canonical": "#E6ECF5",
-        "tonalRamp": [
-          "#5C5E62",
-          "#8A8E93",
-          "#B8BDC4",
-          "#E6ECF5",
-          "#ECF1F8",
-          "#F2F6FA",
-          "#F9FAFC",
-          "#FCFDFE"
-        ]
-      },
-      "navy-muted": {
-        "role": "neutral",
-        "displayName": "Navy Muted",
-        "canonical": "#A9B6CA",
-        "tonalRamp": [
-          "#444951",
-          "#656D79",
-          "#8792A2",
-          "#A9B6CA",
-          "#BEC8D7",
-          "#D4DAE4",
-          "#EAEDF2",
-          "#F6F8FA"
-        ]
-      },
-      "navy-hairline": {
-        "role": "neutral",
-        "displayName": "Navy Hairline",
-        "canonical": "#2A3B5A",
-        "tonalRamp": [
-          "#111824",
-          "#192336",
-          "#222F48",
-          "#2A3B5A",
-          "#5F6C83",
-          "#949DAC",
-          "#CACED6",
-          "#EAEBEE"
-        ]
-      },
-      "navy-edge": {
-        "role": "neutral",
-        "displayName": "Navy Edge",
-        "canonical": "#7486A3",
-        "tonalRamp": [
-          "#2E3641",
-          "#465062",
-          "#5D6B82",
-          "#7486A3",
-          "#97A4BA",
-          "#BAC2D1",
-          "#DCE1E8",
-          "#F1F3F6"
-        ]
-      },
-      "navy-brand": {
+      "accent-fill": {
         "role": "primary",
-        "displayName": "Navy Brand",
-        "canonical": "#8DB6EE",
+        "displayName": "Signal Blue Fill",
+        "canonical": "#2563EB",
         "tonalRamp": [
-          "#38495F",
-          "#556D8F",
-          "#7192BE",
-          "#8DB6EE",
-          "#AAC8F2",
-          "#C6DAF6",
-          "#E2EDFB",
-          "#F4F8FD"
+          "#141F39",
+          "#1B3265",
+          "#1C4296",
+          "#1951CC",
+          "#4376E4",
+          "#8CA7E3",
+          "#C6D2EB",
+          "#EDF0F7"
         ]
       },
-      "navy-band": {
+      "accent-fill-hover": {
+        "role": "primary",
+        "displayName": "Pressed Blue",
+        "canonical": "#1D4ED8",
+        "tonalRamp": [
+          "#151E37",
+          "#1E3062",
+          "#213F91",
+          "#204CC5",
+          "#4A71DE",
+          "#8FA5E0",
+          "#C8D1EA",
+          "#EEF0F7"
+        ]
+      },
+      "on-accent": {
         "role": "neutral",
-        "displayName": "Navy Band",
-        "canonical": "#173763",
+        "displayName": "On Accent White",
+        "canonical": "#FFFFFF",
         "tonalRamp": [
-          "#091628",
-          "#0E213B",
-          "#122C4F",
-          "#173763",
-          "#51698A",
-          "#8B9BB1",
-          "#C5CDD8",
-          "#E8EBEF"
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
         ]
       },
-      "navy-attention": {
-        "role": "tertiary",
-        "displayName": "Navy Attention",
-        "canonical": "#5B9BEA",
+      "accent-tint": {
+        "role": "primary",
+        "displayName": "Blue Wash",
+        "canonical": "color-mix(in srgb, var(--accent) 7%, var(--ground))",
         "tonalRamp": [
-          "#243E5E",
-          "#375D8C",
-          "#497CBB",
-          "#5B9BEA",
-          "#84B4EF",
-          "#ADCDF4",
-          "#D6E6FA",
-          "#EFF5FD"
+          "#131E3A",
+          "#192F67",
+          "#193E99",
+          "#144AD1",
+          "#3F70E9",
+          "#8AA4E6",
+          "#C5D0EC",
+          "#EDF0F7"
         ]
       },
-      "navy-ok": {
-        "role": "tertiary",
-        "displayName": "Navy Ok",
-        "canonical": "#3FB565",
+      "pass": {
+        "role": "secondary",
+        "displayName": "In-Range Green",
+        "canonical": "#16A34A",
         "tonalRamp": [
-          "#194828",
-          "#266D3D",
-          "#329151",
-          "#3FB565",
-          "#6FC88C",
-          "#9FDAB2",
-          "#CFECD8",
-          "#ECF8F0"
+          "#153722",
+          "#1E6237",
+          "#21914B",
+          "#21C55D",
+          "#4ADE81",
+          "#90E0AD",
+          "#C8EAD4",
+          "#EEF7F1"
         ]
       },
-      "navy-fail": {
-        "role": "tertiary",
-        "displayName": "Navy Fail",
-        "canonical": "#F0605A",
+      "pass-text": {
+        "role": "secondary",
+        "displayName": "In-Range Green Text",
+        "canonical": "#15803D",
         "tonalRamp": [
-          "#602624",
-          "#903A36",
-          "#C04D48",
-          "#F0605A",
-          "#F48883",
-          "#F8B0AC",
-          "#FBD7D6",
-          "#FEEFEE"
+          "#163622",
+          "#206038",
+          "#258E4C",
+          "#25C05F",
+          "#4ED982",
+          "#92DDAE",
+          "#C9E9D5",
+          "#EEF6F1"
+        ]
+      },
+      "pass-tint": {
+        "role": "secondary",
+        "displayName": "Green Wash",
+        "canonical": "color-mix(in srgb, var(--pass) 7%, var(--ground))",
+        "tonalRamp": [
+          "#1C3022",
+          "#2B5438",
+          "#387B4C",
+          "#42A45F",
+          "#68C082",
+          "#A0CFAE",
+          "#CFE3D5",
+          "#F0F5F1"
+        ]
+      },
+      "fail": {
+        "role": "tertiary",
+        "displayName": "Out-of-Range Red",
+        "canonical": "#DC2626",
+        "tonalRamp": [
+          "#361616",
+          "#602020",
+          "#8E2424",
+          "#C12525",
+          "#DA4E4E",
+          "#DE9292",
+          "#E9C9C9",
+          "#F6EEEE"
+        ]
+      },
+      "fail-text": {
+        "role": "tertiary",
+        "displayName": "Out-of-Range Red Text",
+        "canonical": "#B91C1C",
+        "tonalRamp": [
+          "#371616",
+          "#611F1F",
+          "#8F2323",
+          "#C22323",
+          "#DB4D4D",
+          "#DE9191",
+          "#E9C8C8",
+          "#F7EEEE"
+        ]
+      },
+      "fail-tint": {
+        "role": "tertiary",
+        "displayName": "Pale Red Cell",
+        "canonical": "#FEF2F2",
+        "tonalRamp": [
+          "#391313",
+          "#661919",
+          "#981B1B",
+          "#CF1616",
+          "#E74141",
+          "#E58B8B",
+          "#ECC6C6",
+          "#F7EDED"
+        ]
+      },
+      "dark-ground": {
+        "role": "neutral",
+        "displayName": "Dark Ground",
+        "canonical": "#0A0A0A",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-panel": {
+        "role": "neutral",
+        "displayName": "Dark Panel",
+        "canonical": "#111111",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-ink": {
+        "role": "neutral",
+        "displayName": "Dark Ink",
+        "canonical": "#EDEDED",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-muted": {
+        "role": "neutral",
+        "displayName": "Dark Muted Ink",
+        "canonical": "#A1A1A1",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-hairline": {
+        "role": "neutral",
+        "displayName": "Dark Hairline",
+        "canonical": "#262626",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-edge": {
+        "role": "neutral",
+        "displayName": "Dark Control Edge",
+        "canonical": "#737373",
+        "tonalRamp": [
+          "#262626",
+          "#404040",
+          "#595959",
+          "#737373",
+          "#949494",
+          "#B8B8B8",
+          "#D9D9D9",
+          "#F2F2F2"
+        ]
+      },
+      "dark-accent": {
+        "role": "primary",
+        "displayName": "Dark Signal Blue",
+        "canonical": "#3B82F6",
+        "tonalRamp": [
+          "#12213A",
+          "#173668",
+          "#16499C",
+          "#105BD5",
+          "#3C7FEC",
+          "#88ACE8",
+          "#C5D4ED",
+          "#EDF1F8"
+        ]
+      },
+      "dark-accent-tint": {
+        "role": "primary",
+        "displayName": "Dark Blue Wash",
+        "canonical": "color-mix(in srgb, var(--accent) 7%, var(--ground)) (dark)",
+        "tonalRamp": [
+          "#1E242E",
+          "#303B4F",
+          "#405273",
+          "#4D6899",
+          "#728AB6",
+          "#A5B2CA",
+          "#D1D7E1",
+          "#F0F2F4"
+        ]
+      },
+      "dark-pass": {
+        "role": "secondary",
+        "displayName": "Dark In-Range Green",
+        "canonical": "#22C55E",
+        "tonalRamp": [
+          "#173622",
+          "#205F37",
+          "#268D4C",
+          "#27BF5F",
+          "#50D882",
+          "#93DDAE",
+          "#C9E8D5",
+          "#EEF6F1"
+        ]
+      },
+      "dark-pass-tint": {
+        "role": "secondary",
+        "displayName": "Dark Green Wash",
+        "canonical": "color-mix(in srgb, var(--pass) 7%, var(--ground)) (dark)",
+        "tonalRamp": [
+          "#1F2D24",
+          "#324E3C",
+          "#427053",
+          "#51956A",
+          "#75B28C",
+          "#A7C8B3",
+          "#D2E0D7",
+          "#F0F4F2"
+        ]
+      },
+      "dark-fail": {
+        "role": "tertiary",
+        "displayName": "Dark Out-of-Range Red",
+        "canonical": "#F87171",
+        "tonalRamp": [
+          "#3A1212",
+          "#681717",
+          "#9C1717",
+          "#D41111",
+          "#EC3C3C",
+          "#E78888",
+          "#EDC5C5",
+          "#F8EDED"
+        ]
+      },
+      "dark-fail-tint": {
+        "role": "tertiary",
+        "displayName": "Dark Pale Red Cell",
+        "canonical": "#2A1215",
+        "tonalRamp": [
+          "#2F1D20",
+          "#522E32",
+          "#773C43",
+          "#9E4852",
+          "#BB6D77",
+          "#CDA3A8",
+          "#E2D0D2",
+          "#F5F0F0"
         ]
       }
     },
     "typographyMeta": {
-      "title": {
-        "displayName": "Title",
-        "purpose": "Screen h1 in institutional blue."
+      "display": {
+        "displayName": "Display",
+        "purpose": "The page h1; Display Compact below 640px."
+      },
+      "display-compact": {
+        "displayName": "Display Compact",
+        "purpose": "The page h1 below 640px."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "The lowercase «tomoshi» text wordmark and the run's line heading."
+      },
+      "wordmark-compact": {
+        "displayName": "Wordmark Compact",
+        "purpose": "The wordmark below 380px, so the brand row fits 320px."
+      },
+      "figure": {
+        "displayName": "Figure",
+        "purpose": "The count in a box cell, ink or fail red."
       },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Section h2."
+        "purpose": "Section headings on a pain's and a run's page."
       },
-      "result-title": {
-        "displayName": "Result title",
-        "purpose": "A pain's title in ink."
+      "subhead": {
+        "displayName": "Subhead",
+        "purpose": "Nichos' section headings; the folded line strip's heading when the run left no line."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "A row's title in every list."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Running text, tabular figures."
+        "purpose": "Default text, tabular figures."
       },
-      "small": {
-        "displayName": "Small",
-        "purpose": "Table rows, notes."
+      "prose": {
+        "displayName": "Prose",
+        "purpose": "Card text and quotes, max 70ch."
+      },
+      "field": {
+        "displayName": "Field",
+        "purpose": "Text typed in a field, 16px so iOS never zooms."
+      },
+      "code": {
+        "displayName": "Code",
+        "purpose": "The sign-in code's eight digits, spaced and tabular."
       },
       "label": {
-        "displayName": "Section label",
-        "purpose": "Tracked uppercase section and table labels, never an eyebrow."
+        "displayName": "Label",
+        "purpose": "Check lines, state words, key data; the most used size."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Pills, tags, column heads, cost labels."
       }
     },
     "shadows": [],
@@ -426,138 +503,217 @@
       {
         "name": "ease-out",
         "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "purpose": "Rare state transitions; all removed under prefers-reduced-motion."
+        "purpose": "Chevrons turning on a row, a fold or the line strip (150-200ms)."
+      },
+      {
+        "name": "control-feedback",
+        "value": "90ms ease-out",
+        "purpose": "Button background and border on hover and press."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "transition: none; animation: none",
+        "purpose": "Everything stops under prefers-reduced-motion: reduce."
       }
     ],
     "breakpoints": [
       {
-        "name": "wide-pad",
-        "value": "640px"
+        "name": "xs",
+        "value": "380px",
+        "purpose": "Below it the brand row and tabs step a size smaller to fit 320px."
       },
       {
-        "name": "line-beside",
-        "value": "1024px"
+        "name": "auth",
+        "value": "480px",
+        "purpose": "The sign-in becomes a bordered panel on the ground."
       },
       {
-        "name": "result-two-column",
-        "value": "container 27rem"
+        "name": "sm",
+        "value": "640px",
+        "purpose": "Margin 24px; h1 28px."
+      },
+      {
+        "name": "detail-narrow",
+        "value": "672px",
+        "purpose": "A pain's page tightens its back link and key data."
+      },
+      {
+        "name": "md",
+        "value": "768px",
+        "purpose": "Brand row gains the week; the niche and the cost take a row under the tabs; tabs 46px."
+      },
+      {
+        "name": "niche-table",
+        "value": "900px",
+        "purpose": "Nichos' candidates switch from stacked blocks to a table."
+      },
+      {
+        "name": "lg",
+        "value": "1024px",
+        "purpose": "Margin 28px; the niche and the cost join the brand row; the run's line becomes the home's side panel; a pain's index a sticky column."
+      },
+      {
+        "name": "row-container-checks",
+        "value": "34rem (container)",
+        "purpose": "A row's checks take a 12rem column at the right."
+      },
+      {
+        "name": "row-container-full",
+        "value": "46rem (container)",
+        "purpose": "A row's four columns."
+      },
+      {
+        "name": "runs-container-table",
+        "value": "60rem (container)",
+        "purpose": "Corridas shows fixed columns under a head row."
       }
-    ]
+    ],
+    "focus": {
+      "value": "outline: 2px solid var(--accent); outline-offset: 2px",
+      "purpose": "The one focus ring; inset (-2px) on full-row links and tabs."
+    }
   },
   "components": [
     {
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one filled action on a screen, such as «Nos interesa».",
-      "html": "<button class=\"ds-btn-primary\">Nos interesa</button>",
-      "css": ".ds-btn-primary{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:44px;padding:6px 16px;border:1px solid #1F4E8C;border-radius:3px;background:#1F4E8C;color:#fff;font-size:15px;font-weight:600;cursor:pointer}.ds-btn-primary:hover{background:#3E679C;border-color:#3E679C}.ds-btn-primary:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
+      "description": "The one filled blue action per decision: «Nos interesa», «Entrar».",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Nos interesa</button>",
+      "css": ".ds-btn { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px; font-weight: 500; min-height: 36px; padding: 8px 12px; border-radius: var(--radius-control, 6px); cursor: pointer; transition: background-color 90ms ease-out, border-color 90ms ease-out; } .ds-btn-primary { background: var(--accent-fill, #2563EB); border: 1px solid var(--accent-fill, #2563EB); color: var(--on-accent, #FFFFFF); } .ds-btn-primary:hover, .ds-btn-primary:active { background: var(--accent-fill-hover, #1D4ED8); border-color: var(--accent-fill-hover, #1D4ED8); } .ds-btn:focus-visible { outline: 2px solid var(--accent, #2563EB); outline-offset: 2px; }"
     },
     {
       "name": "Secondary Button",
       "kind": "button",
       "refersTo": "button-secondary",
-      "description": "Outlined alternative action.",
-      "html": "<button class=\"ds-btn-secondary\">Descartar</button>",
-      "css": ".ds-btn-secondary{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;min-height:44px;padding:6px 16px;border:1px solid #1F4E8C;border-radius:3px;background:#fff;color:#1F4E8C;font-size:15px;font-weight:600;cursor:pointer}.ds-btn-secondary:hover{background:#ECF0F6}.ds-btn-secondary:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
+      "description": "An edge on the ground; «Descartar», «Salir».",
+      "html": "<button class=\"ds-btn2\">Descartar</button>",
+      "css": ".ds-btn2 { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 14px; line-height: 20px; font-weight: 500; min-height: 36px; padding: 8px 12px; border-radius: 6px; background: var(--ground, #FFFFFF); border: 1px solid var(--edge, #8A8A8A); color: var(--ink, #0A0A0A); cursor: pointer; transition: background-color 90ms ease-out; } .ds-btn2:hover, .ds-btn2:active { background: var(--panel, #FAFAFA); } .ds-btn2:focus-visible { outline: 2px solid var(--accent, #2563EB); outline-offset: 2px; }"
     },
     {
-      "name": "Text Field",
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "No box until hovered; «Comentar» with its stroke icon.",
+      "html": "<button class=\"ds-btn3\"><svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\"><path d=\"M2.5 3.5h11v7h-6l-3 2.5v-2.5h-2z\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linejoin=\"round\"/></svg>Comentar</button>",
+      "css": ".ds-btn3 { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; line-height: 20px; font-weight: 500; min-height: 36px; padding: 8px 12px; border: 0; border-radius: 6px; background: none; color: var(--ink, #0A0A0A); cursor: pointer; transition: background-color 90ms ease-out; } .ds-btn3:hover, .ds-btn3:active { background: color-mix(in srgb, var(--ink, #0A0A0A) 5%, transparent); } .ds-btn3:focus-visible { outline: 2px solid var(--accent, #2563EB); outline-offset: 2px; }"
+    },
+    {
+      "name": "Field",
       "kind": "input",
-      "refersTo": "input-field",
-      "description": "44px field with a 1px control edge.",
-      "html": "<input class=\"ds-input\" value=\"Comentario\">",
-      "css": ".ds-input{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;box-sizing:border-box;width:240px;min-height:44px;padding:8px 12px;border:1px solid #6B778A;border-radius:3px;background:#fff;color:#14213D;font-size:16px}.ds-input:focus-visible{outline:2px solid #1F4E8C;outline-offset:2px}"
+      "refersTo": "input",
+      "description": "A 44 px field on the ground with a control edge; 16 px text.",
+      "html": "<label class=\"ds-field\"><span>Correo</span><input class=\"ds-input\" type=\"email\" placeholder=\"tu@correo.com\"></label>",
+      "css": ".ds-field { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; display: grid; gap: 6px; font-size: 14px; font-weight: 500; color: var(--ink, #0A0A0A); max-width: 440px; } .ds-input { font: inherit; font-weight: 400; font-size: 16px; line-height: 22px; min-height: 44px; padding: 10px 12px; border: 1px solid var(--edge, #8A8A8A); border-radius: 6px; background: var(--ground, #FFFFFF); color: var(--ink, #0A0A0A); } .ds-input::placeholder { color: var(--muted, #525252); } .ds-input:focus-visible { outline: 2px solid var(--accent, #2563EB); outline-offset: 1px; } .ds-input[aria-invalid=true] { border-color: var(--fail, #DC2626); outline: 1px solid var(--fail, #DC2626); outline-offset: -2px; }"
     },
     {
-      "name": "Navigation Tabs",
+      "name": "Tabs",
       "kind": "nav",
-      "refersTo": "masthead-band",
-      "description": "Tabs on the blue band; the current one is underlined in white.",
-      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" aria-current=\"page\" href=\"#\">Esta semana</a><a class=\"ds-tab\" href=\"#\">Catálogo</a><a class=\"ds-tab\" href=\"#\">Corridas</a></nav>",
-      "css": ".ds-tabs{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:flex;background:#1F4E8C;padding:0 12px}.ds-tab{display:flex;align-items:center;min-height:44px;padding:3px 12px 0;border-bottom:3px solid transparent;color:rgba(255,255,255,.85);font-size:15px;font-weight:500;text-decoration:none}.ds-tab:hover{color:#fff}.ds-tab[aria-current]{color:#fff;font-weight:600;border-bottom-color:#fff}"
+      "refersTo": "tab",
+      "description": "Muted words across the width on a hairline; the current one in ink, underlined 2 px, with the waiting count in a blue circle.",
+      "html": "<nav class=\"ds-tabs\"><a class=\"ds-tab\" aria-current=\"page\" href=\"#\">Esta semana <span class=\"ds-count\">4</span></a><a class=\"ds-tab\" href=\"#\">Catálogo</a><a class=\"ds-tab\" href=\"#\">Nichos</a><a class=\"ds-tab\" href=\"#\">Corridas</a></nav>",
+      "css": ".ds-tabs { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; display: flex; font-size: 14px; line-height: 20px; background: linear-gradient(var(--hairline, #E5E5E5), var(--hairline, #E5E5E5)) left bottom / 100% 1px no-repeat; } .ds-tab { position: relative; display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 10px; color: var(--muted, #525252); text-decoration: none; } .ds-tab:hover { color: var(--ink, #0A0A0A); } .ds-tab[aria-current=page] { color: var(--ink, #0A0A0A); font-weight: 500; } .ds-tab[aria-current=page]::after { content: ''; position: absolute; left: 10px; right: 10px; bottom: 0; height: 2px; border-radius: 1px; background: var(--ink, #0A0A0A); } .ds-tab:focus-visible { outline: 2px solid var(--accent, #2563EB); outline-offset: -2px; } .ds-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--accent-fill, #2563EB); color: var(--on-accent, #FFFFFF); font-size: 12px; font-weight: 600; line-height: 20px; text-align: center; }"
     },
     {
-      "name": "Tag Chip",
+      "name": "State Pills and Tags",
       "kind": "chip",
-      "refersTo": "tag-chip",
-      "description": "Outlined tag on the panel.",
-      "html": "<span class=\"ds-chip\">Evidencia nueva</span>",
-      "css": ".ds-chip{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;min-height:24px;padding:0 6px;border:1px solid #D5DCE6;border-radius:2px;background:#fff;color:#1F4E8C;font-size:12px;font-weight:600}"
+      "refersTo": "state-pill",
+      "description": "A state's dot and words on its tint; a tag on a hairline, the fresh one in blue.",
+      "html": "<div class=\"ds-chips\"><span class=\"ds-pill ds-pass\"><i></i>Corrida completa</span><span class=\"ds-pill ds-att\"><i></i>En curso</span><span class=\"ds-pill ds-fail\"><i></i>La corrida falló</span><span class=\"ds-tag\">Ganó el duelo</span><span class=\"ds-tag ds-fresh\">Evidencia nueva</span></div>",
+      "css": ".ds-chips { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; display: flex; flex-wrap: wrap; gap: 8px; } .ds-pill { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 2px 10px; border: 1px solid var(--hairline, #E5E5E5); border-radius: 12px; background: var(--panel, #FAFAFA); color: var(--muted, #525252); font-size: 12px; font-weight: 500; line-height: 16px; } .ds-pill i { width: 7px; height: 7px; border-radius: 50%; background: var(--edge, #8A8A8A); } .ds-pass { background: color-mix(in srgb, var(--pass, #16A34A) 7%, var(--ground, #FFFFFF)); color: var(--pass-text, #15803D); border-color: color-mix(in srgb, var(--pass, #16A34A) 35%, var(--ground, #FFFFFF)); } .ds-pass i { background: var(--pass, #16A34A); } .ds-att { background: color-mix(in srgb, var(--accent, #2563EB) 7%, var(--ground, #FFFFFF)); color: var(--accent, #2563EB); border-color: color-mix(in srgb, var(--accent, #2563EB) 35%, var(--ground, #FFFFFF)); } .ds-att i { background: var(--accent, #2563EB); } .ds-fail { background: var(--fail-tint, #FEF2F2); color: var(--fail-text, #B91C1C); border-color: color-mix(in srgb, var(--fail, #DC2626) 35%, var(--ground, #FFFFFF)); } .ds-fail i { background: var(--fail, #DC2626); } .ds-tag { display: inline-flex; align-items: center; min-height: 22px; padding: 0 8px; border: 1px solid var(--hairline, #E5E5E5); border-radius: 11px; background: var(--ground, #FFFFFF); color: var(--ink, #0A0A0A); font-size: 12px; font-weight: 500; line-height: 16px; } .ds-fresh { border-color: color-mix(in srgb, var(--accent, #2563EB) 35%, var(--ground, #FFFFFF)); background: color-mix(in srgb, var(--accent, #2563EB) 7%, var(--ground, #FFFFFF)); color: var(--accent, #2563EB); }"
     },
     {
-      "name": "Result Block",
+      "name": "Pain Row",
       "kind": "card",
-      "refersTo": "result-block",
-      "description": "A pain as a result: tinted head with number, title and state; body on white.",
-      "html": "<div class=\"ds-result\"><div class=\"ds-result-head\"><span class=\"ds-n\">1</span><span class=\"ds-t\">Pain title</span><span class=\"ds-state\"><i></i>DENTRO DEL RANGO</span></div><div class=\"ds-result-body\">Evidence measured against the run's ranges.</div></div>",
-      "css": ".ds-result{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;width:320px;border:1px solid #D5DCE6;border-radius:4px;background:#fff;color:#14213D}.ds-result-head{display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 16px;background:#E8EEF6;border-bottom:1px solid #D5DCE6;border-radius:3px 3px 0 0}.ds-n{color:#1F4E8C;font-size:13px;font-weight:700}.ds-t{font-size:17px;font-weight:600;flex:1}.ds-state{display:inline-flex;align-items:center;gap:6px;padding:0 6px;min-height:24px;border:1px solid #D5DCE6;border-radius:2px;background:#fff;color:#1D7A3A;font-size:11px;font-weight:700;letter-spacing:.06em}.ds-state i{width:10px;height:10px;border-radius:50%;background:#2E9E4F}.ds-result-body{padding:12px 16px;font-size:14px}"
+      "refersTo": "row-list",
+      "description": "Signature: a pain as a row in a bordered list, its three checks stacked, each a ✓/✗ circle with its words, then its state and marks.",
+      "html": "<ul class=\"ds-rows\"><li class=\"ds-row\"><div><div class=\"ds-title\">Clasificar facturas de proveedores a mano</div><div class=\"ds-who\">Pequeñas oficinas contables; todavía no sabemos quién paga por esto.</div></div><ul class=\"ds-checks\"><li><svg class=\"ds-check-icon\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"8\"/><path d=\"M4.8 8.2l2.1 2.1 4.3-4.4\"/></svg>4 testimonios</li><li data-r=\"fail\"><svg class=\"ds-check-icon\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"8\"/><path d=\"M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8\"/></svg>1 tipo de fuente · falta 1</li><li><svg class=\"ds-check-icon\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"8\"/><path d=\"M4.8 8.2l2.1 2.1 4.3-4.4\"/></svg>4 de 5 ataques</li></ul><div class=\"ds-status\"><div class=\"ds-state\"><i></i>En observación</div><div class=\"ds-who\">Sin marcas aún</div></div></li></ul>",
+      "css": ".ds-rows { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; list-style: none; border: 1px solid var(--hairline, #E5E5E5); border-radius: 8px; background: var(--ground, #FFFFFF); overflow: hidden; color: var(--ink, #0A0A0A); } .ds-row { display: grid; grid-template-columns: minmax(0, 1fr) 12rem 10rem; gap: 10px 14px; padding: 16px; cursor: pointer; } .ds-row:hover { background: color-mix(in srgb, var(--ink, #0A0A0A) 2%, var(--ground, #FFFFFF)); } .ds-title { font-size: 15px; font-weight: 600; line-height: 22px; letter-spacing: -0.01em; } .ds-who { margin-top: 2px; color: var(--muted, #525252); font-size: 13px; line-height: 20px; } .ds-checks { margin: 0; padding: 2px 0 0; list-style: none; font-size: 13px; line-height: 20px; font-variant-numeric: tabular-nums; } .ds-checks li { display: flex; align-items: center; gap: 8px; } .ds-checks li[data-r=fail] { color: var(--fail-text, #B91C1C); } .ds-check-icon { width: 16px; height: 16px; flex: none; } .ds-check-icon circle { fill: var(--pass, #16A34A); } [data-r=fail] > .ds-check-icon circle { fill: var(--fail, #DC2626); } .ds-check-icon path { fill: none; stroke: var(--ground, #FFFFFF); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; } .ds-status { padding-top: 2px; font-size: 13px; line-height: 20px; } .ds-state { display: flex; align-items: center; gap: 8px; font-weight: 500; } .ds-state i { width: 8px; height: 8px; margin-left: 4px; border-radius: 50%; background: var(--edge, #8A8A8A); }"
     },
     {
-      "name": "Reference-Range Bar",
+      "name": "Box Cells",
       "kind": "custom",
-      "refersTo": "range-bar",
-      "description": "Signature: the value marker on a band whose shaded part is the real threshold, flagged in words.",
-      "html": "<div class=\"ds-row\"><span class=\"ds-l\">Testimonios</span><b class=\"ds-v\">4</b><span class=\"ds-bar\" aria-hidden=\"true\"><span class=\"ds-in\"></span><span class=\"ds-at\"></span></span><span class=\"ds-flag\"><i></i>DENTRO DEL RANGO</span></div>",
-      "css": ".ds-row{font-family:\"Public Sans\",system-ui,sans-serif;font-variant-numeric:tabular-nums;display:grid;grid-template-columns:1fr auto;gap:2px 12px;width:300px;padding:5px 0;border-bottom:1px solid #D5DCE6;color:#14213D;font-size:14px}.ds-v{font-size:16px;text-align:right}.ds-bar{position:relative;display:block;height:8px;border:1px solid #D5DCE6;border-radius:2px;background:#E8EEF6;margin-top:6px}.ds-in{position:absolute;top:-1px;bottom:-1px;right:-1px;left:50%;border-left:2px solid #2E9E4F;border-radius:0 2px 2px 0;background:#D2EBDA}.ds-at{position:absolute;top:-5px;left:70%;width:3px;height:16px;border-radius:1px;background:#14213D}.ds-flag{grid-column:1/-1;display:inline-flex;align-items:center;gap:6px;color:#1D7A3A;font-size:11px;font-weight:700;letter-spacing:.06em}.ds-flag i{width:10px;height:10px;border-radius:50%;background:#2E9E4F}"
+      "refersTo": "check-cell",
+      "description": "Signature: each check as a cell, boxes filled to a black threshold rule, the failed cell on the pale red tint, the result in words.",
+      "html": "<div class=\"ds-cells\"><div class=\"ds-cell\"><div class=\"ds-lab\">Testimonios</div><div class=\"ds-val\"><span class=\"ds-fig\">4</span><span class=\"ds-boxes\"><b class=\"f\"></b><b class=\"f\"></b><b class=\"f\"></b><s></s><b class=\"f\"></b><b></b><b></b></span></div><div class=\"ds-res\"><svg class=\"ds-flag\" viewBox=\"0 0 14 14\" aria-hidden=\"true\"><path d=\"M2.5 7.2l3 3 6-6.4\"/></svg>Dentro del rango</div><div class=\"ds-lab\">Mínimo 3</div></div><div class=\"ds-cell\" data-r=\"fail\"><div class=\"ds-lab\">Tipos de fuente</div><div class=\"ds-val\"><span class=\"ds-fig\">1</span><span class=\"ds-boxes\"><b class=\"f\"></b><b></b><s></s><b></b><b></b></span></div><div class=\"ds-res\"><svg class=\"ds-flag\" viewBox=\"0 0 14 14\" aria-hidden=\"true\"><path d=\"M3 3l8 8M11 3l-8 8\"/></svg>Fuera del rango · falta 1</div><div class=\"ds-lab\">Mínimo 2</div></div></div>",
+      "css": ".ds-cells { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; display: flex; flex-wrap: wrap; overflow: hidden; border: 1px solid var(--hairline, #E5E5E5); border-radius: 8px; background: var(--ground, #FFFFFF); color: var(--ink, #0A0A0A); font-variant-numeric: tabular-nums; } .ds-cell { flex: 1 1 11rem; margin: -1px 0 0 -1px; padding: 12px 18px 14px; border-top: 1px solid var(--hairline, #E5E5E5); border-left: 1px solid var(--hairline, #E5E5E5); } .ds-cell[data-r=fail] { background: var(--fail-tint, #FEF2F2); } .ds-lab { color: var(--muted, #525252); font-size: 13px; line-height: 20px; } .ds-cell > .ds-lab:first-child { font-weight: 500; } .ds-val { display: flex; align-items: center; gap: 14px; min-height: 34px; margin: 2px 0 6px; } .ds-fig { font-size: 28px; font-weight: 600; line-height: 34px; letter-spacing: -0.03em; } .ds-boxes { display: flex; align-items: center; gap: 3px; } .ds-boxes b { width: 14px; height: 8px; border-radius: 2px; background: var(--hairline, #E5E5E5); } .ds-boxes b.f { background: var(--pass, #16A34A); } [data-r=fail] .ds-boxes b.f { background: var(--fail, #DC2626); } .ds-boxes s { width: 2px; height: 18px; margin: 0 3px; border-radius: 1px; background: var(--ink, #0A0A0A); } .ds-res { display: flex; align-items: center; gap: 6px; color: var(--pass-text, #15803D); font-size: 13px; font-weight: 600; line-height: 20px; } [data-r=fail] :is(.ds-lab, .ds-res) { color: var(--fail-text, #B91C1C); } [data-r=fail] .ds-fig { color: var(--fail, #DC2626); } .ds-flag { width: 14px; height: 14px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "Run's Line Step",
+      "kind": "custom",
+      "refersTo": "row-list",
+      "description": "Signature: the run's step list; a cut step carries the blue scissors and says the cut in words.",
+      "html": "<div class=\"ds-line\"><div class=\"ds-head\">Paso<span>Quedan</span></div><div class=\"ds-step ds-cut\"><svg class=\"ds-icon\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"4\" cy=\"4\" r=\"2\"/><circle cx=\"4\" cy=\"12\" r=\"2\"/><path d=\"M5.6 5.2 14 12.5M5.6 10.8 14 3.5\"/></svg><span>Analizadas a fondo<small>253 testimonios quedaron sin analizar a fondo</small></span><b>44<small>tope de 50</small></b></div><div class=\"ds-step\"><svg class=\"ds-icon\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"><circle cx=\"8\" cy=\"8\" r=\"6.5\"/><path d=\"M5.5 8.2l1.7 1.7 3.3-3.4\"/></svg><span>Con citas comprobadas</span><b>41</b></div></div>",
+      "css": ".ds-line { font-family: Geist, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; overflow: hidden; border: 1px solid var(--hairline, #E5E5E5); border-radius: 8px; background: var(--ground, #FFFFFF); color: var(--ink, #0A0A0A); font-size: 13px; line-height: 20px; font-variant-numeric: tabular-nums; } .ds-head { display: flex; justify-content: space-between; min-height: 30px; align-items: center; padding: 0 16px 0 40px; background: var(--panel, #FAFAFA); color: var(--muted, #525252); font-size: 12px; font-weight: 500; } .ds-step { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto; column-gap: 8px; padding: 6px 16px; border-top: 1px solid var(--hairline, #E5E5E5); } .ds-step small { display: block; color: var(--muted, #525252); font-size: 12px; line-height: 16px; } .ds-cut span small { color: var(--accent, #2563EB); line-height: 18px; } .ds-step b { display: grid; justify-items: end; font-weight: 600; } .ds-step b small { font-weight: 400; } .ds-icon { width: 15px; height: 15px; margin-top: 2.5px; fill: none; stroke: var(--muted, #525252); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; } .ds-cut .ds-icon { stroke: var(--accent, #2563EB); }"
     }
   ],
   "narrative": {
-    "northStar": "The Lab Results Report",
-    "overview": "\n**Creative North Star: \"The Lab Results Report\"**\n\nEach pain arrives as a result, not a card: its evidence measured against the reference ranges the weekly run itself used, with what falls in or out of range said in words. The page reads like a clinical report on white paper: an institutional blue band across the top, pale blue-grey section heads, hairline-ruled tables, ink on white. At night (automatic, no toggle) it is the same report on a deep navy ground, never graphite and never warm.\n\nThe voice is calm, exact and unadorned. Density is that of a document a person reads closely on Monday, on a phone or a computer: small tracked section labels, tabular numbers, short plain-Spanish sentences. Nothing decorates; the one drawn element is the reference-range bar, because it is data.\n\nThis replaces the earlier andon-board world, which was rejected, above all for its yellow. None of that world carries over.",
+    "northStar": "Revisión por dolor",
+    "overview": "\n**Creative North Star: \"Revisión por dolor\"**\n\nThe page is the category standard of a developer dashboard, held to the craft of Stripe Dashboard, Vercel and Notion, and bent to one job: three people leave each week with a decision. Every pain is a row read like a deployment in a deployments list. It passes or fails three checks against the run's own thresholds, each check a filled ✓ or ✗ circle with its result in words. Opening a row shows the same three checks as box cells, small boxes filled up to a black threshold rule, then the duel's line and the actions. Beside the rows, the run's line lists every step, what remained, and each cut, marked with blue scissors and said in words. Everything else (Catálogo, Corridas, Nichos, a pain's page, a run's page) inherits these rows, cells and lists.\n\nThe world is quiet on purpose. A white ground, a #FAFAFA shell, near-black ink, grey hairlines and one blue accent. Green means in range, red means out of range with a pale red cell tint, and blue means attention, a cut, a link or the primary action. Depth is flat: 1 px borders, 6 px controls, 8 px panels, no shadow. Density is a working dashboard's, 14 px body on a 4 px spacing step, with tabular figures everywhere so counts line up. Light and dark follow the system setting with no toggle, and both keep the same roles.",
     "keyCharacteristics": [
-      "White paper, one institutional blue, hairline rules; flat, no shadows.",
-      "One typeface (Public Sans) with tabular figures everywhere.",
-      "Never yellow or amber. Attention is blue.",
-      "Every state is written in words beside its colour; dots and bars are `aria-hidden`.",
-      "The signature move is the reference-range bar drawn from the run's real thresholds.",
-      "AA contrast in both themes, usable from 320 px."
+      "Rows, not cards: bordered lists on the ground with a hairline between rows; the open part of a row sits on the panel grey.",
+      "Three checks per pain, each a ✓/✗ circle with its words; never a score.",
+      "Box cells filled to a 2 px black threshold rule, the failed cell on the fail tint.",
+      "Blue scissors mark a cut step; the cut is always said in words too.",
+      "One blue accent; green and red only for in range and out of range; no yellow, amber or orange anywhere.",
+      "Geist 400/500/600 with tabular figures; light and dark by `prefers-color-scheme`.",
+      "Flat: hairline borders, small radii, an outline focus ring, no shadows."
     ],
     "rules": [
       {
-        "name": "The Never-Yellow Rule",
-        "body": "No yellow, amber or orange anywhere, in either theme. Attention is blue. (The code keeps the internal attribute name `data-lamp=\"amber\"`; it is only a name and renders the attention blue. Likewise `green`, `red`, `off`.)",
+        "name": "The Never Yellow Rule",
+        "body": "No yellow, amber or orange anywhere on the page, in either theme. Attention is blue. The model's internal lamp name `amber` renders as Signal Blue, and a state merely waiting renders as the grey edge dot.",
         "section": "colors"
       },
       {
-        "name": "The Words-Beside-Colour Rule",
-        "body": "A state is never colour alone. The dot or bar is `aria-hidden` and the state is written next to it («DENTRO DEL RANGO», «FUERA DEL RANGO», the run's status).",
+        "name": "The Words Beside the Colour Rule",
+        "body": "Every state is written in words beside its colour: a dot is followed by its state, a ✓/✗ by its result, a filled box row by its figure, a cut's scissors by \"Con recorte\". Colour never carries meaning alone.",
         "section": "colors"
       },
       {
-        "name": "The Text-Variant Rule",
-        "body": "A state written as text uses its `-text` value (4.5:1 or better); the plain state value is for dots, bars and control edges (3:1). A green dot never sits directly on the section tint: it goes inside a chip on the panel.",
+        "name": "The One Blue Rule",
+        "body": "Blue is reserved for attention, cuts, links, selection, the focus ring and the primary action. A waiting pain does not get blue; it gets the grey edge dot, and its section heading says what it is waiting for.",
         "section": "colors"
       },
       {
-        "name": "The No-Eyebrow Rule",
-        "body": "Tracked uppercase labels name a section or a table; they never sit as a kicker above a heading.",
+        "name": "The AA Both Ways Rule",
+        "body": "Text meets 4.5:1 and marks and control edges meet 3:1 in light and in dark. The contrast ratios are annotated beside each token in the stylesheet; a new colour arrives with its ratios measured on the ground, the panel and any tint it sits on.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Everywhere Rule",
+        "body": "`font-variant-numeric: tabular-nums` is set on the body; counts in rows, cells and the run's line align without per-element overrides.",
         "section": "typography"
       },
       {
-        "name": "The Out-of-Range-Is-Bold Rule",
-        "body": "A value outside its range is set bold in the failing state's text colour, as a lab report marks it.",
+        "name": "The Lowercase Wordmark Rule",
+        "body": "tomoshi is a lowercase text wordmark set in Geist 600, never a logo image, never capitalised.",
         "section": "typography"
       },
       {
-        "name": "The Hairline-Not-Shadow Rule",
-        "body": "Separate surfaces with a 1px Hairline or a Section Tint head, never a shadow.",
+        "name": "The Hairline Not Shadow Rule",
+        "body": "A surface is separated by a 1 px hairline or a change between ground and panel grey, never by a shadow or a raised card.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "write every state in words beside its colour; keep dots and bars `aria-hidden`.",
-      "draw ranges from the run's real thresholds and flag them in words.",
-      "use Public Sans at 400/500/600/700 with tabular figures.",
-      "separate surfaces with 1px Hairline rules and the Section Tint; keep radii 2 to 4px.",
-      "keep both themes at AA (4.5:1 text, 3:1 marks and control edges) and usable at 320 px."
+      "**Do** write every state in words beside its colour: a dot with its state, a ✓/✗ with its result, a box row with its figure, scissors with \"Con recorte\".",
+      "**Do** use Signal Blue (#2563EB) for attention, cuts, links, selection, focus and the single primary action, and nothing else.",
+      "**Do** keep text at 4.5:1 and marks and control edges at 3:1 on the ground, the panel and every tint, in both light and dark.",
+      "**Do** build new views from the bordered row list, the three-check stack and the box cells; Catálogo, Corridas, Nichos and the detail pages already do.",
+      "**Do** keep every target at 44px and every screen usable at 320px wide, with tabs and tables reflowing inside their container, never the page.",
+      "**Do** write in plain Spanish: «Nos interesa», «Descartar», «Con recorte», «Fuera del rango · falta 1».",
+      "**Do** set «tomoshi» as a lowercase Geist 600 text wordmark."
     ],
     "donts": [
-      "use yellow, amber or orange, or reintroduce the andon-board look (lamps, graphite, a second display face).",
-      "convey a state by colour alone.",
-      "add shadows, gradients or rounded pills.",
-      "put a tracked uppercase label above a heading as an eyebrow.",
-      "show jargon or internal ids; the page is plain Spanish."
+      "**Don't** use yellow, amber or orange anywhere, in either theme, for any state; attention is blue.",
+      "**Don't** convey a state by colour alone.",
+      "**Don't** add shadows, raised cards, gradients or a sidebar; separate with hairlines and the panel grey.",
+      "**Don't** show internal ids, slugs or pipeline jargon (tier, lens, underserved, scores, pain ids) on the page.",
+      "**Don't** reduce a pain to a single score; it is three checks against the run's own thresholds.",
+      "**Don't** invent a value the run did not leave (a step's duration, a missing count); show a muted dash or leave it out.",
+      "**Don't** add a theme toggle; light and dark follow the system.",
+      "**Don't** use a logo image, another brand's mark or capitals for tomoshi."
     ]
   }
 }
