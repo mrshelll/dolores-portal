@@ -5,62 +5,58 @@ primary_target: "index.html"
 related_targets: []
 ---
 
-# index.html — tomoshi, the lab results report for deciding
+# index.html — tomoshi, la revisión por dolor
 
 ## Scope
 The whole page (one `index.html`, hash routes): Esta semana `#/`, Catálogo `#/catalogo`, Nichos `#/nichos`, Corridas `#/corridas`,
 el dolor `#/dolor/<id>`, plus sign-in and «sin permiso». Visitor mode: Operate. Build path: code-led.
+The Monday email template stays as it is.
 
 ## Brief
 - Audience: the small team on the access list, on phone and computer alike, on Monday.
 - Job: decide which pains to work on; the weekly run's trace is context that backs each decision.
-- Action: «Nos interesa» / «Descartar» on each pain of «Para decidir»; comment.
-- Proof: each pain's evidence against the run's real thresholds, its verbatim quotes and attacks; the run's line.
-- Constraints: plain Spanish, no jargon or internal ids; every state written in words beside its colour; AA on both
-  themes; from 320 px; no real data in this public repo; never yellow or amber (Miguel, 2026-11-23).
-- Replaces the andon-board world (2026-11-22), which Miguel rejected on 2026-11-23: «no me gustó el diseño, ese
-  amarillo no me gusta».
+- Action: «Nos interesa» / «Descartar» on each pain of «Para decidir»; comment. Veto a niche on `#/nichos`.
+- Proof: each pain's evidence against the run's real thresholds (`doc.gate.thresholds`, never hand-written), its verbatim
+  quotes and attacks; the run's step list beside the pains.
+- Constraints: plain Spanish, no jargon or internal ids («checks», «deploy», «build» never appear); every state written in
+  words beside its colour; AA on both themes, automatic light/dark; from 320 px; no real data in this public repo;
+  never yellow, amber or orange (Miguel, 2026-11-23).
+- Replaces the lab-report world (2026-11-23). Miguel, 2026-11-24: nothing specific wrong, «miremos otras opciones»; he
+  took the category standard over the herbarium, the cupping form, the dense Japanese web and the title wall, then chose
+  the «Revisión por dolor» structure over the document, the board by state, «Lo que cambió» and his first pick.
+- Must survive (Miguel, 2026-11-24): measuring each pain against the thresholds; light and dark; the run line on the home.
 
 ## Direction contract
-THESIS: Each pain arrives as a lab result: its evidence measured against the run's own reference ranges, with what
-falls in or out of range said in words; the page refuses the category default of a feed of cards with a separate
-analytics tab.
+THESIS: Each pain is a row that passes or fails three checks against the run's own thresholds, read like a list of
+deployments; the page refuses a feed of cards with a separate analytics tab and gives the category standard at the craft
+of Stripe Dashboard, Vercel and Notion.
 
-OWN-WORLD: The clinical lab results report. Light: white ground, institutional blue #1F4E8C shell band and headings,
-pale blue-grey section heads #E8EEF6, hairline tables #D5DCE6, ink #14213D; state: attention blue, green in range,
-red failed. Dark (automatic): deep navy ground, same roles. Public Sans, tabular figures, small tracked uppercase
-section labels («RESULTADOS», «ANÁLISIS»), never as an eyebrow above a heading. Flat, hairline rules, 2–4 px radius, no shadows.
+OWN-WORLD: Category standard. Light: white #FFFFFF ground, #FAFAFA panels, ink #0A0A0A, grey hairlines, accent blue
+#2563EB (primary button, selection, cut stages, attention), green #16A34A in range, red #DC2626 out of range with a pale
+red cell tint. Dark (automatic): near-black ground, same roles. Geist 400/500/600 with tabular figures. No sidebar:
+brand row, then underlined tabs across the width. Flat, 1px borders, small radii, no heavy shadows.
 
-STORY: The visitor sees which pains wait for a mark, reads each one's results against the ranges that decide «con
-peso» (3 testimonios, 2 tipos de fuente, 3 de 5 ataques resistidos), trusts it because the processed sample shows
-every stage and cut, and marks «Nos interesa» or «Descartar».
+STORY: The visitor sees how many pains wait, scans each row's three checks (✓ or ✗ with words), opens one to see the
+boxes against each threshold, the duel's line and the way to its quotes and attacks, and marks «Nos interesa» or
+«Descartar»; trusts it because the run's step list at the right shows every stage, what remained, each cut in words
+and the cost by model.
 
-FIRST VIEWPORT: The chosen sketch `.impeccable/mocks/decision/model-pick.html`: blue shell band with «tomoshi»,
-status, tabs and week · niche · cost; «Para decidir» with the summary strip, then «RESULTADOS»: each pain a result
-block (number, title, tags, state flag right) with an analysis table (value, reference-range bar, flag in words) and
-«Quién lo sufre» plus the actions beside it; at right «Línea de la corrida» as the processed sample's stage table
-(cant., tope, indicador).
+FIRST VIEWPORT: The chosen sketch `.impeccable/reference/revision-por-dolor.html` (shot `.impeccable/reference/1440x900.png`):
+brand row (tomoshi / Semana del … / status pill; Nicho, Costó, Salir), underlined tabs with the waiting count; «Para
+decidir» heading with its sentence; left, the list of rows (chevron, title and tags, who suffers, three stacked checks,
+state and marks; the sketch's «⋯» menu is not built: it would hold no item, the chevron and the open region carry every action), the first row open with three box cells, the actions and «Ver los testimonios y los ataques»;
+right, «Línea de la corrida» as a step list (Paso, Quedan, Tardó only when the trace has it), sources under the first
+step, cost by model at the foot; under the list, the catalog line.
 
-FORM: candidate 3 of 7 dealt as the roll's assignment was «La transmisión del partido»; Miguel chose IMPECCABLE'S
-PICK, candidate 1 of 7 (the lab report), seed:4b4c0fa1c771083c. Signature move: the reference-range bar — a value
-marker on a band whose shaded part is the real threshold, flagged «DENTRO DEL RANGO» / «FUERA DEL RANGO» in words.
+FORM: Direction round: Miguel took the standing exit (the category standard; seed:2166316c1b4c616e). Structure round:
+candidate 3 of 7 «Revisión por dolor», dealt, seed:6ff3d3486ced206c. Signature move: three stacked checks per row,
+each a ✓/✗ circle with its words; the open row shows the boxes filled to a black threshold rule; blue scissors mark cut
+stages. Other views inherit: Catálogo and Corridas as row lists with the same checks, the pain page as the open row
+at full width, Nichos as rows with their three figures.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
 ## Unresolved
-- The thresholds live in the dolores repo (`record-run.mjs`: TESTIMONY_THRESHOLD 3, TIER_THRESHOLD 2, MIN_SURVIVALS
-  3); the page must not drift from them.
-- Per-country counting: a pain can show 3+ testimonies in total and still be «en observación»; the range must read
-  the same counts the run judged.
-
-## Extension: Nichos `#/nichos` (2026-11-24, approved by Miguel)
-- Job: see which niche ran this week and why, and veto any niche (Miguel's or proposed) for the whole team; one click,
-  undone with the same button, like the marks. Inherits the lab report world; no DESIGN.md change.
-- Composition: the approved sketch `.impeccable/mocks/nichos/sketch.html` (shots in `.impeccable/mocks/nichos/shots/`).
-  «ESTA SEMANA»: the chosen niche as a result block: why it was chosen in words, «Sondeo del <fecha>» analysis table
-  (quejas reales, gasto real, ruido) whose range column is «Frente a los otros N»: the value's marker on a band with a
-  tick per rival niche, flagged «CON SEÑAL» / «SIN SEÑAL»; beside it «Sus dolores» and «Vetar este nicho». Then
-  «CANDIDATOS»: one table, every niche with its state in words (Corrió esta semana / Compite / Descansa / Vetado /
-  Retirado), origin (Tuyo / Propuesto por tomoshi), the proposal's why, quejas, gasto, ruido, its pains, and Vetar /
-  Quitar veto with who vetoed it. From 900 px down each row is a stacked block with the button full width.
-- The masthead's niche becomes a link to `#/nichos`.
+- Per-step durations: shown only if the run trace carries them; never invented.
+- Per-country counting: a pain can show 3+ testimonies in total and still be «en observación»; checks read the same
+  counts the run judged.

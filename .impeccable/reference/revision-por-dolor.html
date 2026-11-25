@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>tomoshi · Esta semana · Revisión por dolor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0A0A0A;--ink2:#3D3D3D;--mut:#666;--line:#EAEAEA;--line2:#D4D4D4;--bg2:#FAFAFA;--blue:#2563EB;--bbg:#EFF6FF;--ok:#16A34A;--okt:#15803D;--okbg:#F0FDF4;--bad:#DC2626;--badt:#B91C1C;--badbg:#FEF2F2}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1440px;height:900px;overflow:hidden}
+body{font:400 14px/20px 'Geist',system-ui,sans-serif;color:var(--ink);background:#fff;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+::selection{background:#DBEAFE;color:var(--ink)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+svg{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.top{display:flex;align-items:center;gap:10px;height:60px;padding:0 28px}
+.wm{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.035em}
+.sl{width:24px;height:24px;color:var(--line2);stroke-width:1.2}
+.wk{font-weight:500}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;margin-left:4px;padding:0 10px;border:1px solid #BBF7D0;border-radius:12px;background:var(--okbg);color:var(--okt);font-size:12.5px;font-weight:500}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+.kv{display:flex;margin:0 8px 0 auto;font-size:13px}
+.kv div{display:flex;gap:6px;padding:0 16px}
+.kv div+div{border-left:1px solid var(--line2)}
+.kv dt{color:var(--mut)}.kv dd{font-weight:500}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid var(--line2);border-radius:6px;background:#fff;font-size:13px;font-weight:500;line-height:1}
+.btn:hover{background:var(--bg2);border-color:#A3A3A3}.btn.p{border-color:var(--blue);background:var(--blue);color:#fff}
+.btn.p:hover{background:#1D4ED8}.btn.g{border-color:transparent;background:none;color:var(--ink2)}
+.btn.g:hover{background:#F0F0F0}
+.tabs{display:flex;height:46px;padding:0 18px;border-bottom:1px solid var(--line)}
+.tabs a{position:relative;display:flex;align-items:center;gap:8px;padding:0 10px;color:var(--mut)}
+.tabs a:hover{color:var(--ink)}.tabs .on{color:var(--ink);font-weight:500}
+.tabs .on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;border-radius:1px;background:var(--ink)}
+.ct{min-width:20px;height:20px;padding:0 6px;border-radius:10px;background:var(--blue);color:#fff;font-size:12px;font-weight:600;line-height:20px;text-align:center}
+.body{display:grid;grid-template-columns:minmax(0,1fr) 344px;gap:24px;align-items:start;height:794px;padding:24px 28px;background:var(--bg2)}
+.hd{display:flex;align-items:baseline;gap:14px;margin-bottom:16px}
+h1{font-size:28px;line-height:36px;font-weight:600;letter-spacing:-.03em}
+.hd span{color:var(--mut)}
+.list{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.row{display:grid;grid-template-columns:24px minmax(0,1fr) 192px 168px 32px;column-gap:14px;align-items:start;padding:16px 12px}
+.list>*+*{border-top:1px solid var(--line)}
+.row:not(.open):hover{background:#FCFCFC}
+.cv{display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:6px;background:none;color:var(--mut)}
+.cv:hover{background:#F0F0F0;color:var(--ink)}.open .cv{color:var(--ink)}
+.tl{display:flex;align-items:center;gap:8px;height:24px}
+h3{font-size:15px;line-height:22px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;height:22px;padding:0 8px;border:1px solid var(--line);border-radius:11px;color:var(--ink2);font-size:12px;font-weight:500;white-space:nowrap}
+.chip.new{border-color:#BFDBFE;background:var(--bbg);color:var(--blue)}
+.who{max-width:62ch;margin-top:2px;color:var(--mut);font-size:13px}
+.ck{list-style:none;padding-top:2px;font-size:13px}
+.ck li{display:flex;align-items:center;gap:8px;height:20px;white-space:nowrap}
+.ck svg{color:var(--ok)}.ck .no{color:var(--badt)}.ck .no svg{color:var(--bad)}
+.st{padding-top:2px;font-size:13px}
+.st p{display:flex;align-items:center;gap:8px;height:20px;font-weight:500}
+.st p::before{content:"";width:8px;height:8px;margin:0 4px;border-radius:50%;background:#8F8F8F}
+.st p.ok::before{background:var(--ok)}.st small{display:flex;align-items:center;gap:7px;height:20px;margin-top:2px;color:var(--mut);font-size:13px}
+.st b{color:var(--ink);font-weight:500}
+.av{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:600}
+.mn{display:grid;place-items:center;width:32px;height:32px;margin-top:-4px;border:0;border-radius:6px;background:none;color:var(--mut)}
+.mn:hover{background:#F0F0F0;color:var(--ink)}.det{padding:16px 20px 18px 50px;background:var(--bg2)}
+.duel{color:var(--ink2);font-size:13.5px}
+.duel span{margin-right:8px;color:var(--mut);font-weight:500}
+.ms{display:grid;grid-template-columns:repeat(3,1fr);margin:12px 0 16px;border:1px solid var(--line);border-radius:8px;background:#fff;overflow:hidden}
+.ms>div{padding:12px 18px 14px}
+.ms>div+div{border-left:1px solid var(--line)}
+.ml{color:var(--mut);font-size:13px;font-weight:500}
+.mv{display:flex;align-items:center;gap:14px;height:34px;margin:2px 0 6px}
+.mv strong{min-width:56px;font-size:28px;line-height:34px;font-weight:600;letter-spacing:-.03em}
+.mv small{margin-left:4px;color:var(--mut);font-size:14px;font-weight:500;letter-spacing:0}
+.m{display:inline-flex;align-items:center;gap:3px}
+.m b,.m s{width:14px;height:8px;border-radius:2px;background:var(--line)}
+.m b{background:var(--ok)}.m i{width:2px;height:18px;margin:0 3px;border-radius:1px;background:var(--ink)}
+.sw{display:flex;align-items:center;gap:6px;color:var(--okt);font-size:13px;font-weight:600}
+.sw svg{width:14px;height:14px;color:var(--ok);stroke-width:2.4}
+.th{color:var(--mut);font-size:13px}
+.out{background:var(--badbg)}.out .mv strong,.out .sw svg{color:var(--bad)}
+.out .m b{background:var(--bad)}.out .m s{background:#FBD5D5}.out .sw{color:var(--badt)}
+.out .ml,.out .th{color:#9B2C2C}
+.cf{display:flex;align-items:center;gap:8px}
+.lnk{margin-left:auto;color:var(--blue);font-size:13px;font-weight:500;text-decoration:underline;text-decoration-color:#93C5FD;text-underline-offset:3px}
+.lnk:hover{text-decoration-color:var(--blue)}.more{display:flex;align-items:center;gap:6px;margin-top:14px;color:var(--mut);font-size:13px}
+.more .lnk{margin-left:6px}
+.run{border:1px solid var(--line);border-radius:10px;background:#fff;overflow:hidden}
+.rh{padding:14px 16px 12px}
+h2{font-size:22px;line-height:28px;font-weight:600;letter-spacing:-.025em}
+.rh p{margin-top:2px;color:var(--mut);font-size:13px}
+.rh .cutl{display:flex;align-items:center;gap:6px;margin-top:6px;color:var(--blue);font-weight:500}
+.cutl svg,.note svg{width:14px;height:14px}
+.sh,.stp li{display:grid;grid-template-columns:16px minmax(0,1fr) 44px 64px;column-gap:8px;align-items:center;padding:0 16px}
+.sh{height:30px;border-top:1px solid var(--line);background:var(--bg2);color:var(--mut);font-size:12px;font-weight:500}
+.sh span:nth-child(n+3),.stp b,.stp time{text-align:right}
+.stp{list-style:none}
+.stp li{min-height:32px;padding-top:6px;padding-bottom:6px;border-top:1px solid var(--line);font-size:13.5px}
+.stp li>svg{color:var(--mut);width:15px;height:15px}
+.stp .cut>svg{color:var(--blue)}.stp b{font-weight:600}
+.stp time{color:var(--mut);font-size:12.5px}
+.note{grid-column:2/-1;display:flex;align-items:center;gap:6px;margin-top:2px;color:var(--blue);font-size:12.5px;line-height:18px}
+.src{grid-column:2/-1;display:grid;grid-template-columns:1fr auto auto;column-gap:10px;margin-top:4px;color:var(--ink2);font-size:12px;line-height:20px}
+.src span:nth-child(3n+2){text-align:right}
+.src .k{color:var(--okt)}.src .c{color:var(--blue)}.src .x{color:var(--badt)}
+.rf{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-top:1px solid var(--line);background:var(--bg2)}
+.rf dt{color:var(--mut);font-size:12px}.rf dd{font-size:13px;font-weight:600}
+</style>
+</head>
+<body>
+<svg style="position:absolute;width:0;height:0" aria-hidden="true">
+<symbol id="i-slash" viewBox="0 0 24 24"><path d="M16.9 3.5 7.1 20.5"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+<symbol id="i-pass" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.5" fill="currentColor" stroke="none"/><path d="m4.9 8.2 2.1 2.1 4.1-4.4" stroke="#fff" stroke-width="1.7"/></symbol>
+<symbol id="i-fail" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7.5" fill="currentColor" stroke="none"/><path d="m5.6 5.6 4.8 4.8m0-4.8-4.8 4.8" stroke="#fff" stroke-width="1.7"/></symbol>
+<symbol id="i-ok" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="i-no" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+<symbol id="i-done" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8.4 12.3 2.5 2.4 4.7-5"/></symbol>
+<symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/></symbol>
+<symbol id="i-msg" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="i-cut" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9M14.5 14.5 20 20M8.1 8.1 12 12"/></symbol>
+</svg>
+<header class="top">
+  <span class="wm">tomoshi</span><svg class="sl" aria-hidden="true"><use href="#i-slash"/></svg>
+  <span class="wk">Semana del 23 de noviembre</span><span class="pill"><i></i>Corrida completa</span>
+  <dl class="kv"><div><dt>Nicho</dt><dd>Cuotas y cobros de clubes</dd></div><div><dt>Costó</dt><dd>2,73 USD</dd></div></dl>
+  <a class="btn" href="#">Salir</a>
+</header>
+<nav class="tabs" aria-label="Vistas">
+  <a class="on" href="#" aria-current="page">Esta semana<span class="ct" aria-label="4 esperan tu marca">4</span></a><a href="#">Catálogo</a><a href="#">Nichos</a><a href="#">Corridas</a>
+</nav>
+<div class="body">
+<main>
+  <div class="hd"><h1>Para decidir</h1><span>4 esperan tu marca. Primero, el ganador del duelo; luego, los que tienen peso para trabajar.</span></div>
+  <div class="list">
+    <article class="row open">
+      <button class="cv" aria-expanded="true" aria-label="Cerrar el detalle"><svg><use href="#i-down"/></svg></button>
+      <div><div class="tl"><h3>Clasificar facturas de proveedores a mano</h3><span class="chip">Ganó el duelo</span><span class="chip new">Evidencia nueva</span></div><p class="who">Pequeñas oficinas contables; todavía no sabemos quién paga por esto.</p></div>
+      <ul class="ck"><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>4 testimonios</li><li class="no"><svg role="img" aria-label="Fuera del rango"><use href="#i-fail"/></svg>1 tipo de fuente · falta 1</li><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>4 de 5 ataques</li></ul>
+      <div class="st"><p>En observación</p><small>Sin marcas aún</small></div>
+      <button class="mn" aria-label="Más acciones"><svg><use href="#i-dots"/></svg></button>
+    </article>
+    <div class="det">
+      <p class="duel"><span>En el duelo</span>Más tesoreros lo cuentan y dos federaciones ya pagan por algo parecido.</p>
+      <div class="ms">
+        <div><p class="ml">Testimonios</p><p class="mv"><strong>4</strong><span class="m" aria-hidden="true"><b></b><b></b><i></i><b></b><b></b><s></s><s></s></span></p><p class="sw"><svg><use href="#i-ok"/></svg>Dentro del rango</p><p class="th">Mínimo 3</p></div>
+        <div class="out"><p class="ml">Tipos de fuente</p><p class="mv"><strong>1</strong><span class="m" aria-hidden="true"><b></b><i></i><s></s><s></s><s></s><s></s></span></p><p class="sw"><svg><use href="#i-no"/></svg>Fuera del rango · falta 1</p><p class="th">Mínimo 2 · todo vino de un solo tipo</p></div>
+        <div><p class="ml">Ataques resistidos</p><p class="mv"><strong>4<small>de 5</small></strong><span class="m" aria-hidden="true"><b></b><b></b><i></i><b></b><b></b><s></s></span></p><p class="sw"><svg><use href="#i-ok"/></svg>Dentro del rango</p><p class="th">Mínimo 3 de 5</p></div>
+      </div>
+      <div class="cf"><button class="btn p">Nos interesa</button><button class="btn">Descartar</button><button class="btn g"><svg><use href="#i-msg"/></svg>Comentar</button><a class="lnk" href="#">Ver los 4 testimonios y los 5 ataques</a></div>
+    </div>
+    <article class="row">
+      <button class="cv" aria-expanded="false" aria-label="Abrir el detalle"><svg><use href="#i-right"/></svg></button>
+      <div><div class="tl"><h3>Cobrar las cuotas del club a tiempo</h3></div><p class="who">Tesoreros voluntarios de clubes deportivos pequeños que cobran cuotas a decenas de familias.</p></div>
+      <ul class="ck"><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>3 testimonios</li><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>2 tipos de fuente</li><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>4 de 5 ataques</li></ul>
+      <div class="st"><p class="ok">Con peso para trabajar</p><small><span class="av" aria-hidden="true">C</span><span><b>Carla</b>: Nos interesa</span></small></div>
+      <button class="mn" aria-label="Más acciones"><svg><use href="#i-dots"/></svg></button>
+    </article>
+    <article class="row">
+      <button class="cv" aria-expanded="false" aria-label="Abrir el detalle"><svg><use href="#i-right"/></svg></button>
+      <div><div class="tl"><h3>Conciliar facturas de proveedores a mano</h3><span class="chip new">Evidencia nueva</span></div><p class="who">Pequeñas oficinas contables que cuadran cada pago contra el extracto del banco.</p></div>
+      <ul class="ck"><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>4 testimonios</li><li class="no"><svg role="img" aria-label="Fuera del rango"><use href="#i-fail"/></svg>1 tipo de fuente · falta 1</li><li class="no"><svg role="img" aria-label="Fuera del rango"><use href="#i-fail"/></svg>2 de 5 ataques · falta 1</li></ul>
+      <div class="st"><p>En observación</p><small>Sin marcas aún</small></div>
+      <button class="mn" aria-label="Más acciones"><svg><use href="#i-dots"/></svg></button>
+    </article>
+    <article class="row">
+      <button class="cv" aria-expanded="false" aria-label="Abrir el detalle"><svg><use href="#i-right"/></svg></button>
+      <div><div class="tl"><h3>Revisar facturas de proveedores a mano</h3><span class="chip new">Evidencia nueva</span></div><p class="who">Tesoreros de clubes que revisan cada factura antes de pagarla.</p></div>
+      <ul class="ck"><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>3 testimonios</li><li class="no"><svg role="img" aria-label="Fuera del rango"><use href="#i-fail"/></svg>1 tipo de fuente · falta 1</li><li><svg role="img" aria-label="Dentro del rango"><use href="#i-pass"/></svg>3 de 5 ataques</li></ul>
+      <div class="st"><p>En observación</p><small>Sin marcas aún</small></div>
+      <button class="mn" aria-label="Más acciones"><svg><use href="#i-dots"/></svg></button>
+    </article>
+  </div>
+  <p class="more">En el catálogo: 1 con peso para trabajar · 55 en observación · 1 descartado por el equipo<a class="lnk" href="#">Abrir el catálogo</a></p>
+</main>
+<aside class="run" aria-label="Línea de la corrida">
+  <div class="rh"><h2>Línea de la corrida</h2><p>Lunes 23 de noviembre · 10 pasos · duró 26 min</p><p class="cutl"><svg><use href="#i-cut"/></svg>Hubo recorte en 3 pasos</p></div>
+  <div class="sh"><span></span><span>Paso</span><span>Quedan</span><span>Tardó</span></div>
+  <ol class="stp">
+    <li class="cut"><svg role="img" aria-label="Con recorte"><use href="#i-cut"/></svg><span>Juntadas</span><b>617</b><time>4 min 10 s</time><p class="note">2 fuentes se juntaron a medias</p>
+      <div class="src"><span>Foro de tesoreros</span><span>72 → 64</span><span class="k">Completa</span><span>Grupos de familias</span><span>240 → 29</span><span class="c">Recortada</span><span>Avisos de federaciones</span><span>90 → 90</span><span class="c">Recortada</span><span>Empleo ficticio</span><span>0</span><span class="x">Sin aporte</span><span>Licitaciones ficticias</span><span>215 → 209</span><span class="k">Completa</span></div></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Leídas</span><b>392</b><time>2 min 05 s</time></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Con señales de dolor</span><b>297</b><time>3 min 40 s</time></li>
+    <li class="cut"><svg role="img" aria-label="Con recorte"><use href="#i-cut"/></svg><span>Analizadas a fondo</span><b>44</b><time>6 min 20 s</time><p class="note">Tope de 50: quedaron 253 sin analizar</p></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Con citas comprobadas</span><b>41</b><time>1 min 15 s</time></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Dolores agrupados</span><b>15</b><time>1 min 30 s</time></li>
+    <li class="cut"><svg role="img" aria-label="Con recorte"><use href="#i-cut"/></svg><span>Candidatos</span><b>12</b><time>50 s</time><p class="note">Tope de 12 candidatos</p></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Puestos a prueba</span><b>12</b><time>4 min 30 s</time></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Resistieron</span><b>2</b><time>20 s</time></li>
+    <li><svg role="img" aria-label="Hecho"><use href="#i-done"/></svg><span>Duelos</span><b>1</b><time>1 min 20 s</time></li>
+  </ol>
+  <dl class="rf"><div><dt>Sonnet</dt><dd>1,64 USD</dd></div><div><dt>Haiku</dt><dd>0,71 USD</dd></div><div><dt>Fichas</dt><dd>0,38 USD</dd></div></dl>
+</aside>
+</div>
+</body>
+</html>
