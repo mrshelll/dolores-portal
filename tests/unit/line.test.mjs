@@ -5,7 +5,7 @@ import * as line from "../../js/line.js";
 
 const { renderLine, lamp } = line;
 
-// The lab report has no lighting sequence (2026-11-23): the andon board's «tomoshi» move is retired with its helpers.
+// The page has no lighting sequence (2026-11-23): the andon board's «tomoshi» move is retired with its helpers.
 test("the lighting sequence is gone: line.js exports no lightUp, firstLighting or lightDelays", () => {
   for (const name of ["lightUp", "firstLighting", "lightDelays", "LIGHT_STEP_MS", "prefersReducedMotion"]) {
     assert.equal(name in line, false, name);

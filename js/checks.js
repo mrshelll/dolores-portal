@@ -6,7 +6,8 @@
 // icon and box row is hidden from a screen reader: the words beside it carry its meaning, and a stack's line says its
 // result in words for a screen reader only (the ✓ and ✗ already differ for the eye). Both return null when the
 // gate gives no checks (missing or malformed): a closed row then shows checkUnmeasured (the dash and «Sin medir contra
-// los umbrales») and its facts line, an open one says there is no analysis; neither claims a range.
+// los umbrales») and its facts line, its open part only its actions, and a pain's page says there is no analysis;
+// none claims a range.
 
 import { h, svg } from "./dom.js";
 import { T } from "./text.js";

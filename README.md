@@ -191,11 +191,12 @@ quotes' «Texto original» fold at a third level (DET-07). The factory's `indice
 The email with the one-time code is `supabase/templates/otp-code.html` (HTML only: Supabase Auth's mailer sends no
 plain-text part) and its subject is `supabase/templates/otp-code.subject.txt`. The rules are COR-10 to COR-13 of the
 factory's visual manual (`patrones/correo-aviso.md`): the code first, large and as real text; how long it lasts; what
-to do if it was not asked for; no links, no images. It says tomoshi in the lab report's colours: the code first, in
-the report's ink (#14213D) on a near-white sheet, then the report's blue band (#1F4E8C, the portal's masthead) that
-closes the email with the lowercase wordmark as near-white text, in Public Sans when the reader has it and Arial
-otherwise (no web font is loaded); no pure white or black (COR-09), and every text colour reaches WCAG AA on its own
-background. `tests/unit/otp-template.test.mjs` checks what is mechanical, contrast included.
+to do if it was not asked for; no links, no images. It keeps its own colours, those of the portal's earlier lab
+report design, which the portal itself no longer uses: the code first, in that design's ink (#14213D) on a near-white
+sheet, then its blue band (#1F4E8C) that closes the email with the lowercase wordmark as near-white text, in Public
+Sans when the reader has it and Arial otherwise (no web font is loaded); no pure white or black (COR-09), and every
+text colour reaches WCAG AA on its own background. `tests/unit/otp-template.test.mjs` checks what is mechanical,
+contrast included.
 
 Steps in the Supabase panel, project `dolores` (Miguel does them; the app password is typed in the panel, never in
 this repository):

@@ -529,12 +529,13 @@ const rowChecks = (item) => checkStack(item.gate)
 // One pain of «Para decidir» as a row. Closed: the chevron that opens it; the title as the link to the pain, its tags
 // and who suffers it; its checks (checkStack: each count against the run's own threshold, a ✓ or ✗ beside its words)
 // or, without a gate, a dash that says it was not measured and why it is there (rowChecks); its state (a dot and its
-// words) and the team's marks. Open, under it: the duel's line (for the winner); the box cells (checkCells) or, without
-// a gate, a line that says there is no analysis; then «Nos interesa», «Descartar» and «Comentar», and at the right the
-// way to its testimonies and attacks. The first row starts open, the rest closed; a row opens and closes by its chevron
-// or a click on its title area, never leaving the page, and opening one never closes another. Each button says what
-// pressing it does and names its pain for a screen reader (aria-describedby). A mark changes the row in place: a
-// discarded pain stays until the next load, its dot off, so it can be undone with the same button.
+// words) and the team's marks. Open, under it: the duel's line (for the winner); the box cells (checkCells), none
+// without a gate (the row's own line already says it was not measured); then «Nos interesa», «Descartar» and
+// «Comentar», and at the right the way to its testimonies and attacks. The first row starts open, the rest closed; a
+// row opens and closes by its chevron or a click on its title area, never leaving the page, and opening one never
+// closes another. Each button says what pressing it does and names its pain for a screen reader (aria-describedby). A
+// mark changes the row in place: a discarded pain stays until the next load, its dot off, so it can be undone with the
+// same button.
 function station(item, index, ctx) {
   const { home, me, pain } = ctx;
   const viewId = state.viewId;
@@ -610,7 +611,7 @@ function station(item, index, ctx) {
     "aria-expanded": String(open), "aria-controls": openId }, chevron());
   const region = h("div", { class: "station-open", id: openId, hidden: !open },
     reason ? h("p", { class: "station-duel" }, h("span", { class: "station-duel-label" }, T.duelReasonLabel), " ", reason) : null,
-    cells || h("p", { class: "checks-none" }, T.analysisNone), // why it is there is already in the row's own line
+    cells, // without a gate, nothing: the row's own line says it was not measured and why it is there
     h("div", { class: "station-foot" },
       h("div", { class: "station-actions" }, interested, discard, comment),
       h("a", { class: "station-evidence", href, "aria-describedby": titleId }, T.stationEvidence),

@@ -19,8 +19,8 @@ test("the subject has no {{ .Token }} and is at most 50 characters", () => {
 
 // The code first (the factory's «code first»), before the wordmark and before any other sentence: the inbox preview
 // shows it. The lab report's band closes the email: the lowercase wordmark «tomoshi», text only, near-white on the
-// report's blue (#1F4E8C), the portal's masthead. Nothing of the andon board is left: no amber line, no graphite, no
-// Barlow.
+// report's blue (#1F4E8C), the masthead of the portal's earlier design. Nothing of the andon board is left: no amber
+// line, no graphite, no Barlow.
 test("the body opens with {{ .Token }}, exactly once, and closes with tomoshi's band in the lab report's colours", () => {
   assert.equal(body.split("{{ .Token }}").length - 1, 1);
   assert.equal(text.filter((line) => line.includes("{{")).length, 1);

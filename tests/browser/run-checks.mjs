@@ -440,7 +440,8 @@ async function behaviours(browser, base) {
 
   // A row whose pain has no gate (home-old-trace: stored before the gate existed) claims no range: where its checks go,
   // the dash of a check with no result, hidden from a screen reader, and «Sin medir contra los umbrales» in muted ink,
-  // then why it is there in its facts line, under the dash's words. Opened, it says there is no analysis, once.
+  // then why it is there in its facts line, under the dash's words. Opened, it does not say it again: no cells, no
+  // sentence, only its actions.
   {
     const wide = { width: 1440, height: 900, scheme: "light" };
     const { context, page, log, problems } = await openScreen(browser, base, scenario("home-old-trace"), wide);
@@ -458,14 +459,16 @@ async function behaviours(browser, base) {
         facts: facts && facts.checkVisibility() ? facts.textContent : null,
         open: Boolean(region && region.checkVisibility()),
         none: region ? region.querySelectorAll(".checks-none").length : null,
+        cells: region ? region.querySelectorAll(".check-cells").length : null,
+        actions: Boolean(region && region.querySelector(".station-actions") && region.querySelector(".station-actions").checkVisibility()),
         openFacts: region ? region.querySelectorAll(".station-facts").length : null,
       };
     }));
     const MUTED = "rgb(82, 82, 82)"; // --muted, #525252 in light
-    check("a row without a gate: the dash and «Sin medir contra los umbrales» in muted ink, then its facts; open, no analysis once",
+    check("a row without a gate: the dash and «Sin medir contra los umbrales» in muted ink, then its facts; open, only its actions",
       rows.length >= 4 && rows.every((row) => !row.stack && row.dash && row.dash.text === T.checkUnmeasured && row.dash.icon === "true"
         && row.dash.color === MUTED && typeof row.facts === "string" && row.facts.length > 0)
-        && rows[0].open && rows[0].none === 1 && rows[0].openFacts === 0 && clean(log, problems),
+        && rows[0].open && rows[0].none === 0 && rows[0].cells === 0 && rows[0].actions && rows[0].openFacts === 0 && clean(log, problems),
       `${JSON.stringify(rows)}; ${why(log, problems)}`);
     await context.close();
   }
@@ -743,6 +746,24 @@ async function behaviours(browser, base) {
     check("320 px, a long title: the line is a strip, the title wraps whole, no sideways scroll",
       seen.strip && !seen.panel && !seen.ellipsis && !seen.clipped && seen.lines >= 2 && !seen.scroll && clean(log, problems),
       `${JSON.stringify(seen)}; ${why(log, problems)}`);
+    await context.close();
+  }
+
+  // Review Focus 5: at 320 px the home's open row stacks its three box cells, one per line: the same left edge, each
+  // one lower than the one before.
+  {
+    const { context, page, log, problems } = await openScreen(browser, base, scenario("home"), PHONE);
+    const cells = await page.evaluate(() => {
+      const region = [...document.querySelectorAll(".station-open")].find((el) => el.checkVisibility());
+      return region ? [...region.querySelectorAll(".check-cell")].map((cell) => {
+        const box = cell.getBoundingClientRect();
+        return { left: Math.round(box.left), top: Math.round(box.top) };
+      }) : [];
+    });
+    check("320 px, the open row: its three box cells stack one per line",
+      cells.length === 3 && cells.every((cell) => cell.left === cells[0].left)
+        && cells.every((cell, i) => i === 0 || cell.top > cells[i - 1].top) && clean(log, problems),
+      `${JSON.stringify(cells)}; ${why(log, problems)}`);
     await context.close();
   }
 

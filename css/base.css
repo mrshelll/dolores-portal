@@ -755,7 +755,7 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 @container station (max-width: 33.99rem) {
   .station-open { padding-inline: var(--space-4); } /* the whole row's width: the cells and the three actions fit a phone */
   .station-open > .station-foot { order: 1; }
-  .station-open > :is(.check-cells, .checks-none) { order: 2; }
+  .station-open > .check-cells { order: 2; }
   .station-evidence { margin-left: 0; }
 }
 @container station (min-width: 34rem) and (max-width: 45.99rem) {
@@ -780,7 +780,7 @@ input[aria-invalid="true"]:focus-visible, textarea[aria-invalid="true"]:focus-vi
 
 /* A sentence that stands for an empty screen (the home, Catálogo, Corridas, Nichos). */
 .week-sentence { max-width: var(--measure-text); }
-/* No gate on the pain: one line in words where the box cells would be (an open row, a pain's page). */
+/* No gate on the pain: one line in words where the box cells would be on a pain's page. */
 .checks-none { color: var(--muted); font-size: 14px; line-height: 20px; }
 
 /* One bordered list per state on the ground, in the board's order: its head row on the panel grey (the state's dot,

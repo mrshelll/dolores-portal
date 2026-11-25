@@ -1157,7 +1157,7 @@ test("the top bar names the niche and the cost the same way whether the home or 
   assert.deepEqual(bar(firstFailed), fallback);
 });
 
-// ---- the lab report: a pain's judged counts (dolores' decideStatus, `gate` on the pain's doc) as analysis rows ------
+// ---- a pain's three checks: its judged counts (dolores' decideStatus, `gate` on the pain's doc) as analysis rows ----
 
 const GATE = Object.freeze({
   testimonies: 4, tiers: 2, survivals: 4, verdicts: 5, has_statement: true, per_country: false,

@@ -505,10 +505,10 @@ export function scenarios() {
       mustNotRead: [T.analysisNone, T.checkUnmeasured] },
     // Review Focus 2: the week's run left no trace; the line is the one before, by its date, drawn in its final state.
     // Its pains were stored before the gate existed: each row says, after a dash, that it was not measured and why it is
-    // there in its facts line; the open one says so in words where the table would be, with no range.
+    // there in its facts line; the open one does not say it again, so no row says there is no analysis.
     { name: "home-old-trace", hash: "#/", data: homeData("complete", { oldTrace: true, gates: false }), ready: HOME_LIST, expectedTitle: T.homeTitle,
-      mustRead: [oldLine, T.analysisNone, T.checkUnmeasured, fill(T.factAttacks, { held: 4, total: 5 }), fill(T.factTestimoniesMany, { count: 4 })],
-      mustNotRead: [T.analysisIn, T.analysisOut],
+      mustRead: [oldLine, T.checkUnmeasured, fill(T.factAttacks, { held: 4, total: 5 }), fill(T.factTestimoniesMany, { count: 4 })],
+      mustNotRead: [T.analysisIn, T.analysisOut, T.analysisNone],
       mustShow: [".station-row > .check-unmeasured > .check[data-result=none] > svg.check-icon[aria-hidden=true]"] },
     { name: "home-failed-run", hash: "#/", data: homeData("failed", { oldTrace: true }),
       ready: `[data-rol=avisos]:has(.notice--warning) ~ [data-rol=cuerpo] ${HOME_LIST}`, expectedTitle: T.homeTitle, mustRead: [T.runFailed, oldLine] },
